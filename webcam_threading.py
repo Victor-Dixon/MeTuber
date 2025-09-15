@@ -1,205 +1,306 @@
-# D:\MeTuber\MeTuber\webcam_threading.py
+# File: webcam_threading.py
+from __future__ import annotations
 
-import av
-import pyvirtualcam
-import logging
-from PyQt5.QtCore import QThread, pyqtSignal
-import cv2
-import numpy as np
 import os
-import traceback
 import time
-import queue
-from collections import deque
+import logging
+from typing import Optional, Dict, Any, Literal
 
-DEBUG_MODE = os.environ.get("METUBER_DEBUG", "0") == "1"
+import numpy as np
+
+try:
+    import av  # PyAV for capture
+except Exception:  # pragma: no cover
+    av = None  # type: ignore
+
+try:
+    import pyvirtualcam
+except Exception:  # pragma: no cover
+    pyvirtualcam = None  # type: ignore
+
+from PyQt5.QtCore import QThread, pyqtSignal  # GUI thread-friendly
+
+logger = logging.getLogger(__name__)
+
+StopReason = Literal["STOP_CALLED", "BACKEND_CLOSED", "NO_FRAMES", "EXCEPTION", "UNKNOWN"]
+
+
+def _default_av_format() -> str:
+    if os.name == "nt":
+        return "dshow"
+    # macOS / Linux best-effort fallbacks
+    if sys_platform := os.environ.get("WSL_DISTRO_NAME"):
+        return "v4l2"
+    from sys import platform
+    if platform == "darwin":
+        return "avfoundation"
+    return "v4l2"
+
+
+def _build_default_input_options(fps: int = 30, width: int = 1280, height: int = 720) -> Dict[str, str]:
+    """
+    Conservative defaults that work for most DirectShow/AVFoundation/V4L2 inputs.
+    Caller may override via ctor.
+    """
+    opts = {
+        "rtbufsize": "100M",
+        "framerate": str(int(max(1, fps))),
+    }
+    # Many stacks accept 'video_size', others accept 'video_size' via WxH
+    opts["video_size"] = f"{int(width)}x{int(height)}"
+    return opts
 
 
 class WebcamThread(QThread):
     """
-    A QThread that captures video frames using PyAV, applies the chosen style,
-    and publishes them to a virtual camera with pyvirtualcam.
+    PyAV-based capture thread with safe, explicit attributes.
+    -> Fix: `input_options` is now defined in __init__ (not lazily in a property).
     """
-    error_signal = pyqtSignal(str, object)  # message, exception
-    info_signal = pyqtSignal(str)
 
-    last_frame = None  # For snapshot feature
+    error_signal = pyqtSignal(str, object)   # (message, exception)
+    info_signal  = pyqtSignal(str)           # status text for UI
+    frame_signal = pyqtSignal(object)        # numpy BGR frame for UI/preview
 
-    def __init__(self, input_device, style_instance, style_params):
+    def __init__(
+        self,
+        input_device: str,
+        style_instance: Any,
+        style_params: Dict[str, Any] | None = None,
+        *,
+        input_options: Dict[str, str] | None = None,
+        av_format: Optional[str] = None,
+        out_backend: Optional[str] = "obs",
+        enable_output: bool = True,
+    ) -> None:
         super().__init__()
         self.input_device = input_device
-        self.style_instance = style_instance
-        self.style_params = style_params
-        self.running = False
-        self.last_frame = None
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.INFO)
-        # Prevent duplicate logs
-        if not self.logger.handlers:
-            handler = logging.StreamHandler()
-            formatter = logging.Formatter(
-                '%(asctime)s - %(levelname)s - %(name)s - %(message)s'
-            )
-            handler.setFormatter(formatter)
-            self.logger.addHandler(handler)
+        self.style = style_instance
+        self.params: Dict[str, Any] = dict(style_params or {})
 
-        # Attempt to import CameraError with fallback
-        try:
-            from pyvirtualcam import CameraError
-            self.CameraError = CameraError
-        except ImportError:
-            try:
-                from pyvirtualcam.errors import CameraError
-                self.CameraError = CameraError
-            except ImportError:
-                self.CameraError = Exception  # Fallback to generic Exception
-        # Detect PyAV AVError exception class if available
-        try:
-            self.AVError = av.AVError
-        except AttributeError:
-            self.AVError = Exception
+        # ✅ Define input_options in __init__
+        fps = int(self.params.get("max_fps", 30) or 30)
+        self.input_options: Dict[str, str] = dict(input_options or _build_default_input_options(fps=fps))
 
-        # Buffer management settings
-        self.max_fps = 30  # Limit frame rate
-        self.frame_skip = 0  # Skip every Nth frame (0 = no skip)
-        self.frame_count = 0
-        self.last_frame_time = 0
-        
-        # Frame queue to prevent buffer buildup
-        self.frame_queue = deque(maxlen=5)  # Only keep 5 frames max
-        
-        # PyAV input options to reduce buffer size aggressively
-        self.input_options = {
-            'rtbufsize': '256k',  # Very small buffer (was 1024k)
-            'fflags': 'nobuffer+discardcorrupt',  # Disable buffering + discard corrupt frames
-            'flags': 'low_delay',  # Low delay mode
-            'framedrop': '1',      # Drop frames if needed
-            'sync': 'ext',         # External sync
-            'probesize': '32',     # Minimal probe size
-            'analyzeduration': '0' # No analysis delay
-        }
+        # AV format
+        self.av_format: str = av_format or _default_av_format()
 
-    def run(self):
-        """
-        Continuously decode frames from the specified device using PyAV,
-        apply the chosen style, and send them to a virtual camera.
-        """
-        self.logger.info("WebcamThread started.")
-        self.info_signal.emit("Webcam thread started.")
-        
+        # Output (virtual cam) backend preference
+        self.out_backend = out_backend
+        self.enable_output = enable_output
+
+        # Runtime state
+        self._stop = False
+        self._stopped_reason: StopReason = "UNKNOWN"
+        self._container: Optional["av.container.InputContainer"] = None  # type: ignore
+        self._stream = None
+        self._vcam: Optional["pyvirtualcam.Camera"] = None  # type: ignore
+        self.last_frame: Optional[np.ndarray] = None
+
+        # Derived perf knobs
+        self.frame_skip = int(self.params.get("frame_skip", 0) or 0)
+        self.target_dt = 1.0 / float(max(1, fps))
+
+    # ---- lifecycle helpers ----
+    @property
+    def stopped_reason(self) -> StopReason:
+        return self._stopped_reason
+
+    def stop(self) -> None:
+        self._stop = True
+
+    def update_params(self, new_params: Dict[str, Any]) -> None:
+        """Hot-update perf/style params (thread-safe enough for UI sliders)."""
+        self.params.update(new_params or {})
+        fps = int(self.params.get("max_fps", 30) or 30)
+        self.frame_skip = int(self.params.get("frame_skip", 0) or 0)
+        self.target_dt = 1.0 / float(max(1, fps))
+        # Keep input_options framerate in sync for restarts
+        self.input_options["framerate"] = str(fps)
+
+    # ---- open/close primitives ----
+    def _open_input(self) -> bool:
+        if av is None:
+            self._emit_error("PyAV not installed; cannot open input.")
+            self._stopped_reason = "BACKEND_CLOSED"
+            return False
         try:
-            # Open input stream with aggressive buffer management options
-            input_stream = av.open(
-                self.input_device,
-                options=self.input_options,
-                timeout=0.1  # Very short timeout (was 1.0)
-            )
-            
-            # Get video stream
-            video_stream = input_stream.streams.video[0]
-            video_stream.thread_type = 'AUTO'  # Use threading for decoding
-            
-            # Set up virtual camera with lower FPS
-            target_fps = min(self.max_fps, 15)  # Cap at 15 FPS to reduce load
-            with pyvirtualcam.Camera(width=video_stream.width, height=video_stream.height, fps=target_fps) as cam:
-                self.logger.info(f"Virtual camera initialized: {video_stream.width}x{video_stream.height} @ {target_fps}fps")
-                self.info_signal.emit(f"Virtual camera ready: {video_stream.width}x{video_stream.height}")
-                
-                frame_interval = 1.0 / target_fps
-                frames_processed = 0
-                frames_dropped = 0
-                last_stats_time = time.time()
-                
-                for frame in input_stream.decode(video=0):
-                    if not self.running:
-                        break
-                    
-                    # Aggressive frame rate limiting
-                    current_time = time.time()
-                    if current_time - self.last_frame_time < frame_interval:
-                        frames_dropped += 1
-                        continue
-                    
-                    # Frame skipping
-                    self.frame_count += 1
-                    if self.frame_skip > 0 and self.frame_count % (self.frame_skip + 1) != 0:
-                        frames_dropped += 1
-                        continue
-                    
-                    # Queue management - drop old frames if queue is full
-                    if len(self.frame_queue) >= 3:  # Keep queue small
-                        try:
-                            self.frame_queue.popleft()  # Drop oldest frame
-                            frames_dropped += 1
-                        except IndexError:
-                            pass
-                    
-                    try:
-                        # Convert frame to numpy array
-                        frame_array = frame.to_ndarray(format='bgr24')
-                        
-                        # Add to queue
-                        self.frame_queue.append(frame_array)
-                        
-                        # Apply style
-                        if self.style_instance:
-                            processed_frame = self.style_instance.apply(frame_array, self.style_params)
-                        else:
-                            processed_frame = frame_array
-                        
-                        # Send to virtual camera
-                        cam.send(processed_frame)
-                        cam.sleep_until_next_frame()
-                        
-                        # Store last frame for snapshot
-                        self.last_frame = processed_frame.copy()
-                        self.last_frame_time = current_time
-                        frames_processed += 1
-                        
-                        # Log stats every 5 seconds
-                        if current_time - last_stats_time > 5.0:
-                            self.logger.info(f"Buffer stats: {frames_processed} processed, {frames_dropped} dropped")
-                            frames_processed = 0
-                            frames_dropped = 0
-                            last_stats_time = current_time
-                        
-                    except Exception as frame_error:
-                        self.logger.warning(f"Frame processing error: {frame_error}")
-                        frames_dropped += 1
-                        # Continue processing other frames
-                        continue
-                        
-        except av.EOFError:
-            self.logger.info("End of video stream reached.")
-            self.info_signal.emit("Video stream ended.")
-        except av.error.EOFError:
-            self.logger.info("End of video stream reached.")
-            self.info_signal.emit("Video stream ended.")
+            logger.info("Attempting to open device via PyAV: device=%s format=%s options=%s",
+                        self.input_device, self.av_format, self.input_options)
+            self._container = av.open(self.input_device, format=self.av_format, options=self.input_options)
+            self._stream = next((s for s in self._container.streams if s.type == "video"), None)
+            if self._stream is None:
+                self._emit_error("No video stream found in input device.")
+                self._stopped_reason = "BACKEND_CLOSED"
+                return False
+            self._stream.thread_type = "AUTO"
+            return True
         except Exception as e:
-            error_msg = f"Unexpected error in WebcamThread: {e}"
-            self.logger.error(error_msg, exc_info=True)
-            if DEBUG_MODE:
-                tb = traceback.format_exc()
-                self.error_signal.emit(f"{error_msg}\n\nTraceback:\n{tb}", e)
-            else:
-                self.error_signal.emit(error_msg, e)
+            logger.exception("Failed to open input device: %s", e)
+            self._emit_error("Failed to open input device.", e)
+            self._stopped_reason = "BACKEND_CLOSED"
+            return False
+
+    def _close_input(self) -> None:
+        try:
+            if self._container:
+                self._container.close()
+        except Exception:
+            pass
+        self._container = None
+        self._stream = None
+
+    def _open_output(self, width: int, height: int, fps: int) -> bool:
+        if pyvirtualcam is None:
+            self.info_signal.emit("Virtual camera unavailable (pyvirtualcam not installed).")
+            return False
+        try:
+            # Prefer OBS backend if available; fallback to default
+            kwargs = {"backend": self.out_backend} if self.out_backend else {}
+            self._vcam = pyvirtualcam.Camera(width, height, fps, **kwargs)
+            logger.info("Virtual camera ready: %sx%s @ %sfps (backend=%s)",
+                        width, height, fps, self.out_backend)
+            self.info_signal.emit(f"Virtual camera ready: {width}x{height} @ {fps}fps")
+            return True
+        except Exception as e:
+            logger.exception("Failed to open virtual camera: %s", e)
+            self._vcam = None
+            self._emit_error("Failed to open virtual camera.", e)
+            return False
+
+    def _close_output(self) -> None:
+        try:
+            if self._vcam:
+                self._vcam.close()
+        except Exception:
+            pass
+        self._vcam = None
+
+    # ---- run loop ----
+    def run(self) -> None:  # noqa: C901
+        self.info_signal.emit("WebcamThread started.")
+        if not self._open_input():
+            # Already emitted error
+            self._cleanup(reason=self._stopped_reason or "BACKEND_CLOSED")
+            return
+
+        # Peek first frame to set output geometry
+        width, height, fps = 1280, 720, int(self.params.get("max_fps", 30) or 30)
+        first_frame = None
+        empty_count = 0
+
+        try:
+            for packet in self._container.demux(self._stream):  # type: ignore[arg-type]
+                if self._stop:
+                    break
+                for frame in packet.decode():
+                    img = frame.to_ndarray(format="bgr24")
+                    h, w, _ = img.shape
+                    width, height = w, h
+                    first_frame = img
+                    break
+                if first_frame is not None:
+                    break
+        except Exception as e:
+            logger.exception("Error during initial demux/decode: %s", e)
+            self._emit_error("Failed to read from input device.", e)
+
+        if first_frame is None:
+            self._stopped_reason = "NO_FRAMES"
+            self._cleanup(reason="NO_FRAMES")
+            return
+
+        # Open output if requested (not needed when OBS Window-Captures the preview)
+        if self.enable_output:
+            self._open_output(width, height, fps)
+
+        # Main decode loop
+        last_emit = time.time()
+        frame_i = 0
+
+        try:
+            # Push first frame immediately
+            self.last_frame = self._process_frame(first_frame)
+            self._push_output(self.last_frame)
+            self.frame_signal.emit(self.last_frame)  # ✅ preview update
+
+            for packet in self._container.demux(self._stream):  # type: ignore[arg-type]
+                if self._stop:
+                    break
+
+                for frm in packet.decode():
+                    img = frm.to_ndarray(format="bgr24")
+                    empty_count = 0  # got a frame
+
+                    # Frame skipping
+                    do_skip = self.frame_skip > 0 and (frame_i % (self.frame_skip + 1)) != 0
+                    frame_i += 1
+                    if do_skip:
+                        continue
+
+                    # Style pipeline
+                    self.last_frame = self._process_frame(img)
+                    self._push_output(self.last_frame)
+                    self.frame_signal.emit(self.last_frame)  # ✅ preview update
+
+                    # Rate control (best-effort)
+                    now = time.time()
+                    elapsed = now - last_emit
+                    if elapsed < self.target_dt:
+                        time.sleep(self.target_dt - elapsed)
+                    last_emit = time.time()
+
+                # Periodic heartbeat
+                if self.last_frame is not None and (time.time() - last_emit) > 1.5:
+                    self.info_signal.emit("Streaming...")
+
+        except Exception as e:
+            logger.exception("WebcamThread exception: %s", e)
+            self._emit_error("Capture loop crashed.", e)
+            self._stopped_reason = "EXCEPTION"
         finally:
-            try:
-                input_stream.close()
-            except:
-                pass
-            self.logger.info("WebcamThread stopped.")
+            reason = self._stopped_reason if self._stop is False else "STOP_CALLED"
+            self._cleanup(reason=reason)
 
-    def update_params(self, new_params):
-        """Update style parameters and buffer settings."""
-        self.style_params = new_params
-        # Allow frame rate control via parameters
-        if 'max_fps' in new_params:
-            self.max_fps = max(1, min(60, new_params['max_fps']))
-        if 'frame_skip' in new_params:
-            self.frame_skip = max(0, min(10, new_params['frame_skip']))
+    # ---- helpers ----
+    def _process_frame(self, bgr: np.ndarray) -> np.ndarray:
+        """Apply current style safely. Expects/returns BGR frames."""
+        try:
+            # Many styles expect BGR or RGB—keep BGR contract internal.
+            if hasattr(self.style, "apply"):
+                # Try keyword arguments first (newer style format)
+                try:
+                    return self.style.apply(bgr, **self.params)
+                except TypeError:
+                    # Fallback to params dict (older style format)
+                    return self.style.apply(bgr, params=self.params)
+            else:
+                return bgr
+        except Exception as e:  # Never crash the capture on style errors
+            logger.exception("Style apply failed: %s", e)
+            self._emit_error("Style apply failed (fallback to passthrough).", e)
+            return bgr
 
-    def stop(self):
-        """Stop the thread."""
-        self.running = False
-        self.wait()  # Wait for thread to finish
+    def _push_output(self, bgr: np.ndarray) -> None:
+        if self._vcam is None:
+            return
+        try:
+            # pyvirtualcam expects RGB
+            rgb = bgr[:, :, ::-1].copy()
+            self._vcam.send(rgb)
+            self._vcam.sleep_until_next_frame()
+        except Exception as e:
+            logger.exception("Virtual camera send failed: %s", e)
+            self._emit_error("Virtual camera send failed.", e)
+
+    def _emit_error(self, message: str, exc: Optional[BaseException] = None) -> None:
+        try:
+            self.error_signal.emit(message, exc)
+        except Exception:
+            # Signals not connected or UI already torn down
+            logger.error("Error (no-signal): %s", message, exc_info=exc)
+
+    def _cleanup(self, *, reason: StopReason) -> None:
+        self._stopped_reason = reason
+        self._close_input()
+        self._close_output()
+        self.info_signal.emit(f"WebcamThread stopped. reason={reason}")

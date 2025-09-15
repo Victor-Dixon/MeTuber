@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 from typing import Any, Dict, Optional, List
-from styles.base import Style
+from ..base import Style
 
 
 class SketchStyle(Style):
@@ -10,7 +10,7 @@ class SketchStyle(Style):
     Unified Sketch style that consolidates multiple sketch variants into a single class.
     Supports Pencil, Advanced, and Color modes.
     """
-    
+
     name = "Sketch"
     category = "Artistic"
     variants = ["Pencil", "Advanced", "Color"]
@@ -118,7 +118,7 @@ class SketchStyle(Style):
         # Validate and get parameters
         params = self.validate_params(params or {})
         variant = params.get("mode", self.current_variant)
-        
+
         # Apply variant-specific processing
         if variant == "Pencil":
             return self._apply_pencil_sketch(image, params)
@@ -133,28 +133,28 @@ class SketchStyle(Style):
         """Apply classic pencil sketch effect."""
         edge_strength = params.get("edge_strength", 0.5)
         detail_level = params.get("detail_level", 3)
-        
+
         # Convert to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
+
         # Calculate blur intensity based on detail level
         blur_intensity = 15 - (detail_level * 2)  # Higher detail = less blur
         blur_intensity = max(1, blur_intensity)
-        
+
         # Apply Gaussian blur
         blurred = cv2.GaussianBlur(gray, (blur_intensity, blur_intensity), 0)
-        
+
         # Apply adaptive threshold
         sketch = cv2.adaptiveThreshold(
             blurred, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2
         )
-        
+
         # Adjust edge strength
         if edge_strength < 1.0:
             # Reduce edge intensity
             sketch = cv2.convertScaleAbs(sketch, alpha=edge_strength, beta=0)
-        
-        return cv2.cvtColor(sketch, cv2.COLOR_GRAY2BGR)
+
+        return sketch
 
     def _apply_advanced_sketch(self, image: np.ndarray, params: Dict[str, Any]) -> np.ndarray:
         """Apply advanced sketch effect with enhanced features."""
@@ -163,38 +163,38 @@ class SketchStyle(Style):
         gaussian_blur = params.get("gaussian_blur", 1.0)
         edge_threshold = params.get("edge_threshold", 100)
         contrast_enhancement = params.get("contrast_enhancement", 1.5)
-        
+
         # Convert to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
+
         # Apply Gaussian blur
         blur_kernel_size = int(gaussian_blur * 2) + 1
         blurred = cv2.GaussianBlur(gray, (blur_kernel_size, blur_kernel_size), 0)
-        
+
         # Apply edge detection
         edges = cv2.Canny(blurred, edge_threshold, edge_threshold * 2)
-        
+
         # Enhance edges based on detail level
         kernel_size = 2 * detail_level + 1
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
         edges = cv2.dilate(edges, kernel)
-        
+
         # Apply adaptive threshold for sketch effect
         sketch = cv2.adaptiveThreshold(
             blurred, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2
         )
-        
+
         # Combine edges with sketch
         combined = cv2.bitwise_or(sketch, edges)
-        
+
         # Adjust contrast
         combined = cv2.convertScaleAbs(combined, alpha=contrast_enhancement, beta=0)
-        
+
         # Apply edge strength
         if edge_strength < 1.0:
             combined = cv2.convertScaleAbs(combined, alpha=edge_strength, beta=0)
-        
-        return cv2.cvtColor(combined, cv2.COLOR_GRAY2BGR)
+
+        return combined
 
     def _apply_color_sketch(self, image: np.ndarray, params: Dict[str, Any]) -> np.ndarray:
         """Apply colored sketch effect."""
@@ -203,54 +203,53 @@ class SketchStyle(Style):
         color_intensity = params.get("color_intensity", 0.7)
         preserve_edges = params.get("preserve_edges", True)
         saturation_boost = params.get("saturation_boost", 1.2)
-        
+
         # Convert to grayscale for sketch
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
+
         # Calculate blur intensity based on detail level
         blur_intensity = 15 - (detail_level * 2)
         blur_intensity = max(1, blur_intensity)
-        
+
         # Apply Gaussian blur
         blurred = cv2.GaussianBlur(gray, (blur_intensity, blur_intensity), 0)
-        
+
         # Create sketch
         sketch = cv2.adaptiveThreshold(
             blurred, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2
         )
-        
+
         # Convert sketch to 3-channel
         sketch_3ch = cv2.cvtColor(sketch, cv2.COLOR_GRAY2BGR)
-        
+
         # Apply color from original image
         if color_intensity > 0:
             # Boost saturation of original image
             hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
             hsv[:, :, 1] = np.clip(hsv[:, :, 1] * saturation_boost, 0, 255)
             colored = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
-            
+
             # Blend colored image with sketch
             colored_sketch = cv2.addWeighted(
-                colored, color_intensity, 
+                colored, color_intensity,
                 sketch_3ch, 1 - color_intensity, 0
             )
         else:
             colored_sketch = sketch_3ch
-        
+
         # Add edge detection if preserve_edges is enabled
         if preserve_edges:
             edges = cv2.Canny(gray, 50, 150)
             edges_3ch = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
-            
             # Combine edges with colored sketch
             result = cv2.bitwise_or(colored_sketch, edges_3ch)
         else:
             result = colored_sketch
-        
+
         # Apply edge strength
         if edge_strength < 1.0:
             result = cv2.convertScaleAbs(result, alpha=edge_strength, beta=0)
-        
+
         return result
 
     def _create_pencil_texture(self, size: tuple) -> np.ndarray:
@@ -264,11 +263,11 @@ class SketchStyle(Style):
         """Apply texture overlay to simulate paper/pencil texture."""
         if texture_intensity <= 0:
             return image
-        
+
         # Create texture
         texture = self._create_pencil_texture(image.shape[:2])
         texture_3ch = cv2.cvtColor(texture, cv2.COLOR_GRAY2BGR)
-        
+
         # Blend texture with image
         result = cv2.addWeighted(image, 1 - texture_intensity, texture_3ch, texture_intensity, 0)
-        return result 
+        return result

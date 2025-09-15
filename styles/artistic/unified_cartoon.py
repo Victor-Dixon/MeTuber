@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 from typing import Any, Dict, Optional, List
-from styles.base import Style
+from ..base import Style
 
 
 class CartoonStyle(Style):
@@ -10,7 +10,7 @@ class CartoonStyle(Style):
     Unified Cartoon style that consolidates multiple cartoon variants into a single class.
     Supports Basic, Advanced, Advanced2, and WholeImage modes.
     """
-    
+
     name = "Cartoon"
     category = "Artistic"
     variants = ["Basic", "Advanced", "Advanced2", "WholeImage"]
@@ -144,7 +144,7 @@ class CartoonStyle(Style):
         # Validate and get parameters
         params = self.validate_params(params or {})
         variant = params.get("mode", self.current_variant)
-        
+
         # Apply variant-specific processing
         if variant == "Basic":
             return self._apply_basic_cartoon(image, params)
@@ -162,25 +162,25 @@ class CartoonStyle(Style):
         edge_threshold = params.get("edge_threshold", 50)
         color_saturation = params.get("color_saturation", 1.5)
         blur_strength = params.get("blur_strength", 5)
-        
+
         # Apply bilateral filter for smoothing
         smoothed = cv2.bilateralFilter(image, blur_strength, 75, 75)
-        
+
         # Convert to grayscale for edge detection
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
+
         # Apply edge detection
         edges = cv2.Canny(gray, edge_threshold, edge_threshold * 2)
         edges = cv2.dilate(edges, None)
-        
+
         # Adjust color saturation
         hsv = cv2.cvtColor(smoothed, cv2.COLOR_BGR2HSV)
         hsv[:, :, 1] = np.clip(hsv[:, :, 1] * color_saturation, 0, 255)
         saturated = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
-        
+
         # Combine edges with saturated image
         cartoon = cv2.bitwise_and(saturated, saturated, mask=255 - edges)
-        
+
         return cartoon
 
     def _apply_advanced_cartoon(self, image: np.ndarray, params: Dict[str, Any]) -> np.ndarray:
@@ -189,17 +189,16 @@ class CartoonStyle(Style):
         detail_level = params.get("detail_level", 3)
         smoothness = params.get("smoothness", 0.8)
         edge_method = params.get("edge_method", "Canny")
-        
+
         # Apply bilateral filter with adaptive parameters
         blur_diameter = int(9 * smoothness)
         sigma_color = int(75 * smoothness)
         sigma_space = int(75 * smoothness)
-        
         smoothed = cv2.bilateralFilter(image, blur_diameter, sigma_color, sigma_space)
-        
+
         # Convert to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
+
         # Apply edge detection based on method
         if edge_method == "Canny":
             edges = cv2.Canny(gray, edge_threshold, edge_threshold * 2)
@@ -213,20 +212,20 @@ class CartoonStyle(Style):
             laplacian = cv2.Laplacian(gray, cv2.CV_64F)
             edges = np.uint8(np.absolute(laplacian))
             _, edges = cv2.threshold(edges, edge_threshold, 255, cv2.THRESH_BINARY)
-        
+
         # Enhance edges based on detail level
         kernel_size = 2 * detail_level + 1
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernel_size, kernel_size))
         edges = cv2.dilate(edges, kernel)
-        
+
         # Color quantization
         levels = 8
         div = 256 // levels
         quantized = smoothed // div * div + div // 2
-        
+
         # Combine edges with quantized image
         cartoon = cv2.bitwise_and(quantized, quantized, mask=255 - edges)
-        
+
         return cartoon
 
     def _apply_advanced2_cartoon(self, image: np.ndarray, params: Dict[str, Any]) -> np.ndarray:
@@ -235,20 +234,20 @@ class CartoonStyle(Style):
         edge_method = params.get("edge_detection_method", "Canny")
         color_quantization = params.get("color_quantization", 8)
         sharpen_intensity = params.get("sharpen_intensity", 1.5)
-        
+
         # Apply bilateral filter
         smoothed = cv2.bilateralFilter(image, 9, 75, 75)
-        
+
         # Sharpen the image
         if sharpen_intensity > 0:
             kernel = np.array([[-1, -1, -1],
-                              [-1,  9, -1],
-                              [-1, -1, -1]]) * sharpen_intensity
+                             [-1,  9, -1],
+                             [-1, -1, -1]]) * sharpen_intensity
             smoothed = cv2.filter2D(smoothed, -1, kernel)
-        
+
         # Convert to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
+
         # Apply edge detection
         if edge_method == "Canny":
             edges = cv2.Canny(gray, edge_threshold, edge_threshold * 2)
@@ -262,21 +261,21 @@ class CartoonStyle(Style):
             laplacian = cv2.Laplacian(gray, cv2.CV_64F)
             edges = np.uint8(np.absolute(laplacian))
             _, edges = cv2.threshold(edges, edge_threshold, 255, cv2.THRESH_BINARY)
-        
+
         # Enhanced edge processing
         edges = cv2.dilate(edges, None)
         edges = cv2.medianBlur(edges, 3)
-        
+
         # Advanced color quantization
         div = 256 // color_quantization
         quantized = smoothed // div * div + div // 2
-        
+
         # Apply color palette
         quantized = self._apply_color_palette(quantized, color_quantization)
-        
+
         # Combine edges with quantized image
         cartoon = cv2.bitwise_and(quantized, quantized, mask=255 - edges)
-        
+
         return cartoon
 
     def _apply_whole_image_cartoon(self, image: np.ndarray, params: Dict[str, Any]) -> np.ndarray:
@@ -284,7 +283,7 @@ class CartoonStyle(Style):
         edge_threshold = params.get("edge_threshold", 50)
         processing_scale = params.get("processing_scale", 1.0)
         preserve_details = params.get("preserve_details", True)
-        
+
         # Scale image for processing
         if processing_scale != 1.0:
             height, width = image.shape[:2]
@@ -293,32 +292,32 @@ class CartoonStyle(Style):
             scaled_image = cv2.resize(image, (new_width, new_height))
         else:
             scaled_image = image.copy()
-        
+
         # Apply bilateral filter
         if preserve_details:
             smoothed = cv2.bilateralFilter(scaled_image, 9, 50, 50)
         else:
             smoothed = cv2.bilateralFilter(scaled_image, 15, 100, 100)
-        
+
         # Convert to grayscale
         gray = cv2.cvtColor(scaled_image, cv2.COLOR_BGR2GRAY)
-        
+
         # Apply edge detection
         edges = cv2.Canny(gray, edge_threshold, edge_threshold * 2)
         edges = cv2.dilate(edges, None)
-        
+
         # Color quantization
         levels = 8
         div = 256 // levels
         quantized = smoothed // div * div + div // 2
-        
+
         # Combine edges with quantized image
         cartoon = cv2.bitwise_and(quantized, quantized, mask=255 - edges)
-        
+
         # Scale back to original size if needed
         if processing_scale != 1.0:
             cartoon = cv2.resize(cartoon, (image.shape[1], image.shape[0]))
-        
+
         return cartoon
 
     def _apply_color_palette(self, image: np.ndarray, num_colors: int) -> np.ndarray:
@@ -333,13 +332,13 @@ class CartoonStyle(Style):
                  (136, 136, 136), (153, 153, 153), (170, 170, 170), (187, 187, 187),
                  (204, 204, 204), (221, 221, 221), (238, 238, 238), (255, 255, 255)]
         }
-        
+
         if num_colors not in palettes:
             return image
-        
+
         palette = palettes[num_colors]
         result = np.zeros_like(image)
-        
+
         # Apply palette to each pixel
         for i in range(image.shape[0]):
             for j in range(image.shape[1]):
@@ -347,13 +346,12 @@ class CartoonStyle(Style):
                 # Find closest color in palette
                 min_dist = float('inf')
                 closest_color = palette[0]
-                
                 for color in palette:
                     dist = np.sqrt(np.sum((pixel - color) ** 2))
                     if dist < min_dist:
                         min_dist = dist
                         closest_color = color
-                
+
                 result[i, j] = closest_color
-        
-        return result 
+
+        return result

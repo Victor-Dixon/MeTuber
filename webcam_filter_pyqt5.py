@@ -15,9 +15,10 @@ import pkgutil
 import importlib
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox,
-    QFormLayout, QSlider, QPushButton, QMessageBox, QFileDialog, QComboBox, QTabWidget, QCheckBox
+    QFormLayout, QSlider, QPushButton, QMessageBox, QFileDialog, QComboBox, QTabWidget, QCheckBox, QScrollArea
 )
 from PyQt5.QtCore import Qt, pyqtSignal, QObject
+from PyQt5.QtGui import QImage, QPixmap
 import traceback
 
 # Import GUI components
@@ -50,7 +51,8 @@ def load_settings():
         "input_device": "video=C270 HD WEBCAM",  # Example default
         "style": "Original",
         "parameters": {},
-        "snapshot_dir": os.path.join(os.path.dirname(os.path.abspath(__file__)), 'snapshots') # Add default snapshot directory
+        "snapshot_dir": os.path.join(os.path.dirname(os.path.abspath(__file__)), 'snapshots'), # Add default snapshot directory
+        "vcam_backend": "obs"  # 'obs' for Zoom/Meet, 'unitycapture' for ingesting into OBS as a source
     }
     if os.path.exists(CONFIG_FILE):
         try:
@@ -73,6 +75,35 @@ def save_settings(settings):
 # 2. Device Enumeration (Windows-Only)
 # =============================================================================
 
+def convert_device_name_for_pyav(device_name):
+    """
+    Convert device name from GUI format to PyAV-compatible format.
+    Handles both 'video=Device Name' and 'Device Name' formats.
+    """
+    if not device_name:
+        return None
+    
+    # Remove 'video=' prefix if present
+    if device_name.startswith('video='):
+        device_name = device_name[6:]
+    
+    # For Windows DirectShow, we need to use the format that PyAV expects
+    # PyAV on Windows with DirectShow expects: 'video=Device Name'
+    return f"video={device_name}"
+
+def check_obs_virtual_camera():
+    """
+    Check if OBS Virtual Camera is available and properly configured.
+    """
+    try:
+        import pyvirtualcam
+        # Try to create a test camera to see if OBS backend is available
+        test_cam = pyvirtualcam.Camera(640, 480, 30, backend='obs')
+        test_cam.close()
+        return True, "OBS Virtual Camera is available"
+    except Exception as e:
+        return False, f"OBS Virtual Camera not available: {e}"
+
 def list_devices():
     """
     List DirectShow devices on Windows using FFmpeg.
@@ -89,6 +120,9 @@ def list_devices():
                 end_idx = line.rfind('"')
                 if start_idx != -1 and end_idx != -1:
                     device_name = line[start_idx + 1:end_idx]
+                    # 🚫 Do not offer virtual outputs as capture INPUTS
+                    if "Virtual Camera" in device_name:
+                        continue
                     devices.append(f"video={device_name}")
     except subprocess.CalledProcessError as e:
         logging.error(f"Could not enumerate devices using FFmpeg: {e}")
@@ -193,8 +227,9 @@ class WebcamApp(QWidget):
     """
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Webcam Style Selector")
-        self.setGeometry(100, 100, 800, 600)
+        self.setWindowTitle("Webcam Style Selector — Filtered Preview")
+        # Optional: uncomment to keep visible for OBS Window Capture
+        # self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
 
         # Thread & style management
         self.thread = None
@@ -241,7 +276,31 @@ class WebcamApp(QWidget):
             self.update_parameter_controls()
 
     def init_ui(self):
-        layout = QVBoxLayout()
+        # Main layout with fixed preview at top
+        main_layout = QVBoxLayout()
+        main_layout.setContentsMargins(10, 10, 10, 10)
+        main_layout.setSpacing(8)
+
+        # 0) LIVE PREVIEW (fixed size, always visible)
+        self.preview_label = QLabel("Preview")
+        self.preview_label.setObjectName("Filtered Preview")  # stable name for OBS picker
+        self.preview_label.setAlignment(Qt.AlignCenter)
+        self.preview_label.setStyleSheet("background:#111; color:#aaa; padding:8px;")
+        self.preview_label.setFixedHeight(200)  # Fixed height for preview
+        self.preview_label.setScaledContents(True)  # Scale content to fit
+        main_layout.addWidget(self.preview_label)
+
+        # Create scroll area for the rest of the controls
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        
+        # Create widget to hold scrollable content
+        scroll_widget = QWidget()
+        layout = QVBoxLayout(scroll_widget)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(8)
 
         # 1) Device Selector
         devices = list_devices() or ["Enter device manually..."]
@@ -249,6 +308,21 @@ class WebcamApp(QWidget):
         device_selector = DeviceSelector(self, devices, default_device)
         layout.addLayout(device_selector.create())
         self.device_combo = device_selector.device_combo
+
+        # 1.5) Output / Virtual Camera Settings
+        out_group = QGroupBox("Output")
+        out_form = QFormLayout()
+        self.vcam_backend_combo = QComboBox()
+        # Human labels → backend ids
+        self.vcam_backend_combo.addItem("OBS Virtual Camera (for Zoom/Meet/Teams)", userData="obs")
+        self.vcam_backend_combo.addItem("UnityCapture (add as 'Video Capture Device' in OBS)", userData="unitycapture")
+        # Restore from settings
+        backend_default = self.settings.get("vcam_backend", "obs")
+        idx = max(0, self.vcam_backend_combo.findData(backend_default))
+        self.vcam_backend_combo.setCurrentIndex(idx)
+        out_form.addRow("Virtual Cam Backend:", self.vcam_backend_combo)
+        out_group.setLayout(out_form)
+        layout.addWidget(out_group)
 
         # 2) Style Selector with Categories
         style_tab_manager = StyleTabManager(self, self.style_categories, self.style_instances, self.settings)
@@ -275,6 +349,11 @@ class WebcamApp(QWidget):
             )
         )
         self.action_buttons = action_buttons
+
+        # 4.0) Output mode — Virtual Camera toggle (for Zoom/Meet; OBS should Window-Capture preview)
+        self.vcam_toggle = QCheckBox("Send frames to Virtual Camera (OBS backend)")
+        self.vcam_toggle.setChecked(True)
+        layout.addWidget(self.vcam_toggle)
 
         # 4.1) Auto Optimize Parameters Button
         self.optimize_button = QPushButton("Auto Optimize Parameters")
@@ -315,7 +394,27 @@ class WebcamApp(QWidget):
         self.status_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.status_label)
 
-        self.setLayout(layout)
+        # Set up scroll area
+        scroll_area.setWidget(scroll_widget)
+        main_layout.addWidget(scroll_area)
+        
+        # Set main layout and window constraints
+        self.setLayout(main_layout)
+        self.setMinimumSize(600, 500)  # Minimum window size
+        self.setMaximumSize(1200, 800)  # Maximum window size
+        self.resize(800, 600)  # Initial window size
+
+    def _show_bgr_on_preview(self, bgr):
+        """Render numpy BGR frame to the preview label."""
+        try:
+            h, w, c = bgr.shape
+            rgb = bgr[:, :, ::-1].copy()
+            qimg = QImage(rgb.data, w, h, 3 * w, QImage.Format_RGB888)
+            self.preview_label.setPixmap(QPixmap.fromImage(qimg).scaled(
+                self.preview_label.width(), self.preview_label.height(),
+                Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        except Exception as e:
+            logging.exception("Preview update failed: %s", e)
 
     def update_parameter_controls(self):
         """Update parameter controls based on the selected style."""
@@ -407,6 +506,25 @@ class WebcamApp(QWidget):
             QMessageBox.warning(self, "Input Device Error", "Please specify a valid input device.")
             return
 
+        # Convert device name to PyAV-compatible format
+        pyav_device = convert_device_name_for_pyav(input_device)
+        if not pyav_device:
+            QMessageBox.warning(self, "Input Device Error", "Invalid device name format.")
+            return
+        
+        # If OUTPUT to VirtualCam is requested, validate OBS backend
+        if self.vcam_toggle.isChecked():
+            obs_available, obs_message = check_obs_virtual_camera()
+            if not obs_available:
+                QMessageBox.warning(
+                    self, "Virtual Camera Error",
+                    f"{obs_message}\n\nPlease ensure:\n"
+                    "1) OBS Studio is installed with Virtual Camera\n"
+                    "2) 'Start Virtual Camera' is enabled in OBS (or obs-virtualcam driver present)"
+                )
+                return
+            logging.info(f"OBS Virtual Camera check: {obs_message}")
+
         if not selected_style:
             QMessageBox.warning(self, "Style Selection Error", "Please select a style.")
             return
@@ -414,6 +532,7 @@ class WebcamApp(QWidget):
         # Save current settings
         self.settings["input_device"] = input_device
         self.settings["style"] = selected_style
+        self.settings["vcam_backend"] = self.vcam_backend_combo.currentData()
         if "parameters" not in self.settings:
             self.settings["parameters"] = {}
         self.settings["parameters"][selected_style] = self.current_style_params
@@ -423,15 +542,21 @@ class WebcamApp(QWidget):
         thread_params = dict(self.current_style_params)
         thread_params['max_fps'] = self.max_fps_slider.value()
         thread_params['frame_skip'] = self.frame_skip_slider.value()
+        chosen_backend = self.vcam_backend_combo.currentData()
         
-        # Initialize and start the thread
+        # Initialize and start the thread with converted device name
         self.thread = WebcamThread(
-            input_device=input_device,
+            input_device=pyav_device,
             style_instance=self.style_instances[selected_style],
-            style_params=thread_params
+            style_params=thread_params,
+            out_backend=chosen_backend,
+            enable_output=self.vcam_toggle.isChecked(),   # ✅ control virtual-cam output
+            # Optional explicit input_options override (keeps defaults if omitted)
+            # input_options={"framerate": str(thread_params.get("max_fps", 30)), "video_size": "1280x720", "rtbufsize": "100M"},
         )
         self.thread.error_signal.connect(self.display_error)
         self.thread.info_signal.connect(self.display_info)
+        self.thread.frame_signal.connect(self._show_bgr_on_preview)  # ✅ live preview
         self.thread.start()
 
         # Update button states
@@ -480,26 +605,36 @@ class WebcamApp(QWidget):
 
     def display_info(self, message):
         """Display status messages in the status label."""
-        self.status_label.setText(f"Status: {message}")
+        backend = self.vcam_backend_combo.currentData()
+        hint = ""
+        if backend == "unitycapture":
+            hint = " | In OBS: Add → Video Capture Device → 'Unity Video Capture'"
+        elif backend == "obs":
+            hint = " | In Zoom/Meet: pick 'OBS Virtual Camera' as your camera"
+        self.status_label.setText(f"Status: {message}{hint}")
         logging.info(f"Info: {message}")
 
     def auto_optimize_parameters(self):
-        """Use AI to find the best parameters for the current style on the last frame."""
+        """Intelligently optimize parameters for the current style based on frame analysis."""
         # Ensure there's a frame to optimize on
         if not self.thread or self.thread.last_frame is None:
             show_error_dialog(self, "No frame available for optimization.")
             return
+        
         selected_style = self.current_style
-        # Check if the style supports AI optimization
-        if not hasattr(selected_style, "ai_optimize"):
-            QMessageBox.information(self, "AI Optimize", "Current style does not support AI optimization.")
-            return
+        frame = self.thread.last_frame
+        
         try:
-            # Run AI optimization on the last captured frame
-            optimized_params = selected_style.ai_optimize(self.thread.last_frame, self.current_style_params.copy())
-            # Disable recursive AI flag if present
-            if "enable_ai_optimization" in optimized_params:
-                optimized_params["enable_ai_optimization"] = False
+            # Check if the style has the old ai_optimize method
+            if hasattr(selected_style, "ai_optimize"):
+                # Use the old AI optimization method
+                optimized_params = selected_style.ai_optimize(frame, self.current_style_params.copy())
+                if "enable_ai_optimization" in optimized_params:
+                    optimized_params["enable_ai_optimization"] = False
+            else:
+                # Use intelligent parameter optimization for unified styles
+                optimized_params = self._intelligent_parameter_optimization(selected_style, frame)
+            
             # Update internal state and UI controls
             self.current_style_params = optimized_params
             self.parameter_controls.update_parameters(
@@ -507,13 +642,170 @@ class WebcamApp(QWidget):
                 self.current_style_params,
                 self.on_param_changed
             )
+            
             # Save optimized parameters
             style_name = self.style_tab_manager.get_current_style()
             self.settings["parameters"][style_name] = self.current_style_params
             save_settings(self.settings)
-            QMessageBox.information(self, "AI Optimize", "Parameters optimized and updated.")
+            
+            # Show detailed optimization results
+            param_changes = []
+            for key, value in optimized_params.items():
+                if key in self.current_style_params and self.current_style_params[key] != value:
+                    param_changes.append(f"{key}: {self.current_style_params[key]} → {value}")
+            
+            if param_changes:
+                changes_text = "\n".join(param_changes[:5])  # Show first 5 changes
+                if len(param_changes) > 5:
+                    changes_text += f"\n... and {len(param_changes) - 5} more changes"
+                QMessageBox.information(self, "Auto Optimize", f"Parameters optimized!\n\nChanges made:\n{changes_text}")
+            else:
+                QMessageBox.information(self, "Auto Optimize", "Parameters were already optimal for this frame.")
+            
         except Exception as e:
-            show_error_dialog(self, f"Optimization failed: {e}", exc=e)
+            show_error_dialog(self, f"Parameter optimization failed: {str(e)}")
+            logging.exception("Parameter optimization error")
+
+    def _intelligent_parameter_optimization(self, style, frame):
+        """Intelligently optimize parameters based on frame characteristics and style type."""
+        import cv2
+        import numpy as np
+        
+        # Start with current parameters
+        optimized_params = self.current_style_params.copy()
+        
+        # Analyze frame characteristics more thoroughly
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        brightness = np.mean(gray)
+        contrast = np.std(gray)
+        edges = cv2.Canny(gray, 50, 150)
+        edge_density = np.sum(edges > 0) / (frame.shape[0] * frame.shape[1])
+        
+        # Additional analysis
+        hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
+        hist_peak = np.argmax(hist)
+        hist_spread = np.std(hist)
+        
+        # Style-specific optimizations with more dramatic changes
+        style_name = style.name.lower()
+        
+        if "cartoon" in style_name:
+            # More aggressive cartoon optimization
+            if brightness < 70:  # Very dark image
+                optimized_params["edge_threshold"] = 25
+                optimized_params["color_saturation"] = 2.5
+                optimized_params["blur_strength"] = 8
+            elif brightness > 200:  # Very bright image
+                optimized_params["edge_threshold"] = 80
+                optimized_params["color_saturation"] = 1.2
+                optimized_params["blur_strength"] = 3
+            elif brightness < 120:  # Dark image
+                optimized_params["edge_threshold"] = 35
+                optimized_params["color_saturation"] = 2.0
+                optimized_params["blur_strength"] = 6
+            elif brightness > 160:  # Bright image
+                optimized_params["edge_threshold"] = 70
+                optimized_params["color_saturation"] = 1.3
+                optimized_params["blur_strength"] = 4
+            else:  # Normal brightness
+                optimized_params["edge_threshold"] = 50
+                optimized_params["color_saturation"] = 1.8
+                optimized_params["blur_strength"] = 5
+            
+            # Adjust based on edge density with more dramatic changes
+            if edge_density > 0.15:  # Very high detail
+                optimized_params["blur_strength"] = max(2, optimized_params["blur_strength"] - 2)
+                optimized_params["edge_threshold"] = max(20, optimized_params["edge_threshold"] - 15)
+            elif edge_density < 0.05:  # Very low detail
+                optimized_params["blur_strength"] = min(12, optimized_params["blur_strength"] + 3)
+                optimized_params["edge_threshold"] = min(100, optimized_params["edge_threshold"] + 20)
+            
+            # Advanced cartoon specific with more dramatic changes
+            if hasattr(style, 'variants') and "Advanced" in style.variants:
+                if edge_density > 0.15:
+                    optimized_params["detail_level"] = 5
+                    optimized_params["smoothness"] = 0.4
+                elif edge_density < 0.05:
+                    optimized_params["detail_level"] = 1
+                    optimized_params["smoothness"] = 1.0
+                else:
+                    optimized_params["detail_level"] = 3
+                    optimized_params["smoothness"] = 0.7
+        
+        elif "sketch" in style_name:
+            # More aggressive sketch optimization
+            if contrast < 25:  # Very low contrast
+                optimized_params["edge_strength"] = 0.9
+                optimized_params["detail_level"] = 1
+            elif contrast > 100:  # Very high contrast
+                optimized_params["edge_strength"] = 0.2
+                optimized_params["detail_level"] = 5
+            elif contrast < 40:  # Low contrast
+                optimized_params["edge_strength"] = 0.8
+                optimized_params["detail_level"] = 2
+            elif contrast > 70:  # High contrast
+                optimized_params["edge_strength"] = 0.3
+                optimized_params["detail_level"] = 4
+            else:  # Normal contrast
+                optimized_params["edge_strength"] = 0.6
+                optimized_params["detail_level"] = 3
+            
+            # Advanced sketch specific with more dramatic changes
+            if hasattr(style, 'variants') and "Advanced" in style.variants:
+                if edge_density > 0.15:
+                    optimized_params["gaussian_blur"] = 0.5
+                    optimized_params["edge_threshold"] = 50
+                    optimized_params["contrast_enhancement"] = 2.5
+                elif edge_density < 0.05:
+                    optimized_params["gaussian_blur"] = 2.5
+                    optimized_params["edge_threshold"] = 150
+                    optimized_params["contrast_enhancement"] = 1.2
+                else:
+                    optimized_params["gaussian_blur"] = 1.0
+                    optimized_params["edge_threshold"] = 100
+                    optimized_params["contrast_enhancement"] = 1.8
+        
+        elif "edge" in style_name:
+            # More aggressive edge detection optimization
+            if edge_density > 0.15:  # Very high edge density
+                optimized_params["threshold1"] = 30
+                optimized_params["threshold2"] = 80
+            elif edge_density < 0.05:  # Very low edge density
+                optimized_params["threshold1"] = 120
+                optimized_params["threshold2"] = 250
+            elif edge_density > 0.1:  # High edge density
+                optimized_params["threshold1"] = 50
+                optimized_params["threshold2"] = 120
+            else:  # Low edge density
+                optimized_params["threshold1"] = 100
+                optimized_params["threshold2"] = 200
+            
+            # Enhanced edge detection specific with more dramatic changes
+            if hasattr(style, 'variants') and "Enhanced" in style.variants:
+                if edge_density > 0.15:
+                    optimized_params["edge_thickness"] = 3
+                    optimized_params["noise_reduction"] = 0.5
+                elif edge_density < 0.05:
+                    optimized_params["edge_thickness"] = 1
+                    optimized_params["noise_reduction"] = 2.5
+                else:
+                    optimized_params["edge_thickness"] = 2
+                    optimized_params["noise_reduction"] = 1.0
+        
+        # Ensure all parameters are within valid ranges
+        for param_name, param_value in optimized_params.items():
+            if hasattr(style, 'parameters') and param_name in [p["name"] for p in style.parameters]:
+                param_def = next((p for p in style.parameters if p["name"] == param_name), None)
+                if param_def:
+                    if "min" in param_def:
+                        optimized_params[param_name] = max(param_def["min"], param_value)
+                    if "max" in param_def:
+                        optimized_params[param_name] = min(param_def["max"], param_value)
+        
+        # Log the optimization for debugging
+        logging.info(f"Auto-optimized parameters for {style_name}: {optimized_params}")
+        
+        return optimized_params
 
     def closeEvent(self, event):
         """Ensure the thread stops when closing the app."""
@@ -535,7 +827,7 @@ def main():
     stream_handler = logging.StreamHandler(sys.stdout)
     stream_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.WARNING,
         handlers=[file_handler, stream_handler]
     )
 

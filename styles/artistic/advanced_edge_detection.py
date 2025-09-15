@@ -1,6 +1,9 @@
 import cv2
 import numpy as np
+import logging
 from ..base import Style
+
+logger = logging.getLogger(__name__)
 
 
 class AdvancedEdgeDetection(Style):
@@ -152,7 +155,7 @@ class AdvancedEdgeDetection(Style):
 
         # Validate and sanitize parameters
         params = self.validate_params(params or {})
-        print("Parameters received:", params)
+        logger.debug("Parameters received: %s", params)
 
         # Extract parameters
         method = params["method"]
@@ -170,10 +173,10 @@ class AdvancedEdgeDetection(Style):
 
         # Validate color_mode
         if color_mode not in ["White", "Red", "Green", "Blue", "Custom"]:
-            print(f"Invalid color_mode detected: {color_mode}. Defaulting to White.")
+            logger.warning("Invalid color_mode detected: %s. Defaulting to White.", color_mode)
             color_mode = "White"
         else:
-            print(f"Valid color_mode detected: {color_mode}.")
+            logger.debug("Valid color_mode detected: %s.", color_mode)
 
         # Ensure the blur kernel size is odd
         if blur_ksize % 2 == 0:
@@ -202,14 +205,14 @@ class AdvancedEdgeDetection(Style):
 
         # Create a binary mask for detected edges
         edge_mask = edges > 0
-        print(f"Edge mask created. Total edge pixels: {np.sum(edge_mask)}")
+        logger.debug("Edge mask created. Total edge pixels: %d", np.sum(edge_mask))
 
         # Initialize a blank image to hold colored edges
         edges_colored = np.zeros_like(image)
 
         # Retrieve the desired edge color
         edge_color = self.get_edge_color(color_mode, custom_r, custom_g, custom_b)
-        print(f"Applying edge color: {edge_color}")
+        logger.debug("Applying edge color: %s", edge_color)
 
         # Colorize the edges using the mask
         edges_colored[edge_mask] = edge_color
@@ -219,7 +222,7 @@ class AdvancedEdgeDetection(Style):
             glow_kernel = (15, 15)  # This can be dynamic based on image size if desired
             glow = cv2.GaussianBlur(edges_colored, glow_kernel, sigmaX=glow_intensity * 3)
             edges_colored = cv2.addWeighted(edges_colored, 1.0, glow, glow_intensity, 0)
-            print("Glow effect applied.")
+            logger.debug("Glow effect applied.")
 
         # If overlay is enabled, blend the edge image with the original
         if overlay:
