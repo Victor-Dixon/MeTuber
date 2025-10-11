@@ -2,8 +2,11 @@
 from __future__ import annotations
 
 import os
+import sys
 import time
 import logging
+import platform as platform_module
+import subprocess
 from typing import Optional, Dict, Any, Literal
 
 import numpy as np
@@ -25,14 +28,54 @@ logger = logging.getLogger(__name__)
 StopReason = Literal["STOP_CALLED", "BACKEND_CLOSED", "NO_FRAMES", "EXCEPTION", "UNKNOWN"]
 
 
+def _list_dshow_devices():
+    """Return list of DirectShow device names via ffmpeg (Windows only)."""
+    try:
+        proc = subprocess.run(
+            ["ffmpeg", "-hide_banner", "-list_devices", "true", "-f", "dshow", "-i", "dummy"],
+            capture_output=True, text=True, timeout=5
+        )
+        out = (proc.stderr or "") + (proc.stdout or "")
+        names = []
+        for line in out.splitlines():
+            line = line.strip()
+            # Lines look like: [dshow @ ...] "Logitech HD Webcam C270"
+            if '"' in line and "DirectShow" not in line:
+                parts = line.split('"')
+                if len(parts) >= 2:
+                    device_name = parts[1]
+                    # Skip virtual outputs (like OBS Virtual Camera) as input sources
+                    if "Virtual Camera" not in device_name and device_name:
+                        names.append(device_name)
+        # Remove duplicates while preserving order
+        return list(dict.fromkeys(names))
+    except Exception as e:
+        logger.warning(f"Could not enumerate DirectShow devices: {e}")
+        return []
+
+
+def _probe_opencv_device():
+    """Try to discover a working device index via OpenCV as a fallback (returns int index)."""
+    try:
+        import cv2
+        for idx in range(3):  # probe first 3 indices
+            cap = cv2.VideoCapture(idx, cv2.CAP_DSHOW if os.name == "nt" else cv2.CAP_ANY)
+            ok = cap.isOpened()
+            cap.release()
+            if ok:
+                return idx
+    except Exception as e:
+        logger.warning(f"OpenCV device probe failed: {e}")
+    return None
+
+
 def _default_av_format() -> str:
     if os.name == "nt":
         return "dshow"
     # macOS / Linux best-effort fallbacks
     if sys_platform := os.environ.get("WSL_DISTRO_NAME"):
         return "v4l2"
-    from sys import platform
-    if platform == "darwin":
+    if platform_module.system() == "Darwin":
         return "avfoundation"
     return "v4l2"
 
@@ -43,7 +86,7 @@ def _build_default_input_options(fps: int = 30, width: int = 1280, height: int =
     Caller may override via ctor.
     """
     opts = {
-        "rtbufsize": "100M",
+        "rtbufsize": "256M",  # Increased buffer for Windows DirectShow
         "framerate": str(int(max(1, fps))),
     }
     # Many stacks accept 'video_size', others accept 'video_size' via WxH
@@ -118,27 +161,90 @@ class WebcamThread(QThread):
         self.input_options["framerate"] = str(fps)
 
     # ---- open/close primitives ----
+    def _resolve_device_for_windows(self):
+        """Windows-specific: resolve device name to exact DirectShow name."""
+        if not isinstance(self.input_device, str):
+            return self.input_device
+            
+        # If already properly formatted with exact name, keep it
+        device_str = self.input_device
+        if device_str.lower().startswith("video="):
+            device_name = device_str[6:]  # Remove "video=" prefix
+        else:
+            device_name = device_str
+            
+        # Try to find exact match or similar match from DirectShow
+        dshow_devices = _list_dshow_devices()
+        
+        if not dshow_devices:
+            logger.warning("No DirectShow devices found. Check camera connection and Windows Camera privacy settings.")
+            return self.input_device
+            
+        # Look for exact match first
+        for dev in dshow_devices:
+            if dev.lower() == device_name.lower():
+                resolved = f"video={dev}"
+                logger.info(f"Resolved device '{self.input_device}' to exact match: '{resolved}'")
+                return resolved
+                
+        # Look for partial match (e.g., "C270" matches "Logitech HD Webcam C270")
+        for dev in dshow_devices:
+            if device_name.lower() in dev.lower() or dev.lower() in device_name.lower():
+                resolved = f"video={dev}"
+                logger.info(f"Resolved device '{self.input_device}' to similar match: '{resolved}'")
+                return resolved
+                
+        # No match found, try first available device
+        if dshow_devices:
+            resolved = f"video={dshow_devices[0]}"
+            logger.warning(f"Could not find device '{self.input_device}', using first available: '{resolved}'")
+            return resolved
+            
+        return self.input_device
+
     def _open_input(self) -> bool:
         if av is None:
             self._emit_error("PyAV not installed; cannot open input.")
             self._stopped_reason = "BACKEND_CLOSED"
             return False
-        try:
-            logger.info("Attempting to open device via PyAV: device=%s format=%s options=%s",
-                        self.input_device, self.av_format, self.input_options)
-            self._container = av.open(self.input_device, format=self.av_format, options=self.input_options)
-            self._stream = next((s for s in self._container.streams if s.type == "video"), None)
-            if self._stream is None:
-                self._emit_error("No video stream found in input device.")
-                self._stopped_reason = "BACKEND_CLOSED"
-                return False
-            self._stream.thread_type = "AUTO"
-            return True
-        except Exception as e:
-            logger.exception("Failed to open input device: %s", e)
-            self._emit_error("Failed to open input device.", e)
-            self._stopped_reason = "BACKEND_CLOSED"
-            return False
+            
+        # Windows-specific: resolve device name to exact DirectShow device
+        if os.name == "nt" and self.av_format == "dshow":
+            self.input_device = self._resolve_device_for_windows()
+            
+        # Try opening with retries (camera may need a moment to initialize)
+        last_error = None
+        for attempt in range(3):
+            try:
+                logger.info("Attempt %d: Opening device via PyAV: device=%s format=%s options=%s",
+                            attempt + 1, self.input_device, self.av_format, self.input_options)
+                self._container = av.open(self.input_device, format=self.av_format, options=self.input_options)
+                self._stream = next((s for s in self._container.streams if s.type == "video"), None)
+                if self._stream is None:
+                    self._emit_error("No video stream found in input device.")
+                    self._stopped_reason = "BACKEND_CLOSED"
+                    return False
+                self._stream.thread_type = "AUTO"
+                logger.info("Successfully opened camera: %s", self.input_device)
+                return True
+            except Exception as e:
+                last_error = e
+                logger.warning(f"Attempt {attempt + 1} failed: {e}")
+                if attempt < 2:  # Don't sleep on last attempt
+                    time.sleep(0.5 * (attempt + 1))  # Progressive backoff
+                    
+        # All attempts failed
+        logger.exception("Failed to open input device after 3 attempts: %s", last_error)
+        error_msg = "Failed to open input device."
+        if os.name == "nt":
+            error_msg += "\n\nWindows Troubleshooting:\n"
+            error_msg += "1. Check Settings → Privacy & Security → Camera (enable camera access)\n"
+            error_msg += "2. Close any apps using the camera (Teams, Zoom, Discord, OBS, etc.)\n"
+            error_msg += "3. Try unplugging and replugging the camera\n"
+            error_msg += f"4. Available devices: {', '.join(_list_dshow_devices())}"
+        self._emit_error(error_msg, last_error)
+        self._stopped_reason = "BACKEND_CLOSED"
+        return False
 
     def _close_input(self) -> None:
         try:

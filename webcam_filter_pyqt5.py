@@ -252,7 +252,22 @@ class WebcamApp(QWidget):
         for style_name, style_instance in self.style_instances.items():
             style_params = self.settings.get("parameters", {}).get(style_name, {})
             try:
-                validated_params = style_instance.validate_params(style_params)
+                # Guard against missing validate_params method
+                if hasattr(style_instance, 'validate_params'):
+                    validated_params = style_instance.validate_params(style_params)
+                else:
+                    # Fallback: build defaults from parameters
+                    validated_params = {
+                        param['name']: style_params.get(param['name'], param.get("default", 0))
+                        for param in style_instance.parameters
+                    }
+            except AttributeError as e:
+                # Handle styles missing expected attributes (like current_variant)
+                logging.warning(f"Invalid parameters for style '{style_name}': {e}. Resetting to defaults.")
+                validated_params = {
+                    param['name']: param.get("default", 0)
+                    for param in style_instance.parameters
+                }
             except Exception as e:
                 logging.warning(f"Invalid parameters for style '{style_name}': {e}. Resetting to defaults.")
                 # Reset to defaults using normalized parameters
@@ -265,10 +280,11 @@ class WebcamApp(QWidget):
                 if param.get("type") == "file":
                     file_path = validated_params.get(param["name"], "")
                     if file_path and not os.path.exists(file_path):
-                        logging.warning(
-                            f"File for parameter '{param['name']}' not found at '{file_path}'. Resetting to default '{param.get('default', '')}'."
+                        # Silently reset missing files (common for texture paths)
+                        logging.info(
+                            f"File for parameter '{param['name']}' not found at '{file_path}'. Using empty path (texture disabled)."
                         )
-                        validated_params[param['name']] = param.get("default", "")
+                        validated_params[param['name']] = ""  # Empty path = disabled feature
             self.settings["parameters"][style_name] = validated_params
         save_settings(self.settings)
         # If the UI is initialized, update controls to reflect any changed defaults (e.g. file paths)
