@@ -49,6 +49,7 @@ class AIParameterOptimizer:
         
         # Pre-defined parameter optimization rules
         self.optimization_rules = {
+            "Cartoon": self._optimize_cartoon_parameters,
             "Cartoon (Detailed)": self._optimize_cartoon_parameters,
             "Pencil Sketch": self._optimize_sketch_parameters,
             "Edge Detection": self._optimize_edge_detection_parameters,

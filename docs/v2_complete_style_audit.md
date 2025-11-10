@@ -3,7 +3,7 @@
 ## 📊 **EXISTING STYLE INVENTORY (58+ Styles Found)**
 
 ### 🎨 **ARTISTIC STYLES (20+ styles)**
-- **Cartoon Effects**: Cartoon, CartoonStyle, AdvancedCartoon, AdvancedCartoon2, CartoonWholeImage
+- **Cartoon Effects**: CartoonStylePro presets (Detailed, Fast, Advanced, Anime, Whole)
 - **Sketch Effects**: PencilSketch, AdvancedPencilSketch, SketchAndColor, LineArt, Stippling
 - **Advanced Effects**: AdvancedEdgeDetection, EdgeDetection, OilPainting, Watercolor
 

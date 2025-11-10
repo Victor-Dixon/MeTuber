@@ -185,6 +185,10 @@ def load_styles():
                         not inspect.isabstract(cls) and
                         cls not in seen_classes
                     ):
+                        if getattr(cls, "__skip_registration__", False):
+                            logging.debug(
+                                f"Skipping legacy style class {cls.__module__}.{cls.__name__}")
+                            continue
                         try:
                             instance = cls()  # Instantiate
                             seen_classes.add(cls)

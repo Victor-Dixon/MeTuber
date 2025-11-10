@@ -202,7 +202,7 @@ class TestPerformanceBenchmarks:
             assert avg_cpu < 30     # Less than 30% CPU usage
         
         # Test high complexity styles
-        high_complexity_styles = ["AdvancedCartoon", "OilPainting", "Watercolor"]
+        high_complexity_styles = ["Cartoon (Advanced)", "OilPainting", "Watercolor"]
         for style_name in high_complexity_styles:
             start_time = time.time()
             start_cpu = psutil.cpu_percent()

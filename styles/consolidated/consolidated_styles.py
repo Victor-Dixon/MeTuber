@@ -19,7 +19,7 @@ class ConsolidatedCartoon(Style):
     """
     name = "Cartoon Effects"
     category = "Artistic"
-    variants = ["Classic", "Fast", "Anime", "Advanced", "Whole Image"]
+    variants = ["Classic", "Fast", "Anime", "Advanced", "Whole"]
     default_variant = "Fast"
 
     def __init__(self):
@@ -54,7 +54,7 @@ class ConsolidatedCartoon(Style):
             "Fast": "Fast",
             "Anime": "Anime",
             "Advanced": "Advanced",
-            "Whole": "Fast",
+            "Whole": "Whole",
         }
         preset = preset_map.get(self.current_variant, "Fast")
         pro_params = {"preset": preset}

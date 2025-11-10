@@ -1,3 +1,5 @@
+import logging
+
 import cv2
 import numpy as np
 from typing import Dict, Any, Optional, Tuple
@@ -32,6 +34,9 @@ def _is_rgb(img: np.ndarray) -> bool:
     # Heuristic: if image likely loaded via PIL (RGB) vs OpenCV (BGR)
     # We don't convert automatically to avoid color shifts; we just note it.
     return False  # assume BGR since pipeline is OpenCV-native
+
+
+logger = logging.getLogger(__name__)
 
 
 class CartoonStylePro(Style):
@@ -106,18 +111,19 @@ class CartoonStylePro(Style):
         },
         "Whole": {
             "preset": "Whole",
-            "bilateral_passes": 1,
-            "bilateral_d": 9,
-            "bilateral_sigmaColor": 80,
-            "bilateral_sigmaSpace": 80,
+            "bilateral_passes": 2,
+            "bilateral_d": 11,
+            "bilateral_sigmaColor": 110,
+            "bilateral_sigmaSpace": 110,
             "quant_method": "Downscale+Uniform",
-            "bits": 3,
-            "downscale_factor": 0.2,
-            "edge_method": "Adaptive",
-            "adaptive_block": 9,
-            "adaptive_C": 2,
+            "bits": 4,
+            "downscale_factor": 0.35,
+            "anti_alias_upscale": True,
+            "edge_method": "Canny",
+            "canny_t1": 50,
+            "canny_t2": 120,
             "edge_median_ksize": 5,
-            "edge_dilate": 0,
+            "edge_dilate": 1,
             "edge_erode": 0,
         },
     }
@@ -247,17 +253,15 @@ class CartoonStylePro(Style):
     # ------- helpers -------
 
     def _migrate_params(self, params: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Map legacy parameter names/values to the new unified schema.
-        Returns a new dict without mutating the input.
-        """
+        """Map legacy parameter names/values to the new unified schema."""
         if not params:
             return {}
 
         migrated: Dict[str, Any] = {}
+        consumed = set()
         preset_hint: Optional[str] = None
 
-        # Legacy Cartoon (Detailed) params
+        # Legacy Cartoon (Detailed)
         if any(k.startswith("bilateral_filter_") or k.startswith("canny_") for k in params):
             preset_hint = preset_hint or "Detailed"
             mapping = {
@@ -270,13 +274,14 @@ class CartoonStylePro(Style):
             for old, new in mapping.items():
                 if old in params:
                     migrated[new] = params[old]
+                    consumed.add(old)
             if "color_levels" in params:
                 levels = max(2, min(16, int(params["color_levels"])))
-                bits = max(2, min(8, int(round(np.log2(levels))))
-                           ) if levels > 0 else 4
+                bits = max(2, min(8, int(round(np.log2(levels)))) if levels > 0 else 4)
                 migrated["bits"] = bits
+                consumed.add("color_levels")
 
-        # Legacy Cartoon (Fast) params
+        # Legacy Cartoon (Fast)
         if any(k in params for k in ("spatial_radius", "color_radius", "downscale")):
             preset_hint = preset_hint or "Fast"
             if "quant_method" in params:
@@ -286,54 +291,79 @@ class CartoonStylePro(Style):
                     "Downscale+Quantize": "Downscale+Uniform",
                     "K-means": "KMeans",
                 }
-                migrated["quant_method"] = method_map.get(
-                    params["quant_method"], "Uniform")
+                migrated["quant_method"] = method_map.get(params["quant_method"], "Uniform")
+                consumed.add("quant_method")
             if "spatial_radius" in params:
                 migrated["meanshift_spatial"] = params["spatial_radius"]
+                consumed.add("spatial_radius")
             if "color_radius" in params:
                 migrated["meanshift_color"] = params["color_radius"]
+                consumed.add("color_radius")
             if "downscale" in params:
                 migrated["downscale_factor"] = params["downscale"]
+                consumed.add("downscale")
             if "bits" in params:
                 migrated["bits"] = params["bits"]
+                consumed.add("bits")
 
-        # Legacy Advanced Cartoon params
+        # Legacy Advanced Cartoon
         if "edge_threshold1" in params or "edge_method" in params:
             preset_hint = preset_hint or "Advanced"
-            migrated["edge_method"] = params.get(
-                "edge_method", migrated.get("edge_method"))
-            migrated["canny_t1"] = params.get(
-                "edge_threshold1", migrated.get("canny_t1"))
-            migrated["canny_t2"] = params.get(
-                "edge_threshold2", migrated.get("canny_t2"))
+            if "edge_method" in params:
+                migrated["edge_method"] = params["edge_method"]
+                consumed.add("edge_method")
+            if "edge_threshold1" in params:
+                migrated["canny_t1"] = params["edge_threshold1"]
+                consumed.add("edge_threshold1")
+            if "edge_threshold2" in params:
+                migrated["canny_t2"] = params["edge_threshold2"]
+                consumed.add("edge_threshold2")
             if "sharpen_intensity" in params:
                 migrated["edge_dilate"] = 1 if params["sharpen_intensity"] > 1.2 else 0
-            if "enable_color_quantization" in params and params["enable_color_quantization"]:
+                consumed.add("sharpen_intensity")
+            if params.get("enable_color_quantization"):
                 migrated["quant_method"] = "KMeans"
-                migrated["kmeans_k"] = params.get(
-                    "color_clusters", migrated.get("kmeans_k"))
+                consumed.add("enable_color_quantization")
+                if "color_clusters" in params:
+                    migrated["kmeans_k"] = params["color_clusters"]
+                    consumed.add("color_clusters")
             if params.get("enable_texture_overlay"):
                 migrated["preset"] = "Advanced"
+                consumed.add("enable_texture_overlay")
             if "texture_alpha" in params:
                 migrated["edge_erode"] = int(params["texture_alpha"] * 2)
+                consumed.add("texture_alpha")
 
-        # Legacy Anime variant hints
+        # Legacy Anime hints
         if "anime_mode" in params or "enable_bloom_effect" in params:
             preset_hint = preset_hint or "Anime"
             migrated["quant_method"] = "Downscale+Uniform"
-            migrated["downscale_factor"] = min(
-                0.4, params.get("downscale_factor", 0.25))
-            migrated["bilateral_passes"] = max(
-                2, params.get("bilateral_filter_diameter", 9) // 6)
+            migrated["downscale_factor"] = min(0.4, params.get("downscale_factor", 0.25))
+            migrated["bilateral_passes"] = max(2, params.get("bilateral_filter_diameter", 9) // 6)
             migrated["edge_method"] = "Adaptive"
+            consumed.update(
+                key for key in (
+                    "anime_mode",
+                    "enable_bloom_effect",
+                    "downscale_factor",
+                    "bilateral_filter_diameter",
+                ) if key in params
+            )
 
         if preset_hint and "preset" not in params:
             migrated["preset"] = preset_hint
 
-        # Copy over any keys already in new schema
+        # Keep existing schema keys
+        schema_keys = {spec["name"] for spec in self.parameters}
         for key in params:
-            if key in {spec["name"] for spec in self.parameters}:
+            if key in schema_keys and key not in consumed:
                 migrated[key] = params[key]
+                consumed.add(key)
+
+        # Preserve custom keys
+        for key, value in params.items():
+            if key not in consumed and key not in migrated:
+                migrated[key] = value
 
         return migrated
 
@@ -362,6 +392,7 @@ class CartoonStylePro(Style):
         # Validate ranges
         def clamp(name, lo, hi, cast=None):
             v = p.get(name, spec_defaults[name])
+            original = v
             if cast is None:
                 spec = spec_lookup.get(name)
                 cast_type = spec.get("type") if spec else None
@@ -383,9 +414,16 @@ class CartoonStylePro(Style):
                 except Exception:
                     v = cast(spec_defaults[name])
             if v < lo:
+                logger.warning(
+                    "Clamping %s below minimum (%s < %s)", name, v, lo)
                 v = lo
             elif v > hi:
+                logger.warning(
+                    "Clamping %s above maximum (%s > %s)", name, v, hi)
                 v = hi
+            if v != original:
+                logger.warning(
+                    "Adjusted parameter %s from %s to %s", name, original, v)
             p[name] = v
 
         clamp("bilateral_passes", 0, 4, int)
@@ -393,6 +431,8 @@ class CartoonStylePro(Style):
         clamp("bilateral_sigmaColor", 1, 200, int)
         clamp("bilateral_sigmaSpace", 1, 200, int)
         if p["quant_method"] not in ["Uniform", "MeanShift", "Downscale+Uniform", "KMeans"]:
+            logger.warning("Unknown quant_method '%s'; defaulting to %s",
+                           p["quant_method"], spec_defaults["quant_method"])
             p["quant_method"] = spec_defaults["quant_method"]
         clamp("bits", 2, 8, int)
         clamp("downscale_factor", 0.1, 1.0, float)
@@ -404,6 +444,8 @@ class CartoonStylePro(Style):
         clamp("kmeans_eps", 1e-6, 1.0, float)
 
         if p["edge_method"] not in ["Adaptive", "Canny", "Sobel", "Laplacian"]:
+            logger.warning("Unknown edge_method '%s'; defaulting to %s",
+                           p["edge_method"], spec_defaults["edge_method"])
             p["edge_method"] = spec_defaults["edge_method"]
         # odd kernel for median; clamp to nearest odd within range
         k = int(p["edge_median_ksize"])
@@ -464,15 +506,94 @@ class CartoonStylePro(Style):
     @staticmethod
     def _kmeans_quant(img: np.ndarray, k: int, attempts: int, max_iter: int, eps: float, seed: int) -> np.ndarray:
         data = np.float32(img.reshape((-1, 3)))
-        criteria = (cv2.TERM_CRITERIA_EPS +
-                    cv2.TERM_CRITERIA_MAX_ITER, int(max_iter), float(eps))
-        rng = cv2.RNG(seed)
-        compactness, labels, centers = cv2.kmeans(
-            data, k, None, criteria, attempts, cv2.KMEANS_PP_CENTERS
-        )
-        centers = np.uint8(centers)
-        quant = centers[labels.flatten()].reshape(img.shape)
-        return quant
+        n_samples = data.shape[0]
+        if n_samples == 0:
+            return img
+
+        attempts = max(1, int(attempts))
+        max_iter = max(1, int(max_iter))
+        eps = float(max(eps, 0.0))
+
+        master_seed = int(seed) if seed is not None else None
+        master_rng = np.random.default_rng(master_seed)
+
+        best_inertia = np.inf
+        best_centers: Optional[np.ndarray] = None
+        best_labels: Optional[np.ndarray] = None
+
+        for _ in range(attempts):
+            sub_seed = master_rng.integers(
+                0, np.iinfo(np.uint32).max, dtype=np.uint32)
+            centers, labels, inertia = CartoonStylePro._kmeans_single_attempt(
+                data, k, np.random.default_rng(int(sub_seed)), max_iter, eps
+            )
+            if inertia < best_inertia:
+                best_inertia = inertia
+                best_centers = centers
+                best_labels = labels
+
+        if best_centers is None or best_labels is None:
+            return img
+
+        quant = best_centers[best_labels].reshape(img.shape)
+        return np.clip(quant, 0, 255).astype(np.uint8)
+
+    @staticmethod
+    def _kmeans_single_attempt(
+        data: np.ndarray,
+        k: int,
+        rng: np.random.Generator,
+        max_iter: int,
+        eps: float,
+    ) -> Tuple[np.ndarray, np.ndarray, float]:
+        n_samples = data.shape[0]
+        replace = n_samples < k
+        init_indices = rng.choice(n_samples, size=k, replace=replace)
+        centers = data[init_indices].copy()
+
+        labels = np.zeros(n_samples, dtype=np.int32)
+        inertia = np.inf
+
+        for _ in range(max_iter):
+            labels, inertia = CartoonStylePro._assign_labels(data, centers)
+            new_centers = CartoonStylePro._update_centers(
+                data, labels, centers, rng)
+            max_shift = np.linalg.norm(new_centers - centers, axis=1).max()
+            centers = new_centers
+            if max_shift <= eps:
+                break
+
+        labels, inertia = CartoonStylePro._assign_labels(data, centers)
+        return centers, labels, inertia
+
+    @staticmethod
+    def _assign_labels(data: np.ndarray, centers: np.ndarray) -> Tuple[np.ndarray, float]:
+        n_samples = data.shape[0]
+        k = centers.shape[0]
+        distances = np.empty((n_samples, k), dtype=np.float32)
+        for idx, center in enumerate(centers):
+            diff = data - center
+            distances[:, idx] = np.sum(diff * diff, axis=1)
+        labels = np.argmin(distances, axis=1)
+        inertia = float(np.sum(distances[np.arange(n_samples), labels]))
+        return labels, inertia
+
+    @staticmethod
+    def _update_centers(
+        data: np.ndarray,
+        labels: np.ndarray,
+        centers: np.ndarray,
+        rng: np.random.Generator,
+    ) -> np.ndarray:
+        k = centers.shape[0]
+        new_centers = np.empty_like(centers)
+        for idx in range(k):
+            mask = labels == idx
+            if np.any(mask):
+                new_centers[idx] = data[mask].mean(axis=0)
+            else:
+                new_centers[idx] = data[rng.integers(0, data.shape[0])]
+        return new_centers
 
     def _edges(self, img_bgr: np.ndarray, p: Dict[str, Any]) -> np.ndarray:
         gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
@@ -574,15 +695,15 @@ class CartoonStyle(Style):
         {"name": "quant_method", "label": "Quantization Method", "type": "str",
          "default": "Uniform", "options": ["Uniform", "Mean Shift", "Downscale+Quantize", "K-means"]},
         {"name": "bits", "label": "Color Bits (Uniform/Downscale)",
-         "type": "int", "default": 4, "min": 2, "max": 8},
+         "type": "int", "default": 4, "min": 2, "max": 8, "step": 1},
         {"name": "spatial_radius", "label": "Mean Shift Spatial Radius",
-            "type": "int", "default": 10, "min": 1, "max": 30},
+            "type": "int", "default": 10, "min": 1, "max": 30, "step": 1},
         {"name": "color_radius", "label": "Mean Shift Color Radius",
-            "type": "int", "default": 30, "min": 1, "max": 100},
+            "type": "int", "default": 30, "min": 1, "max": 100, "step": 1},
         {"name": "k", "label": "K-means Clusters",
-            "type": "int", "default": 8, "min": 2, "max": 16},
+            "type": "int", "default": 8, "min": 2, "max": 16, "step": 1},
         {"name": "downscale", "label": "Downscale Factor (Downscale+Quantize)",
-         "type": "float", "default": 0.25, "min": 0.1, "max": 1.0},
+         "type": "float", "default": 0.25, "min": 0.1, "max": 1.0, "step": 0.05},
     ]
 
     def apply(self, img, params):

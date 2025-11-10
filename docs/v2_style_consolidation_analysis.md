@@ -5,9 +5,7 @@
 ### 🎭 **CARTOON STYLES → CONSOLIDATE TO 1 WIDGET**
 **Current: 6+ separate styles**
 - `Cartoon` (basic with bilateral filter)
-- `CartoonStyle` (fast with quantization methods)
-- `AdvancedCartoon` (sophisticated edge detection)
-- `AdvancedCartoon2` (anime-style)
+- `CartoonStylePro` presets (Detailed, Advanced, Anime, Whole) replace legacy `advanced_cartoon*` modules
 - `CartoonWholeImage` (uniform processing)
 - `unified_cartoon.py` (already consolidates Basic/Advanced/Advanced2/WholeImage)
 

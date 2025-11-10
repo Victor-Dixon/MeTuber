@@ -28,6 +28,84 @@ class ParameterManager:
         # Throttling for parameter updates
         self.last_parameter_update = 0
         self.parameter_update_threshold = 0.1  # 100ms between updates
+
+    def _get_style_mapping(self):
+        """Return mapping of UI-friendly names to concrete styles and preset overrides."""
+        return {
+            # Cartoon and related effects
+            "🎭 Cartoon Effects": {"style": "Cartoon", "params": {"preset": "Detailed"}},
+            "🎨 Cartoon Effects": {"style": "Cartoon", "params": {"preset": "Detailed"}},
+            "Cartoon Effects": {"style": "Cartoon", "params": {"preset": "Detailed"}},
+            "Cartoon (Detailed)": {"style": "Cartoon", "params": {"preset": "Detailed"}},
+            "🎨 Advanced Cartoon": {"style": "Cartoon", "params": {"preset": "Advanced"}},
+            "Advanced Cartoon": {"style": "Cartoon", "params": {"preset": "Advanced"}},
+            "🎨 Advanced Cartoon (Anime)": {"style": "Cartoon", "params": {"preset": "Anime"}},
+            "Advanced Cartoon (Anime)": {"style": "Cartoon", "params": {"preset": "Anime"}},
+            "🎨 Cartoon Whole Image": {"style": "Cartoon", "params": {"preset": "Whole"}},
+            "Cartoon Whole Image": {"style": "Cartoon", "params": {"preset": "Whole"}},
+            "Cartoon (Fast)": {"style": "Cartoon", "params": {"preset": "Fast"}},
+            "Cartoon (Advanced)": {"style": "Cartoon", "params": {"preset": "Advanced"}},
+            "Cartoon (Anime)": {"style": "Cartoon", "params": {"preset": "Anime"}},
+            "Cartoon": "Cartoon",
+            # Edge Detection effects
+            "🔍 Edge Detection": "Edge Detection",
+            "🔍 Advanced Edge Detection": "Advanced Edge Detection",
+            "🔍 Line Art": "Line Art",
+            # Sketch and drawing effects
+            "✏️ Sketch Effects": "Pencil Sketch",
+            "✏️ Advanced Pencil Sketch": "Light Pencil Sketch (Color)",
+            "✏️ Sketch & Color": "Sketch & Color",
+            "✏️ Unified Sketch": "Unified Sketch",
+            # Artistic effects
+            "🎨 Oil Painting": "Oil Painting",
+            "💧 Watercolor": "Watercolor",
+            "🎯 Stippling": "Stippling",
+            # Basic effects
+            "⚡ Brightness Only": "Brightness Only",
+            "⚡ Contrast Only": "Contrast Only",
+            "🎨 Color Balance": "Color Balance",
+            "🌅 Sepia Vibrant": "Sepia Vibrant",
+            "🎨 Vibrant Color": "Vibrant Color",
+            # Adjustments
+            "🔧 Blur": "Blur",
+            "🔧 Brightness Contrast": "Brightness Contrast",
+            "🔧 Emboss": "Emboss",
+            "🔧 Gamma Correction": "Gamma Correction",
+            "🔧 Hue Saturation": "Hue Saturation",
+            "🔧 Posterize": "Posterize",
+            "🔧 Sharpen": "Sharpen",
+            "🔧 Solarize": "Solarize",
+            "🔧 Threshold": "Threshold",
+            "🔧 Vibrance": "Vibrance",
+            "🔧 Vintage": "Vintage",
+            # Color filters
+            "🔄 Invert Colors": "Invert Colors",
+            "🎨 Invert Filter": "Invert Filter",
+            "🌙 Negative": "Negative",
+            "🎨 Unified Invert": "Unified Invert",
+            # Distortions
+            "🌀 Advanced Halftone": "Advanced Halftone",
+            "🎪 Glitch": "Glitch",
+            "🔲 Halftone": "Halftone",
+            "💡 Light Leak": "Light Leak",
+            "🎨 Mosaic": "Mosaic",
+            # Effects
+            "⚫ Black & White": "Black & White",
+            "⚡ Blur Motion": "Blur Motion",
+            "⚡ Color Quantization": "Color Quantization",
+            "⚡ Emboss & Contrast": "Emboss & Contrast",
+            "✨ Glowing Edges": "Glowing Edges",
+            "⚡ Lines": "Lines",
+            "⚡ Negative Vintage": "Negative Vintage",
+            "⚡ Original": "Original",
+            # Bitwise operations
+            "🔧 Bitwise AND": "Bitwise AND",
+            "🔧 Bitwise OR": "Bitwise OR",
+            "🔧 Bitwise XOR": "Bitwise XOR",
+            # Consolidated fallbacks
+            "🎨 Color Effects": "Brightness Only",
+            "🎨 Sketch Effects": "Pencil Sketch",
+        }
         
     def clear_embedded_parameter_widgets(self):
         """Clear existing embedded parameter widgets."""
@@ -478,102 +556,33 @@ class ParameterManager:
                 from src.core.style_manager import StyleManager
                 style_manager = StyleManager()
                 
-            # Map UI effect names to actual detailed style names (using ALL original detailed styles)
-            style_mapping = {
-                # Cartoon and related effects
-                "🎭 Cartoon Effects": "Cartoon (Detailed)",  # Original detailed Cartoon with 6 parameters
-                "🎨 Advanced Cartoon": "Advanced Cartoon",  # Advanced Cartoon with 8+ parameters
-                "🎨 Advanced Cartoon (Anime)": "Advanced Cartoon (Anime)",  # Anime version
-                "🎨 Cartoon Whole Image": "Cartoon Whole Image",  # Whole image cartoon
-                
-                # Edge Detection effects
-                "🔍 Edge Detection": "Edge Detection",  # Basic edge detection
-                "🔍 Advanced Edge Detection": "Advanced Edge Detection",  # Advanced edge detection
-                "🔍 Line Art": "Line Art",  # Line art effect
-                
-                # Sketch and drawing effects
-                "✏️ Sketch Effects": "Pencil Sketch",  # Basic pencil sketch
-                "✏️ Advanced Pencil Sketch": "Light Pencil Sketch (Color)",  # Advanced pencil sketch
-                "✏️ Sketch & Color": "Sketch & Color",  # Sketch with color
-                "✏️ Unified Sketch": "Unified Sketch",  # Unified sketch
-                
-                # Artistic effects
-                "🎨 Oil Painting": "Oil Painting",  # Oil painting effect
-                "💧 Watercolor": "Watercolor",  # Watercolor effect (correct name from UI)
-                "🎯 Stippling": "Stippling",  # Stippling effect
-                
-                # Basic effects
-                "⚡ Brightness Only": "Brightness Only",  # Brightness adjustment
-                "⚡ Contrast Only": "Contrast Only",  # Contrast adjustment
-                "🎨 Color Balance": "Color Balance",  # Color balance
-                "🌅 Sepia Vibrant": "Sepia Vibrant",  # Sepia with vibrant colors
-                "🎨 Vibrant Color": "Vibrant Color",  # Vibrant color effect
-                
-                # Adjustments
-                "🔧 Blur": "Blur",  # Blur effect
-                "🔧 Brightness Contrast": "Brightness Contrast",  # Brightness and contrast
-                "🔧 Emboss": "Emboss",  # Emboss effect
-                "🔧 Gamma Correction": "Gamma Correction",  # Gamma correction
-                "🔧 Hue Saturation": "Hue Saturation",  # Hue and saturation
-                "🔧 Posterize": "Posterize",  # Posterize effect
-                "🔧 Sharpen": "Sharpen",  # Sharpen effect
-                "🔧 Solarize": "Solarize",  # Solarize effect
-                "🔧 Threshold": "Threshold",  # Threshold effect
-                "🔧 Vibrance": "Vibrance",  # Vibrance effect
-                "🔧 Vintage": "Vintage",  # Vintage effect
-                
-                # Color filters
-                "🔄 Invert Colors": "Invert Colors",  # Invert colors
-                "🎨 Invert Filter": "Invert Filter",  # Invert filter
-                "🌙 Negative": "Negative",  # Negative effect
-                "🎨 Unified Invert": "Unified Invert",  # Unified invert
-                
-                # Distortions
-                "🌀 Advanced Halftone": "Advanced Halftone",  # Advanced halftone
-                "🎪 Glitch": "Glitch",  # Glitch effect
-                "🔲 Halftone": "Halftone",  # Halftone effect
-                "💡 Light Leak": "Light Leak",  # Light leak effect
-                "🎨 Mosaic": "Mosaic",  # Mosaic effect
-                
-                # Effects
-                "⚫ Black & White": "Black & White",  # Black and white
-                "⚡ Blur Motion": "Blur Motion",  # Motion blur
-                "⚡ Color Quantization": "Color Quantization",  # Color quantization
-                "⚡ Emboss & Contrast": "Emboss & Contrast",  # Emboss with contrast
-                "✨ Glowing Edges": "Glowing Edges",  # Glowing edges
-                "⚡ Lines": "Lines",  # Lines effect
-                "⚡ Negative Vintage": "Negative Vintage",  # Negative vintage
-                "⚡ Original": "Original",  # Original (no effect)
-                
-                # Bitwise operations
-                "🔧 Bitwise AND": "Bitwise AND",  # Bitwise AND
-                "🔧 Bitwise OR": "Bitwise OR",  # Bitwise OR
-                "🔧 Bitwise XOR": "Bitwise XOR",  # Bitwise XOR
-                
-                # Consolidated effects (fallback)
-                "🎨 Color Effects": "Brightness Only",  # Fallback for color effects
-                "🎨 Sketch Effects": "Pencil Sketch",  # Fallback for sketch effects
-                "🎨 Cartoon Effects": "Cartoon (Detailed)",  # Fallback for cartoon effects
-            }
+            style_mapping = self._get_style_mapping()
+            mapping_entry = style_mapping.get(filter_name, filter_name)
+            if isinstance(mapping_entry, dict):
+                actual_style_name = mapping_entry.get("style", filter_name)
+                override_params = mapping_entry.get("params", {})
+            else:
+                actual_style_name = mapping_entry
+                override_params = {}
             
-            # Get the actual style name from mapping
-            actual_style_name = style_mapping.get(filter_name, filter_name)
+            parameters = parameters or {}
+            combined_params = {**override_params, **parameters}
             
             # Get the style instance
             style_instance = style_manager.get_style(actual_style_name)
             
             if style_instance:
-                self.logger.info(f"🎨 Applying {actual_style_name} with params: {parameters}")
+                self.logger.info(f"🎨 Applying {actual_style_name} with params: {combined_params}")
                 
                 # Update the webcam service with the style and parameters
                 if hasattr(self.main_window, 'webcam_manager') and self.main_window.webcam_manager:
                     # Update through the webcam manager
-                    self.main_window.webcam_manager.update_style(actual_style_name, parameters)
-                    self.logger.info(f"🔧 Updated webcam manager with style '{actual_style_name}' and parameters: {parameters}")
+                    self.main_window.webcam_manager.update_style(actual_style_name, combined_params)
+                    self.logger.info(f"🔧 Updated webcam manager with style '{actual_style_name}' and parameters: {combined_params}")
                 elif hasattr(self.main_window, 'webcam_service') and self.main_window.webcam_service:
                     # Fallback to direct webcam service
-                    self.main_window.webcam_service.update_style(style_instance, parameters)
-                    self.logger.info(f"🔧 Updated webcam service with parameters: {parameters}")
+                    self.main_window.webcam_service.update_style(style_instance, combined_params)
+                    self.logger.info(f"🔧 Updated webcam service with parameters: {combined_params}")
                 else:
                     self.logger.warning("No webcam service or manager available")
                     
@@ -806,81 +815,12 @@ class ParameterManager:
                 from src.core.style_manager import StyleManager
                 style_manager = StyleManager()
             
-            # Map UI effect names to actual detailed style names (using ALL original detailed styles)
-            style_mapping = {
-                # Cartoon and related effects
-                "🎭 Cartoon Effects": "Cartoon (Detailed)",  # Original detailed Cartoon with 6 parameters
-                "🎨 Advanced Cartoon": "Advanced Cartoon",  # Advanced Cartoon with 8+ parameters
-                "🎨 Advanced Cartoon (Anime)": "Advanced Cartoon (Anime)",  # Anime version
-                "🎨 Cartoon Whole Image": "Cartoon Whole Image",  # Whole image cartoon
-                
-                # Edge Detection effects
-                "🔍 Edge Detection": "Edge Detection",  # Basic edge detection
-                "🔍 Advanced Edge Detection": "Advanced Edge Detection",  # Advanced edge detection
-                "🔍 Line Art": "Line Art",  # Line art effect
-                
-                # Sketch and drawing effects
-                "✏️ Sketch Effects": "Pencil Sketch",  # Basic pencil sketch
-                "✏️ Advanced Pencil Sketch": "Light Pencil Sketch (Color)",  # Advanced pencil sketch
-                "✏️ Sketch & Color": "Sketch & Color",  # Sketch with color
-                "✏️ Unified Sketch": "Unified Sketch",  # Unified sketch
-                
-                # Artistic effects
-                "🎨 Oil Painting": "Oil Painting",  # Oil painting effect
-                "💧 Watercolor": "Watercolor",  # Watercolor effect (correct name from UI)
-                "🎯 Stippling": "Stippling",  # Stippling effect
-                
-                # Basic effects
-                "⚡ Brightness Only": "Brightness Only",  # Brightness adjustment
-                "⚡ Contrast Only": "Contrast Only",  # Contrast adjustment
-                "🎨 Color Balance": "Color Balance",  # Color balance
-                "🌅 Sepia Vibrant": "Sepia Vibrant",  # Sepia with vibrant colors
-                "🎨 Vibrant Color": "Vibrant Color",  # Vibrant color effect
-                
-                # Adjustments
-                "🔧 Blur": "Blur",  # Blur effect
-                "🔧 Brightness Contrast": "Brightness Contrast",  # Brightness and contrast
-                "🔧 Emboss": "Emboss",  # Emboss effect
-                "🔧 Gamma Correction": "Gamma Correction",  # Gamma correction
-                "🔧 Hue Saturation": "Hue Saturation",  # Hue and saturation
-                "🔧 Posterize": "Posterize",  # Posterize effect
-                "🔧 Sharpen": "Sharpen",  # Sharpen effect
-                "🔧 Solarize": "Solarize",  # Solarize effect
-                "🔧 Threshold": "Threshold",  # Threshold effect
-                "🔧 Vibrance": "Vibrance",  # Vibrance effect
-                "🔧 Vintage": "Vintage",  # Vintage effect
-                
-                # Color filters
-                "🔄 Invert Colors": "Invert Colors",  # Invert colors
-                "🎨 Invert Filter": "Invert Filter",  # Invert filter
-                "🌙 Negative": "Negative",  # Negative effect
-                "🎨 Unified Invert": "Unified Invert",  # Unified invert
-                
-                # Distortions
-                "🌀 Advanced Halftone": "Advanced Halftone",  # Advanced halftone
-                "🎪 Glitch": "Glitch",  # Glitch effect
-                "🔲 Halftone": "Halftone",  # Halftone effect
-                "💡 Light Leak": "Light Leak",  # Light leak effect
-                "🎨 Mosaic": "Mosaic",  # Mosaic effect
-                
-                # Effects
-                "⚫ Black & White": "Black & White",  # Black and white
-                "⚡ Blur Motion": "Blur Motion",  # Motion blur
-                "⚡ Color Quantization": "Color Quantization",  # Color quantization
-                "⚡ Emboss & Contrast": "Emboss & Contrast",  # Emboss with contrast
-                "✨ Glowing Edges": "Glowing Edges",  # Glowing edges
-                "⚡ Lines": "Lines",  # Lines effect
-                "⚡ Negative Vintage": "Negative Vintage",  # Negative vintage
-                "⚡ Original": "Original",  # Original (no effect)
-                
-                # Bitwise operations
-                "🔧 Bitwise AND": "Bitwise AND",  # Bitwise AND
-                "🔧 Bitwise OR": "Bitwise OR",  # Bitwise OR
-                "🔧 Bitwise XOR": "Bitwise XOR",  # Bitwise XOR
-            }
-            
-            # Get the actual style name from mapping
-            actual_style_name = style_mapping.get(filter_name, filter_name)
+            style_mapping = self._get_style_mapping()
+            mapping_entry = style_mapping.get(filter_name, filter_name)
+            if isinstance(mapping_entry, dict):
+                actual_style_name = mapping_entry.get("style", filter_name)
+            else:
+                actual_style_name = mapping_entry
             
             # Try to get the style instance
             style_instance = style_manager.get_style(actual_style_name)
@@ -1050,9 +990,9 @@ class ParameterManager:
                 'pencil_sketch': 'Pencil Sketch',
                 'sketch_color': 'Sketch & Color',
                 'unified_sketch': 'Unified Sketch',
-                'advanced_cartoon': 'Advanced Cartoon',
-                'advanced_cartoon_anime': 'Advanced Cartoon (Anime)',
-                'cartoon_whole_image': 'Cartoon Whole Image',
+                'advanced_cartoon': 'Cartoon (Advanced)',
+                'advanced_cartoon_anime': 'Cartoon (Anime)',
+                'cartoon_whole_image': 'Cartoon (Whole)',
                 'advanced_edge_detection': 'Advanced Edge Detection',
                 'advanced_pencil_sketch': 'Advanced Pencil Sketch',
                 'advanced_halftone': 'Advanced Halftone',

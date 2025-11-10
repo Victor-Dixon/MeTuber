@@ -17,3 +17,7 @@ __all__ = [
     "Stippling",
     "Watercolor",
 ]
+
+# Legacy compatibility wrappers should not be auto-registered by dynamic loaders.
+Cartoon.__skip_registration__ = True
+CartoonStyle.__skip_registration__ = True

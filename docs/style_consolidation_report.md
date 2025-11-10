@@ -8,7 +8,7 @@
 ## Summary Table: Style Groups & Consolidation Priority
 | Group         | Styles Included                                   | Priority   | Notes                  |
 |---------------|---------------------------------------------------|------------|------------------------|
-| Cartoon       | Cartoon, CartoonStyle, AdvancedCartoon, etc.      | High       | Merge into variants    |
+| Cartoon       | CartoonStylePro presets (Detailed/Fast/Advanced/Anime/Whole) | High       | Merge complete; use presets    |
 | Sketch/Line   | PencilSketch, SketchAndColor, LineArt, etc.       | High       | Merge/group as needed  |
 | Invert/Negate | Negative, InvertFilter, InvertColors              | Medium     | Merge into one         |
 | Halftone      | Halftone, AdvancedHalftone                        | Medium     | Advanced toggle        |

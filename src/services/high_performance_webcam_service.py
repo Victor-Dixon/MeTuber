@@ -243,6 +243,7 @@ class HighPerformanceWebcamService:
         # Apply optimized effect based on style
         try:
             effect_function = match(self._current_style, [
+                ("Cartoon", self._apply_optimized_cartoon),
                 ("Cartoon (Detailed)", self._apply_optimized_cartoon),
                 ("Cartoon Effects", self._apply_optimized_cartoon),
                 ("Pencil Sketch", self._apply_optimized_sketch),

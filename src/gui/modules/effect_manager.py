@@ -180,7 +180,7 @@ class EffectManager:
         self.main_window.effect_variant_combo.clear()
         
         if "Cartoon Effects" in effect_name:
-            self.main_window.effect_variant_combo.addItems(["Classic", "Fast", "Anime", "Advanced", "Whole Image"])
+            self.main_window.effect_variant_combo.addItems(["Detailed", "Fast", "Advanced", "Anime", "Whole"])
         elif "Sketch Effects" in effect_name:
             self.main_window.effect_variant_combo.addItems(["Pencil", "Advanced Pencil", "Color Sketch", "Line Art", "Stippling"])
         elif "Color Effects" in effect_name:
@@ -199,66 +199,33 @@ class EffectManager:
                 from src.core.style_manager import StyleManager
                 style_manager = StyleManager()
             
-            # Map UI effect names to actual style names
-            style_mapping = {
-                # Consolidated styles
-                "🎭 Cartoon Effects": "Cartoon (Detailed)",
-                "✏️ Sketch Effects": "Pencil Sketch", 
-                "🎨 Color Effects": "Brightness Only",
-                
-                # Individual styles
-                "💧 Watercolor": "Watercolor",
-                "⚡ Glitch Effect": "Glitch",
-                "🌟 Glow Effect": "Glowing Edges",
-                "🎬 Motion Blur": "Motion Blur",
-                "🔍 Edge Detection": "Edge Detection",
-                "🌈 Color Grading": "Color Balance",
-                "📸 Portrait Mode": "Brightness Only",
-                "🎪 Vintage": "Sepia Vibrant",
-                "🌌 Cyberpunk": "Negative Vintage",
-                
-                # Legacy mappings
-                "Cartoon (Fast)": "Cartoon",
-                "Cartoon (Anime)": "Advanced Cartoon (Anime)",
-                "Cartoon (Advanced)": "Advanced Cartoon",
-                "Pencil Sketch": "Pencil Sketch",
-                "Advanced Sketch": "Advanced Edge Detection",
-                "Color Sketch": "Sketch & Color",
-                "Oil Painting": "Oil Painting",
-                "Line Art": "Line Art",
-                "Stippling": "Stippling",
-                "Glitch": "Glitch",
-                "Mosaic": "Mosaic",
-                "Light Leak": "Light Leak",
-                "Halftone": "Halftone",
-                "Invert": "Invert Colors",
-                "Negative": "Negative",
-                "Sepia": "Sepia Vibrant",
-                "Black & White": "Black & White",
-                "Brightness": "Brightness Only",
-                "Contrast": "Contrast Only",
-                "Color Balance": "Color Balance",
-                "Vibrant Color": "Vibrant Color",
-                "Edge Detection": "Edge Detection",
-                "Cartoon": "Cartoon",
-                "Pencil Sketch": "Pencil Sketch",
-                "Advanced Edge Detection": "Advanced Edge Detection",
-                "Oil Painting": "Oil Painting",
-                "Line Art": "Line Art",
-                "Stippling": "Stippling",
-                "Watercolor": "Watercolor",
-                "Motion Blur": "Motion Blur",
-                "Glowing Edges": "Glowing Edges",
-                "Color Quantization": "Color Quantization",
-                "Emboss & Contrast": "Emboss & Contrast",
-                "Canny Edge": "Canny Edge",
-                "Hough Lines": "Hough Lines",
-                "Negative Vintage": "Negative Vintage",
-                "Original": "Original"
-            }
+            if hasattr(self.main_window, 'parameter_manager'):
+                style_mapping = self.main_window.parameter_manager._get_style_mapping()
+            else:
+                style_mapping = {
+                    "🎭 Cartoon Effects": {"style": "Cartoon", "params": {"preset": "Detailed"}},
+                    "🎨 Cartoon Effects": {"style": "Cartoon", "params": {"preset": "Detailed"}},
+                    "Cartoon Effects": {"style": "Cartoon", "params": {"preset": "Detailed"}},
+                    "Cartoon (Detailed)": {"style": "Cartoon", "params": {"preset": "Detailed"}},
+                    "🎨 Advanced Cartoon": {"style": "Cartoon", "params": {"preset": "Advanced"}},
+                    "🎨 Advanced Cartoon (Anime)": {"style": "Cartoon", "params": {"preset": "Anime"}},
+                    "🎨 Cartoon Whole Image": {"style": "Cartoon", "params": {"preset": "Whole"}},
+                    "Advanced Cartoon": {"style": "Cartoon", "params": {"preset": "Advanced"}},
+                    "Advanced Cartoon (Anime)": {"style": "Cartoon", "params": {"preset": "Anime"}},
+                    "Cartoon Whole Image": {"style": "Cartoon", "params": {"preset": "Whole"}},
+                    "Cartoon (Fast)": {"style": "Cartoon", "params": {"preset": "Fast"}},
+                    "Cartoon (Advanced)": {"style": "Cartoon", "params": {"preset": "Advanced"}},
+                    "Cartoon (Anime)": {"style": "Cartoon", "params": {"preset": "Anime"}},
+                    "Cartoon": "Cartoon",
+                }
             
-            # Get the actual style name
-            actual_style_name = style_mapping.get(style_name, style_name)
+            mapping_entry = style_mapping.get(style_name, style_name)
+            if isinstance(mapping_entry, dict):
+                actual_style_name = mapping_entry.get("style", style_name)
+                override_params = mapping_entry.get("params", {})
+            else:
+                actual_style_name = mapping_entry
+                override_params = {}
             
             # Load the style
             style_instance = style_manager.get_style(actual_style_name)
@@ -268,17 +235,18 @@ class EffectManager:
                 
             # Apply the style
             self.main_window.current_style = style_instance
-            self.main_window.pending_params = {}
+            combined_params = {**override_params}
+            self.main_window.pending_params = combined_params
             
             # Update webcam service if running
             if hasattr(self.main_window, 'webcam_manager') and self.main_window.webcam_manager:
                 # Update through the webcam manager
-                self.main_window.webcam_manager.update_style(actual_style_name, {})
-                self.logger.info(f"🔧 Updated webcam manager with style: {actual_style_name}")
+                self.main_window.webcam_manager.update_style(actual_style_name, combined_params)
+                self.logger.info(f"🔧 Updated webcam manager with style: {actual_style_name} params: {combined_params}")
             elif hasattr(self.main_window, 'webcam_service') and self.main_window.webcam_service:
                 # Fallback to direct webcam service
-                self.main_window.webcam_service.update_style(style_instance, {})
-                self.logger.info(f"🔧 Updated webcam service with style: {actual_style_name}")
+                self.main_window.webcam_service.update_style(style_instance, combined_params)
+                self.logger.info(f"🔧 Updated webcam service with style: {actual_style_name} params: {combined_params}")
             else:
                 self.logger.warning("No webcam service or manager available")
                 

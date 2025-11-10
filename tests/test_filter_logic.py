@@ -51,6 +51,8 @@ def load_all_styles():
                         not inspect.isabstract(cls) and
                         cls not in seen_classes
                     ):
+                        if getattr(cls, "__skip_registration__", False):
+                            continue
                         try:
                             instance = cls()
                             seen_classes.add(cls)

@@ -1502,7 +1502,7 @@ class ProfessionalV2MainWindow(QMainWindow):
         self.effect_variant_combo.clear()
         
         if "Cartoon Effects" in effect_name:
-            self.effect_variant_combo.addItems(["Classic", "Fast", "Anime", "Advanced", "Whole Image"])
+            self.effect_variant_combo.addItems(["Detailed", "Fast", "Advanced", "Anime", "Whole"])
         elif "Sketch Effects" in effect_name:
             self.effect_variant_combo.addItems(["Pencil", "Advanced Pencil", "Color Sketch", "Line Art", "Stippling"])
         elif "Color Effects" in effect_name:

@@ -47,6 +47,12 @@ class StyleManager:
                                 not inspect.isabstract(cls) and
                                 cls not in seen_classes
                             ):
+                                if getattr(cls, "__skip_registration__", False):
+                                    self.logger.debug(
+                                        "Skipping legacy style class %s.%s during load",
+                                        cls.__module__, cls.__name__
+                                    )
+                                    continue
                                 try:
                                     instance = cls()  # Instantiate
                                     seen_classes.add(cls)
@@ -283,6 +289,13 @@ class StyleManager:
                     cls is not Style and 
                     not inspect.isabstract(cls)):
                     
+                    if getattr(cls, "__skip_registration__", False):
+                        self.logger.debug(
+                            "Skipping legacy style class %s.%s during single load",
+                            cls.__module__, cls.__name__
+                        )
+                        continue
+
                     instance = cls()
                     category = getattr(instance, "category", "Uncategorized")
                     

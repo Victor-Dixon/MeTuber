@@ -88,12 +88,12 @@ class ParameterControls(QWidget):
         if is_float:
             slider.setMinimum(int(param["min"] * 10))  # Scale float for precision
             slider.setMaximum(int(param["max"] * 10))
-            slider.setSingleStep(int(param["step"] * 10))
+            slider.setSingleStep(int(param.get("step", 0.1) * 10))
             value = int(current_params.get(param["name"], param["default"]) * 10)  # Convert float to int
         else:
             slider.setMinimum(param["min"])
             slider.setMaximum(param["max"])
-            slider.setSingleStep(param["step"])
+            slider.setSingleStep(param.get("step", 1))
             value = int(current_params.get(param["name"], param["default"]))  # Ensure integer
 
         slider.setValue(value)
