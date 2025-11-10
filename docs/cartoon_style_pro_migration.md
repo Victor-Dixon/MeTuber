@@ -5,8 +5,8 @@ This document captures the preset updates introduced by `CartoonStylePro` and ou
 ## Summary
 
 - The unified presets now enforce tuned defaults (bilateral smoothing, quantization, edge detection). These differ from the implicit values that older scripts relied on.
-- Legacy automation that invoked the historical `Cartoon` or `CartoonStyle` classes without overriding parameters can observe visible changes (sharper edges, additional downscaling).
-- To keep the classic look, explicitly override the parameters called out below or use the provided back-compat wrappers (`styles.artistic.cartoon.Cartoon` and `styles.artistic.cartoon.CartoonStyle`).
+- Legacy automation that invoked the historical cartoon modules without overriding parameters can observe visible changes (sharper edges, additional downscaling).
+- To keep the classic look, explicitly override the parameters called out below or set the `preset` value directly when calling `CartoonStylePro`.
 
 ## Preset Deltas
 
@@ -19,11 +19,6 @@ This document captures the preset updates introduced by `CartoonStylePro` and ou
 | `Whole` | Previously matched whole-image pipeline without extra edge sharpening | `downscale_factor=0.35`, `edge_method="Canny"`, `edge_dilate=1` | Pass `edge_method="Adaptive"`, `downscale_factor=1.0`, `edge_dilate=0` |
 
 > **Tip:** These presets can be combined with custom overrides. Only the parameters you specify are substituted; all others fall back to the preset defaults.
-
-## Compatibility Shims
-
-- `Cartoon` approximates the original “Cartoon (Detailed)” behavior. It forwards to `CartoonStylePro` but supplies the historical parameters (`quant_method="Uniform"`, original bilateral settings, adaptive edges). Use this class if you were importing `Cartoon` previously and prefer the old defaults.
-- `CartoonStyle` serves the same purpose for the “Cartoon (Fast)” widget, preserving the former parameter layout and value ranges.
 
 ## Migration Recommendations
 
@@ -43,8 +38,7 @@ This document captures the preset updates introduced by `CartoonStylePro` and ou
        },
    )
    ```
-3. **Adopt the wrappers** (`Cartoon`, `CartoonStyle`) for minimal code changes in automation or plugins that still expect the earlier signatures.
-4. **Document project-specific overrides** so downstream consumers know whether to rely on the new sharper defaults or to keep parity with the legacy appearance.
+3. **Document project-specific overrides** so downstream consumers know whether to rely on the new sharper defaults or to keep parity with the legacy appearance.
 
 ## Tracking Future Adjustments
 

@@ -15,7 +15,7 @@ from ..artistic.cartoon import CartoonStylePro
 class ConsolidatedCartoon(Style):
     """
     Consolidated Cartoon Effects
-    Combines: Cartoon, CartoonStyle, AdvancedCartoon, AdvancedCartoon2, CartoonWholeImage
+    Aggregates CartoonStylePro presets into a single configurable style (Classic/Fast/Anime/Advanced/Whole).
     """
     name = "Cartoon Effects"
     category = "Artistic"

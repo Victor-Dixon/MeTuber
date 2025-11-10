@@ -277,7 +277,8 @@ class CartoonStylePro(Style):
                     consumed.add(old)
             if "color_levels" in params:
                 levels = max(2, min(16, int(params["color_levels"])))
-                bits = max(2, min(8, int(round(np.log2(levels)))) if levels > 0 else 4)
+                bits = max(2, min(8, int(round(np.log2(levels))))
+                           if levels > 0 else 4)
                 migrated["bits"] = bits
                 consumed.add("color_levels")
 
@@ -291,7 +292,8 @@ class CartoonStylePro(Style):
                     "Downscale+Quantize": "Downscale+Uniform",
                     "K-means": "KMeans",
                 }
-                migrated["quant_method"] = method_map.get(params["quant_method"], "Uniform")
+                migrated["quant_method"] = method_map.get(
+                    params["quant_method"], "Uniform")
                 consumed.add("quant_method")
             if "spatial_radius" in params:
                 migrated["meanshift_spatial"] = params["spatial_radius"]
@@ -338,8 +340,10 @@ class CartoonStylePro(Style):
         if "anime_mode" in params or "enable_bloom_effect" in params:
             preset_hint = preset_hint or "Anime"
             migrated["quant_method"] = "Downscale+Uniform"
-            migrated["downscale_factor"] = min(0.4, params.get("downscale_factor", 0.25))
-            migrated["bilateral_passes"] = max(2, params.get("bilateral_filter_diameter", 9) // 6)
+            migrated["downscale_factor"] = min(
+                0.4, params.get("downscale_factor", 0.25))
+            migrated["bilateral_passes"] = max(
+                2, params.get("bilateral_filter_diameter", 9) // 6)
             migrated["edge_method"] = "Adaptive"
             consumed.update(
                 key for key in (
@@ -625,109 +629,3 @@ class CartoonStylePro(Style):
 
 
 # ---- Optional: drop-in compatibility shims for your existing code ----
-
-
-class Cartoon(Style):
-    """Back-compat wrapper approximating your original 'Cartoon (Detailed)'."""
-
-    def __init__(self):
-        super().__init__()
-        self.name = "Cartoon (Detailed)"
-        self.category = "Artistic"
-        self._pro = CartoonStylePro()
-
-    def define_parameters(self):
-        # Map to Pro parameters for UI continuity
-        return {
-            "bilateral_filter_diameter": {"default": 9, "min": 1, "max": 20, "label": "Bilateral Diameter", "step": 1},
-            "bilateral_filter_sigmaColor": {"default": 75, "min": 1, "max": 150, "label": "Sigma Color", "step": 1},
-            "bilateral_filter_sigmaSpace": {"default": 75, "min": 1, "max": 150, "label": "Sigma Space", "step": 1},
-            "canny_threshold1": {"default": 100, "min": 0, "max": 500, "label": "Canny Threshold 1", "step": 1},
-            "canny_threshold2": {"default": 200, "min": 0, "max": 500, "label": "Canny Threshold 2", "step": 1},
-            "color_levels": {"default": 8, "min": 2, "max": 16, "label": "Color Levels", "step": 1},
-        }
-
-    def apply(self, image, params=None):
-        # Translate to Pro params and run
-        p_def = self.define_parameters()
-        p = {k: (params.get(k, v["default"]) if params else v["default"])
-             for k, v in p_def.items()}
-        # emulate your pipeline: bilateral + Canny + uniform quantization via levels
-        levels = int(np.clip(p["color_levels"], 2, 16))
-        bits = int(np.rint(np.log2(levels)))  # approx mapping
-        pro_params = dict(
-            preset="Detailed",
-            bilateral_passes=1,
-            bilateral_d=int(np.clip(p["bilateral_filter_diameter"], 1, 20)),
-            bilateral_sigmaColor=int(
-                np.clip(p["bilateral_filter_sigmaColor"], 1, 150)),
-            bilateral_sigmaSpace=int(
-                np.clip(p["bilateral_filter_sigmaSpace"], 1, 150)),
-            quant_method="Uniform",
-            bits=int(np.clip(max(2, bits), 2, 8)),
-            edge_method="Canny",
-            canny_t1=int(np.clip(p["canny_threshold1"], 0, 500)),
-            canny_t2=int(np.clip(p["canny_threshold2"], 0, 500)),
-            edge_median_ksize=7,
-            preserve_alpha=True,
-            anti_alias_upscale=True,
-            downscale_factor=0.25, meanshift_spatial=10, meanshift_color=30,
-            kmeans_k=8, kmeans_attempts=3, kmeans_max_iter=20, kmeans_eps=0.001, seed=1234,
-            adaptive_block=9, adaptive_C=2, edge_dilate=1, edge_erode=0
-        )
-        return self._pro.apply(image, pro_params)
-
-    # keep your helper for parity
-    def quantize_colors(self, image: np.ndarray, k: int) -> np.ndarray:
-        return CartoonStylePro._kmeans_quant(_ensure_uint8(image), k, attempts=5, max_iter=30, eps=1e-3, seed=1234)
-
-
-class CartoonStyle(Style):
-    """Back-compat wrapper approximating your 'Cartoon (Fast)' with multiple methods."""
-    name = "Cartoon (Fast)"
-    category = "Artistic"
-
-    def __init__(self):
-        super().__init__()
-        self._pro = CartoonStylePro()
-
-    parameters = [
-        {"name": "quant_method", "label": "Quantization Method", "type": "str",
-         "default": "Uniform", "options": ["Uniform", "Mean Shift", "Downscale+Quantize", "K-means"]},
-        {"name": "bits", "label": "Color Bits (Uniform/Downscale)",
-         "type": "int", "default": 4, "min": 2, "max": 8, "step": 1},
-        {"name": "spatial_radius", "label": "Mean Shift Spatial Radius",
-            "type": "int", "default": 10, "min": 1, "max": 30, "step": 1},
-        {"name": "color_radius", "label": "Mean Shift Color Radius",
-            "type": "int", "default": 30, "min": 1, "max": 100, "step": 1},
-        {"name": "k", "label": "K-means Clusters",
-            "type": "int", "default": 8, "min": 2, "max": 16, "step": 1},
-        {"name": "downscale", "label": "Downscale Factor (Downscale+Quantize)",
-         "type": "float", "default": 0.25, "min": 0.1, "max": 1.0, "step": 0.05},
-    ]
-
-    def apply(self, img, params):
-        # Map to Pro and delegate
-        method_map = {
-            "Uniform": "Uniform",
-            "Mean Shift": "MeanShift",
-            "Downscale+Quantize": "Downscale+Uniform",
-            "K-means": "KMeans",
-        }
-        p = {
-            "preset": "Fast",
-            "quant_method": method_map.get(params.get("quant_method", "Uniform"), "Uniform"),
-            "bits": int(params.get("bits", 4)),
-            "meanshift_spatial": int(params.get("spatial_radius", 10)),
-            "meanshift_color": int(params.get("color_radius", 30)),
-            "kmeans_k": int(params.get("k", 8)),
-            "downscale_factor": float(params.get("downscale", 0.25)),
-            # sensible defaults for rest
-            "bilateral_passes": 1, "bilateral_d": 9, "bilateral_sigmaColor": 75, "bilateral_sigmaSpace": 75,
-            "edge_method": "Adaptive", "adaptive_block": 9, "adaptive_C": 2,
-            "edge_median_ksize": 7, "edge_dilate": 0, "edge_erode": 0,
-            "kmeans_attempts": 3, "kmeans_max_iter": 20, "kmeans_eps": 0.001, "seed": 1234,
-            "preserve_alpha": True, "anti_alias_upscale": True,
-            "canny_t1": 100, "canny_t2": 200,
-        }
-        return self._pro.apply(img, p)

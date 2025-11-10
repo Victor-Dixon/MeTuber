@@ -1,4 +1,4 @@
-from .cartoon import Cartoon, CartoonStyle, CartoonStylePro
+from .cartoon import CartoonStylePro
 from .edge_detection import EdgeDetection
 from .line_art import LineArt
 from .pencil_sketch import PencilSketch
@@ -8,8 +8,6 @@ from .watercolor import Watercolor
 
 __all__ = [
     "CartoonStylePro",
-    "CartoonStyle",
-    "Cartoon",
     "EdgeDetection",
     "LineArt",
     "PencilSketch",
@@ -17,7 +15,3 @@ __all__ = [
     "Stippling",
     "Watercolor",
 ]
-
-# Legacy compatibility wrappers should not be auto-registered by dynamic loaders.
-Cartoon.__skip_registration__ = True
-CartoonStyle.__skip_registration__ = True

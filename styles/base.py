@@ -1,7 +1,12 @@
 # styles/base.py
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Tuple, Set
 from abc import ABC, abstractmethod
 import numpy as np
+import logging
+
+
+_logger = logging.getLogger(__name__)
+_MISSING_STEP_WARNINGS: Set[Tuple[type, str]] = set()
 
 
 class Style(ABC):
@@ -34,15 +39,14 @@ class Style(ABC):
                         prop['type'] = 'float'
                     else:
                         prop['type'] = 'str'
-                # Assign a default step if not provided
-                if 'step' not in prop:
-                    prop['step'] = 1 if prop['type'] == 'int' else 0.1
                 normalized.append(prop)
             self.parameters = normalized
         elif isinstance(params, list):
             self.parameters = params
         else:
             raise TypeError(f"define_parameters must return a dict or list, got {type(params)}")
+
+        self._ensure_parameter_steps()
 
         # Set default variant if not specified
         if self.default_variant is None and self.variants:
@@ -232,3 +236,29 @@ class Style(ABC):
             "parameters": self.get_variant_parameters(self.current_variant),
             "description": self.describe()
         }
+
+    def _ensure_parameter_steps(self) -> None:
+        """
+        Ensure all numeric parameters expose an explicit step value.
+        Emits a warning the first time a parameter is auto-filled.
+        """
+        for param in self.parameters:
+            param_type = param.get('type')
+            if param_type not in {'int', 'float'}:
+                continue
+            if 'step' in param:
+                continue
+
+            default_step = 1 if param_type == 'int' else 0.1
+            param['step'] = default_step
+
+            key = (self.__class__, param.get('name', '<unnamed>'))
+            if key not in _MISSING_STEP_WARNINGS:
+                _MISSING_STEP_WARNINGS.add(key)
+                _logger.warning(
+                    "Style %s parameter '%s' missing explicit 'step'; defaulting to %s. "
+                    "Update the parameter metadata to provide a step for consistent UI/config behaviour.",
+                    self.__class__.__name__,
+                    param.get('name', '<unnamed>'),
+                    default_step,
+                )

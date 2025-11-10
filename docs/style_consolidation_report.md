@@ -25,12 +25,7 @@
 ## 1. Current Style Landscape
 
 ### A. Artistic Styles (`styles/artistic/`)
-- **Cartoon (multiple implementations):**
-  - `Cartoon` (Cartoon effect, basic)
-  - `CartoonStyle` ("Cartoon (Fast)", with quantization modes)
-  - `AdvancedCartoon` ("Advanced Cartoon", more parameters, AI optimization)
-  - `AdvancedCartoonAnime` ("Advanced Cartoon Anime", anime-focused)
-  - `CartoonWholeImage` ("Cartoon Whole Image", stylizes everything)
+- **Cartoon (current):** Single `CartoonStylePro` class with presets (Detailed, Fast, Advanced, Anime, Whole)
 - **Sketch/Line/Edge:**
   - `PencilSketch`
   - `SketchAndColor`
@@ -90,8 +85,7 @@
 ## 2. Redundancy & Consolidation Opportunities
 
 ### A. Cartoon/Sketch/Edge Styles
-- **Cartoon:** At least 4 classes with similar goals but different algorithms/parameters.
-  - **Consolidation Option:** Merge into a single `CartoonStyle` with a "variant" dropdown (Fast, Advanced, Anime, Whole Image, etc.), and show/hide parameters based on variant.
+- **Cartoon:** Now served by `CartoonStylePro` presets instead of multiple classes. Additional refactoring focuses on exposing preset selection in the UI.
 - **Sketch/Line/Edge:** Multiple classes for sketch, line art, edge detection, stippling, etc.
   - **Consolidation Option:** Merge into a `SketchStyle` or `DrawingStyle` with a "mode" (Pencil, Color, Line, Stippling, etc.), or group under a "Sketch & Line" tab.
 

@@ -244,13 +244,12 @@ class HighPerformanceWebcamService:
         try:
             effect_function = match(self._current_style, [
                 ("Cartoon", self._apply_optimized_cartoon),
-                ("Cartoon (Detailed)", self._apply_optimized_cartoon),
                 ("Cartoon Effects", self._apply_optimized_cartoon),
                 ("Pencil Sketch", self._apply_optimized_sketch),
                 ("Sketch Effects", self._apply_optimized_sketch),
                 ("Edge Detection", self._apply_optimized_edge_detection),
                 ("Watercolor", self._apply_optimized_watercolor),
-                ("none", lambda f: f), # Default case
+                ("none", lambda f: f),  # Default case
             ])
             
             # Call the effect function with the frame
@@ -273,29 +272,38 @@ class HighPerformanceWebcamService:
     def _apply_optimized_cartoon(self, frame: np.ndarray) -> np.ndarray:
         """Optimized cartoon effect with reduced memory allocations."""
         try:
-            params = self._style_params
-            
-            # Extract parameters with defaults
-            bilateral_diameter = int(params.get('bilateral_filter_diameter', 1))
-            bilateral_sigma_color = float(params.get('bilateral_filter_sigmaColor', 7.0))
-            bilateral_sigma_space = float(params.get('bilateral_filter_sigmaSpace', 1.0))
-            
+            params = self._style_params or {}
+            preset = params.get("preset")
+
+            bilateral_diameter = int(params.get("bilateral_d", params.get('bilateral_filter_diameter', 9)))
+            bilateral_sigma_color = float(params.get("bilateral_sigmaColor", params.get('bilateral_filter_sigmaColor', 75)))
+            bilateral_sigma_space = float(params.get("bilateral_sigmaSpace", params.get('bilateral_filter_sigmaSpace', 75)))
+
             # Apply bilateral filter (edge-preserving smoothing)
             smoothed = cv2.bilateralFilter(
                 frame, bilateral_diameter, bilateral_sigma_color, bilateral_sigma_space
             )
-            
-            # Convert to grayscale for edge detection
+
             gray = cv2.cvtColor(smoothed, cv2.COLOR_BGR2GRAY)
-            
-            # Apply adaptive threshold for edge detection
-            edges = cv2.adaptiveThreshold(
-                gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 9, 2
-            )
-            
-            # Combine edges with smoothed color
-            result = cv2.bitwise_and(smoothed, smoothed, mask=edges)
-            
+
+            edge_method = params.get("edge_method", "Adaptive")
+            if edge_method == "Canny":
+                t1 = int(params.get("canny_t1", 80))
+                t2 = int(params.get("canny_t2", 180))
+                edges = cv2.Canny(gray, t1, t2)
+                edges = cv2.bitwise_not(edges)
+            else:
+                block = int(params.get("adaptive_block", 9))
+                if block % 2 == 0:
+                    block += 1
+                c_val = int(params.get("adaptive_C", 2))
+                edges = cv2.adaptiveThreshold(
+                    gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, block, c_val
+                )
+
+            edges = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
+            result = cv2.bitwise_and(smoothed, edges)
+
             return result
         except Exception as e:
             self.logger.error(f"❌ Error in cartoon effect: {e}")

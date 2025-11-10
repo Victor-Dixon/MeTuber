@@ -54,7 +54,7 @@ def test_cartoon_effect():
                 return False
                 
         else:
-            print("❌ CartoonStyle not found in style manager")
+            print("❌ Cartoon style not found in style manager")
             return False
             
     except Exception as e:
