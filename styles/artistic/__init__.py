@@ -1,4 +1,4 @@
-from .cartoon import Cartoon
+from .cartoon import Cartoon, CartoonStyle, CartoonStylePro
 from .edge_detection import EdgeDetection
 from .line_art import LineArt
 from .pencil_sketch import PencilSketch
@@ -7,6 +7,8 @@ from .stippling import Stippling
 from .watercolor import Watercolor
 
 __all__ = [
+    "CartoonStylePro",
+    "CartoonStyle",
     "Cartoon",
     "EdgeDetection",
     "LineArt",

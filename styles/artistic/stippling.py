@@ -8,6 +8,8 @@ class Stippling(Style):
     """
     name = "Stippling"
     category = "Artistic"
+    variants = []
+    current_variant = None  # explicit for base-class helpers
     parameters = [
         {
             "name": "dot_density",
@@ -30,8 +32,12 @@ class Stippling(Style):
     ]
 
     def __init__(self):
+        super().__init__()
         # Initialize default_params from parameters
         self.default_params = {param["name"]: param["default"] for param in self.parameters}
+        # Explicitly ensure variant attribute exists (style has no variants)
+        if not hasattr(self, "current_variant"):
+            self.current_variant = None
 
     def define_parameters(self):
         """

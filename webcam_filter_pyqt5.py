@@ -33,8 +33,9 @@ from styles.effects.original import Original
 
 # Import the updated classes
 # Make sure these files actually exist in your styles/artistic/ folder!
-from styles.artistic.advanced_cartoon import AdvancedCartoon      # Updated import
-from styles.artistic.advanced_cartoon2 import AdvancedCartoonAnime # Updated import
+# Unified cartoon style with presets
+from styles.artistic.cartoon import CartoonStylePro
+# from styles.artistic.advanced_cartoon2 import AdvancedCartoonAnime # Removed (consolidated)
 
 # Import the updated WebcamThread
 from webcam_threading import WebcamThread  # Ensure this path is correct
@@ -45,14 +46,17 @@ from webcam_threading import WebcamThread  # Ensure this path is correct
 
 CONFIG_FILE = "config.json"
 
+
 def load_settings():
     """Load settings from a JSON file if it exists; otherwise use defaults."""
     default_settings = {
         "input_device": "video=C270 HD WEBCAM",  # Example default
         "style": "Original",
         "parameters": {},
-        "snapshot_dir": os.path.join(os.path.dirname(os.path.abspath(__file__)), 'snapshots'), # Add default snapshot directory
-        "vcam_backend": "obs"  # 'obs' for Zoom/Meet, 'unitycapture' for ingesting into OBS as a source
+        # Add default snapshot directory
+        "snapshot_dir": os.path.join(os.path.dirname(os.path.abspath(__file__)), 'snapshots'),
+        # 'obs' for Zoom/Meet, 'unitycapture' for ingesting into OBS as a source
+        "vcam_backend": "obs"
     }
     if os.path.exists(CONFIG_FILE):
         try:
@@ -60,8 +64,10 @@ def load_settings():
                 loaded = json.load(f)
                 default_settings.update(loaded)
         except (json.JSONDecodeError, IOError):
-            logging.warning("Failed to load config.json. Using default settings.")
+            logging.warning(
+                "Failed to load config.json. Using default settings.")
     return default_settings
+
 
 def save_settings(settings):
     """Save current settings to a JSON file."""
@@ -75,6 +81,7 @@ def save_settings(settings):
 # 2. Device Enumeration (Windows-Only)
 # =============================================================================
 
+
 def convert_device_name_for_pyav(device_name):
     """
     Convert device name from GUI format to PyAV-compatible format.
@@ -82,14 +89,15 @@ def convert_device_name_for_pyav(device_name):
     """
     if not device_name:
         return None
-    
+
     # Remove 'video=' prefix if present
     if device_name.startswith('video='):
         device_name = device_name[6:]
-    
+
     # For Windows DirectShow, we need to use the format that PyAV expects
     # PyAV on Windows with DirectShow expects: 'video=Device Name'
     return f"video={device_name}"
+
 
 def check_obs_virtual_camera():
     """
@@ -104,6 +112,7 @@ def check_obs_virtual_camera():
     except Exception as e:
         return False, f"OBS Virtual Camera not available: {e}"
 
+
 def list_devices():
     """
     List DirectShow devices on Windows using FFmpeg.
@@ -112,7 +121,8 @@ def list_devices():
     devices = []
     cmd = ['ffmpeg', '-list_devices', 'true', '-f', 'dshow', '-i', 'dummy']
     try:
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT).decode('utf-8', errors='ignore')
+        output = subprocess.check_output(
+            cmd, stderr=subprocess.STDOUT).decode('utf-8', errors='ignore')
         for line in output.splitlines():
             line = line.strip()
             if line.startswith("[dshow") and '"' in line:
@@ -131,6 +141,7 @@ def list_devices():
 # =============================================================================
 # 3. Dynamic Style Loading
 # =============================================================================
+
 
 def load_styles():
     """
@@ -178,22 +189,27 @@ def load_styles():
                             instance = cls()  # Instantiate
                             seen_classes.add(cls)
 
-                            category = getattr(instance, "category", "Uncategorized")
+                            category = getattr(
+                                instance, "category", "Uncategorized")
                             if category not in style_categories:
                                 style_categories[category] = []
 
                             # Avoid duplicate style names in the same category
                             if instance.name not in style_categories[category]:
-                                style_categories[category].append(instance.name)
+                                style_categories[category].append(
+                                    instance.name)
 
                             style_instances[instance.name] = instance
-                            logging.info(f"Loaded style: {instance.name} (Category: {category})")
+                            logging.info(
+                                f"Loaded style: {instance.name} (Category: {category})")
 
                         except Exception as instantiation_error:
-                            logging.error(f"Failed to instantiate style '{cls.__name__}': {instantiation_error}")
+                            logging.error(
+                                f"Failed to instantiate style '{cls.__name__}': {instantiation_error}")
 
             except Exception as module_error:
-                logging.error(f"Failed to load module '{modname}': {module_error}")
+                logging.error(
+                    f"Failed to load module '{modname}': {module_error}")
 
     return style_instances, style_categories
 
@@ -201,10 +217,12 @@ def load_styles():
 # 4. PyQt5 GUI
 # =============================================================================
 
+
 # Debug mode flag (can be set via config or env)
 DEBUG_MODE = os.environ.get("METUBER_DEBUG", "0") == "1"
 
-SNAPSHOT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'snapshots')
+SNAPSHOT_DIR = os.path.join(os.path.dirname(
+    os.path.abspath(__file__)), 'snapshots')
 if not os.path.exists(SNAPSHOT_DIR):
     os.makedirs(SNAPSHOT_DIR)
 
@@ -225,6 +243,7 @@ class WebcamApp(QWidget):
     Main GUI application that manages device selection, style parameters,
     and the start/stop logic for the webcam processing thread.
     """
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Webcam Style Selector — Filtered Preview")
@@ -250,26 +269,31 @@ class WebcamApp(QWidget):
     def validate_and_load_settings(self):
         """Validate and load settings, resetting invalid parameters as needed."""
         for style_name, style_instance in self.style_instances.items():
-            style_params = self.settings.get("parameters", {}).get(style_name, {})
+            style_params = self.settings.get(
+                "parameters", {}).get(style_name, {})
             try:
                 # Guard against missing validate_params method
                 if hasattr(style_instance, 'validate_params'):
-                    validated_params = style_instance.validate_params(style_params)
+                    validated_params = style_instance.validate_params(
+                        style_params)
                 else:
                     # Fallback: build defaults from parameters
                     validated_params = {
-                        param['name']: style_params.get(param['name'], param.get("default", 0))
+                        param['name']: style_params.get(
+                            param['name'], param.get("default", 0))
                         for param in style_instance.parameters
                     }
             except AttributeError as e:
                 # Handle styles missing expected attributes (like current_variant)
-                logging.warning(f"Invalid parameters for style '{style_name}': {e}. Resetting to defaults.")
+                logging.warning(
+                    f"Invalid parameters for style '{style_name}': {e}. Resetting to defaults.")
                 validated_params = {
                     param['name']: param.get("default", 0)
                     for param in style_instance.parameters
                 }
             except Exception as e:
-                logging.warning(f"Invalid parameters for style '{style_name}': {e}. Resetting to defaults.")
+                logging.warning(
+                    f"Invalid parameters for style '{style_name}': {e}. Resetting to defaults.")
                 # Reset to defaults using normalized parameters
                 validated_params = {
                     param['name']: param.get("default", 0)
@@ -284,7 +308,8 @@ class WebcamApp(QWidget):
                         logging.info(
                             f"File for parameter '{param['name']}' not found at '{file_path}'. Using empty path (texture disabled)."
                         )
-                        validated_params[param['name']] = ""  # Empty path = disabled feature
+                        # Empty path = disabled feature
+                        validated_params[param['name']] = ""
             self.settings["parameters"][style_name] = validated_params
         save_settings(self.settings)
         # If the UI is initialized, update controls to reflect any changed defaults (e.g. file paths)
@@ -299,9 +324,11 @@ class WebcamApp(QWidget):
 
         # 0) LIVE PREVIEW (fixed size, always visible)
         self.preview_label = QLabel("Preview")
-        self.preview_label.setObjectName("Filtered Preview")  # stable name for OBS picker
+        self.preview_label.setObjectName(
+            "Filtered Preview")  # stable name for OBS picker
         self.preview_label.setAlignment(Qt.AlignCenter)
-        self.preview_label.setStyleSheet("background:#111; color:#aaa; padding:8px;")
+        self.preview_label.setStyleSheet(
+            "background:#111; color:#aaa; padding:8px;")
         self.preview_label.setFixedHeight(200)  # Fixed height for preview
         self.preview_label.setScaledContents(True)  # Scale content to fit
         main_layout.addWidget(self.preview_label)
@@ -311,7 +338,7 @@ class WebcamApp(QWidget):
         scroll_area.setWidgetResizable(True)
         scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        
+
         # Create widget to hold scrollable content
         scroll_widget = QWidget()
         layout = QVBoxLayout(scroll_widget)
@@ -320,7 +347,8 @@ class WebcamApp(QWidget):
 
         # 1) Device Selector
         devices = list_devices() or ["Enter device manually..."]
-        default_device = self.settings.get("input_device", devices[0] if devices else "")
+        default_device = self.settings.get(
+            "input_device", devices[0] if devices else "")
         device_selector = DeviceSelector(self, devices, default_device)
         layout.addLayout(device_selector.create())
         self.device_combo = device_selector.device_combo
@@ -330,8 +358,10 @@ class WebcamApp(QWidget):
         out_form = QFormLayout()
         self.vcam_backend_combo = QComboBox()
         # Human labels → backend ids
-        self.vcam_backend_combo.addItem("OBS Virtual Camera (for Zoom/Meet/Teams)", userData="obs")
-        self.vcam_backend_combo.addItem("UnityCapture (add as 'Video Capture Device' in OBS)", userData="unitycapture")
+        self.vcam_backend_combo.addItem(
+            "OBS Virtual Camera (for Zoom/Meet/Teams)", userData="obs")
+        self.vcam_backend_combo.addItem(
+            "UnityCapture (add as 'Video Capture Device' in OBS)", userData="unitycapture")
         # Restore from settings
         backend_default = self.settings.get("vcam_backend", "obs")
         idx = max(0, self.vcam_backend_combo.findData(backend_default))
@@ -341,7 +371,8 @@ class WebcamApp(QWidget):
         layout.addWidget(out_group)
 
         # 2) Style Selector with Categories
-        style_tab_manager = StyleTabManager(self, self.style_categories, self.style_instances, self.settings)
+        style_tab_manager = StyleTabManager(
+            self, self.style_categories, self.style_instances, self.settings)
         layout.addWidget(style_tab_manager)
         self.style_tab_manager = style_tab_manager
 
@@ -367,7 +398,8 @@ class WebcamApp(QWidget):
         self.action_buttons = action_buttons
 
         # 4.0) Output mode — Virtual Camera toggle (for Zoom/Meet; OBS should Window-Capture preview)
-        self.vcam_toggle = QCheckBox("Send frames to Virtual Camera (OBS backend)")
+        self.vcam_toggle = QCheckBox(
+            "Send frames to Virtual Camera (OBS backend)")
         self.vcam_toggle.setChecked(True)
         layout.addWidget(self.vcam_toggle)
 
@@ -377,31 +409,34 @@ class WebcamApp(QWidget):
         layout.addWidget(self.optimize_button)
         # 4.2) Set Snapshot Directory Button
         self.set_snapshot_dir_button = QPushButton("Set Snapshot Save Folder")
-        self.set_snapshot_dir_button.clicked.connect(self.set_snapshot_directory)
+        self.set_snapshot_dir_button.clicked.connect(
+            self.set_snapshot_directory)
         layout.addWidget(self.set_snapshot_dir_button)
 
         # 4.3) Performance Controls
         performance_group = QGroupBox("Performance Settings")
         performance_layout = QFormLayout()
-        
+
         # Max FPS slider
         self.max_fps_slider = QSlider(Qt.Horizontal)
         self.max_fps_slider.setRange(1, 60)
         self.max_fps_slider.setValue(30)
         self.max_fps_label = QLabel("30")
-        self.max_fps_slider.valueChanged.connect(lambda v: self.max_fps_label.setText(str(v)))
+        self.max_fps_slider.valueChanged.connect(
+            lambda v: self.max_fps_label.setText(str(v)))
         performance_layout.addRow("Max FPS:", self.max_fps_slider)
         performance_layout.addRow("", self.max_fps_label)
-        
+
         # Frame skip slider
         self.frame_skip_slider = QSlider(Qt.Horizontal)
         self.frame_skip_slider.setRange(0, 10)
         self.frame_skip_slider.setValue(0)
         self.frame_skip_label = QLabel("0")
-        self.frame_skip_slider.valueChanged.connect(lambda v: self.frame_skip_label.setText(str(v)))
+        self.frame_skip_slider.valueChanged.connect(
+            lambda v: self.frame_skip_label.setText(str(v)))
         performance_layout.addRow("Frame Skip:", self.frame_skip_slider)
         performance_layout.addRow("", self.frame_skip_label)
-        
+
         performance_group.setLayout(performance_layout)
         layout.addWidget(performance_group)
 
@@ -413,7 +448,7 @@ class WebcamApp(QWidget):
         # Set up scroll area
         scroll_area.setWidget(scroll_widget)
         main_layout.addWidget(scroll_area)
-        
+
         # Set main layout and window constraints
         self.setLayout(main_layout)
         self.setMinimumSize(600, 500)  # Minimum window size
@@ -435,22 +470,27 @@ class WebcamApp(QWidget):
     def update_parameter_controls(self):
         """Update parameter controls based on the selected style."""
         selected_style_name = self.style_tab_manager.get_current_style()
-        self.current_style = self.style_instances.get(selected_style_name, Original())
+        self.current_style = self.style_instances.get(
+            selected_style_name, Original())
 
         saved_params = self.settings.get("parameters", {})
-        self.current_style_params = saved_params.get(selected_style_name, {}).copy()
+        self.current_style_params = saved_params.get(
+            selected_style_name, {}).copy()
 
         if self.current_style:
-            logging.info(f"Updating parameters for style: {selected_style_name}")
+            logging.info(
+                f"Updating parameters for style: {selected_style_name}")
 
             # Ensure all parameters have default values if missing
             for param in self.current_style.parameters:
                 if param["name"] not in self.current_style_params:
-                    self.current_style_params[param["name"]] = param.get("default", 0)
+                    self.current_style_params[param["name"]] = param.get(
+                        "default", 0)
             # For 'file' parameters, if the path no longer exists (e.g. file moved), reset to default to update GUI
             for param in self.current_style.parameters:
                 if param.get("type") == "file":
-                    current_path = self.current_style_params.get(param["name"], "")
+                    current_path = self.current_style_params.get(
+                        param["name"], "")
                     if current_path and not os.path.exists(current_path):
                         logging.info(
                             f"File for parameter '{param['name']}' not found at '{current_path}', resetting to default '{param.get('default','')}'"
@@ -460,7 +500,8 @@ class WebcamApp(QWidget):
                         self.current_style_params[param['name']] = new_default
                         # Persist change
                         style_name = self.style_tab_manager.get_current_style()
-                        self.settings['parameters'][style_name][param['name']] = new_default
+                        self.settings['parameters'][style_name][param['name']
+                                                                ] = new_default
                         save_settings(self.settings)
 
             # Update controls based on normalized parameters list
@@ -498,13 +539,15 @@ class WebcamApp(QWidget):
                 else:
                     widget.setText(str(value))
             except Exception as e:
-                logging.error(f"Failed to update label for '{param_name}': {e}")
+                logging.error(
+                    f"Failed to update label for '{param_name}': {e}")
         elif isinstance(widget, QComboBox):
             logging.debug(f"ComboBox '{param_name}' changed to '{value}'")
         elif isinstance(widget, QCheckBox):
             logging.debug(f"Checkbox '{param_name}' changed to '{value}'")
         else:
-            logging.debug(f"Parameter '{param_name}' updated to {value} (widget={type(widget)})")
+            logging.debug(
+                f"Parameter '{param_name}' updated to {value} (widget={type(widget)})")
 
         # If the webcam thread is running, update parameters on the fly
         if self.thread and self.thread.isRunning():
@@ -519,15 +562,17 @@ class WebcamApp(QWidget):
         selected_style = self.style_tab_manager.get_current_style()
 
         if not input_device:
-            QMessageBox.warning(self, "Input Device Error", "Please specify a valid input device.")
+            QMessageBox.warning(self, "Input Device Error",
+                                "Please specify a valid input device.")
             return
 
         # Convert device name to PyAV-compatible format
         pyav_device = convert_device_name_for_pyav(input_device)
         if not pyav_device:
-            QMessageBox.warning(self, "Input Device Error", "Invalid device name format.")
+            QMessageBox.warning(self, "Input Device Error",
+                                "Invalid device name format.")
             return
-        
+
         # If OUTPUT to VirtualCam is requested, validate OBS backend
         if self.vcam_toggle.isChecked():
             obs_available, obs_message = check_obs_virtual_camera()
@@ -542,7 +587,8 @@ class WebcamApp(QWidget):
             logging.info(f"OBS Virtual Camera check: {obs_message}")
 
         if not selected_style:
-            QMessageBox.warning(self, "Style Selection Error", "Please select a style.")
+            QMessageBox.warning(self, "Style Selection Error",
+                                "Please select a style.")
             return
 
         # Save current settings
@@ -559,7 +605,7 @@ class WebcamApp(QWidget):
         thread_params['max_fps'] = self.max_fps_slider.value()
         thread_params['frame_skip'] = self.frame_skip_slider.value()
         chosen_backend = self.vcam_backend_combo.currentData()
-        
+
         # Initialize and start the thread with converted device name
         self.thread = WebcamThread(
             input_device=pyav_device,
@@ -572,7 +618,8 @@ class WebcamApp(QWidget):
         )
         self.thread.error_signal.connect(self.display_error)
         self.thread.info_signal.connect(self.display_info)
-        self.thread.frame_signal.connect(self._show_bgr_on_preview)  # ✅ live preview
+        self.thread.frame_signal.connect(
+            self._show_bgr_on_preview)  # ✅ live preview
         self.thread.start()
 
         # Update button states
@@ -596,7 +643,8 @@ class WebcamApp(QWidget):
         self.action_buttons.snapshot_button.setEnabled(False)
 
     def set_snapshot_directory(self):
-        dir_path = QFileDialog.getExistingDirectory(self, "Select Snapshot Save Folder", self.snapshot_dir)
+        dir_path = QFileDialog.getExistingDirectory(
+            self, "Select Snapshot Save Folder", self.snapshot_dir)
         if dir_path:
             self.snapshot_dir = dir_path
             self.settings['snapshot_dir'] = dir_path
@@ -605,13 +653,16 @@ class WebcamApp(QWidget):
     def take_snapshot(self):
         """Capture the last processed frame and let the user save it."""
         if not self.thread or self.thread.last_frame is None:
-            QMessageBox.information(self, "Snapshot", "No frame available to save.")
+            QMessageBox.information(
+                self, "Snapshot", "No frame available to save.")
             return
         default_path = os.path.join(self.snapshot_dir, "snapshot.png")
-        save_path, _ = QFileDialog.getSaveFileName(self, "Save Snapshot", default_path, "Image Files (*.png *.jpg *.bmp)")
+        save_path, _ = QFileDialog.getSaveFileName(
+            self, "Save Snapshot", default_path, "Image Files (*.png *.jpg *.bmp)")
         if save_path:
             cv2.imwrite(save_path, self.thread.last_frame)
-            QMessageBox.information(self, "Snapshot", f"Snapshot saved to:\n{save_path}")
+            QMessageBox.information(
+                self, "Snapshot", f"Snapshot saved to:\n{save_path}")
             logging.info(f"Snapshot saved to: {save_path}")
 
     def display_error(self, message, exc=None):
@@ -636,21 +687,23 @@ class WebcamApp(QWidget):
         if not self.thread or self.thread.last_frame is None:
             show_error_dialog(self, "No frame available for optimization.")
             return
-        
+
         selected_style = self.current_style
         frame = self.thread.last_frame
-        
+
         try:
             # Check if the style has the old ai_optimize method
             if hasattr(selected_style, "ai_optimize"):
                 # Use the old AI optimization method
-                optimized_params = selected_style.ai_optimize(frame, self.current_style_params.copy())
+                optimized_params = selected_style.ai_optimize(
+                    frame, self.current_style_params.copy())
                 if "enable_ai_optimization" in optimized_params:
                     optimized_params["enable_ai_optimization"] = False
             else:
                 # Use intelligent parameter optimization for unified styles
-                optimized_params = self._intelligent_parameter_optimization(selected_style, frame)
-            
+                optimized_params = self._intelligent_parameter_optimization(
+                    selected_style, frame)
+
             # Update internal state and UI controls
             self.current_style_params = optimized_params
             self.parameter_controls.update_parameters(
@@ -658,26 +711,30 @@ class WebcamApp(QWidget):
                 self.current_style_params,
                 self.on_param_changed
             )
-            
+
             # Save optimized parameters
             style_name = self.style_tab_manager.get_current_style()
             self.settings["parameters"][style_name] = self.current_style_params
             save_settings(self.settings)
-            
+
             # Show detailed optimization results
             param_changes = []
             for key, value in optimized_params.items():
                 if key in self.current_style_params and self.current_style_params[key] != value:
-                    param_changes.append(f"{key}: {self.current_style_params[key]} → {value}")
-            
+                    param_changes.append(
+                        f"{key}: {self.current_style_params[key]} → {value}")
+
             if param_changes:
-                changes_text = "\n".join(param_changes[:5])  # Show first 5 changes
+                # Show first 5 changes
+                changes_text = "\n".join(param_changes[:5])
                 if len(param_changes) > 5:
                     changes_text += f"\n... and {len(param_changes) - 5} more changes"
-                QMessageBox.information(self, "Auto Optimize", f"Parameters optimized!\n\nChanges made:\n{changes_text}")
+                QMessageBox.information(
+                    self, "Auto Optimize", f"Parameters optimized!\n\nChanges made:\n{changes_text}")
             else:
-                QMessageBox.information(self, "Auto Optimize", "Parameters were already optimal for this frame.")
-            
+                QMessageBox.information(
+                    self, "Auto Optimize", "Parameters were already optimal for this frame.")
+
         except Exception as e:
             show_error_dialog(self, f"Parameter optimization failed: {str(e)}")
             logging.exception("Parameter optimization error")
@@ -686,25 +743,25 @@ class WebcamApp(QWidget):
         """Intelligently optimize parameters based on frame characteristics and style type."""
         import cv2
         import numpy as np
-        
+
         # Start with current parameters
         optimized_params = self.current_style_params.copy()
-        
+
         # Analyze frame characteristics more thoroughly
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         brightness = np.mean(gray)
         contrast = np.std(gray)
         edges = cv2.Canny(gray, 50, 150)
         edge_density = np.sum(edges > 0) / (frame.shape[0] * frame.shape[1])
-        
+
         # Additional analysis
         hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
         hist_peak = np.argmax(hist)
         hist_spread = np.std(hist)
-        
+
         # Style-specific optimizations with more dramatic changes
         style_name = style.name.lower()
-        
+
         if "cartoon" in style_name:
             # More aggressive cartoon optimization
             if brightness < 70:  # Very dark image
@@ -727,15 +784,19 @@ class WebcamApp(QWidget):
                 optimized_params["edge_threshold"] = 50
                 optimized_params["color_saturation"] = 1.8
                 optimized_params["blur_strength"] = 5
-            
+
             # Adjust based on edge density with more dramatic changes
             if edge_density > 0.15:  # Very high detail
-                optimized_params["blur_strength"] = max(2, optimized_params["blur_strength"] - 2)
-                optimized_params["edge_threshold"] = max(20, optimized_params["edge_threshold"] - 15)
+                optimized_params["blur_strength"] = max(
+                    2, optimized_params["blur_strength"] - 2)
+                optimized_params["edge_threshold"] = max(
+                    20, optimized_params["edge_threshold"] - 15)
             elif edge_density < 0.05:  # Very low detail
-                optimized_params["blur_strength"] = min(12, optimized_params["blur_strength"] + 3)
-                optimized_params["edge_threshold"] = min(100, optimized_params["edge_threshold"] + 20)
-            
+                optimized_params["blur_strength"] = min(
+                    12, optimized_params["blur_strength"] + 3)
+                optimized_params["edge_threshold"] = min(
+                    100, optimized_params["edge_threshold"] + 20)
+
             # Advanced cartoon specific with more dramatic changes
             if hasattr(style, 'variants') and "Advanced" in style.variants:
                 if edge_density > 0.15:
@@ -747,7 +808,7 @@ class WebcamApp(QWidget):
                 else:
                     optimized_params["detail_level"] = 3
                     optimized_params["smoothness"] = 0.7
-        
+
         elif "sketch" in style_name:
             # More aggressive sketch optimization
             if contrast < 25:  # Very low contrast
@@ -765,7 +826,7 @@ class WebcamApp(QWidget):
             else:  # Normal contrast
                 optimized_params["edge_strength"] = 0.6
                 optimized_params["detail_level"] = 3
-            
+
             # Advanced sketch specific with more dramatic changes
             if hasattr(style, 'variants') and "Advanced" in style.variants:
                 if edge_density > 0.15:
@@ -780,7 +841,7 @@ class WebcamApp(QWidget):
                     optimized_params["gaussian_blur"] = 1.0
                     optimized_params["edge_threshold"] = 100
                     optimized_params["contrast_enhancement"] = 1.8
-        
+
         elif "edge" in style_name:
             # More aggressive edge detection optimization
             if edge_density > 0.15:  # Very high edge density
@@ -795,7 +856,7 @@ class WebcamApp(QWidget):
             else:  # Low edge density
                 optimized_params["threshold1"] = 100
                 optimized_params["threshold2"] = 200
-            
+
             # Enhanced edge detection specific with more dramatic changes
             if hasattr(style, 'variants') and "Enhanced" in style.variants:
                 if edge_density > 0.15:
@@ -807,20 +868,24 @@ class WebcamApp(QWidget):
                 else:
                     optimized_params["edge_thickness"] = 2
                     optimized_params["noise_reduction"] = 1.0
-        
+
         # Ensure all parameters are within valid ranges
         for param_name, param_value in optimized_params.items():
             if hasattr(style, 'parameters') and param_name in [p["name"] for p in style.parameters]:
-                param_def = next((p for p in style.parameters if p["name"] == param_name), None)
+                param_def = next(
+                    (p for p in style.parameters if p["name"] == param_name), None)
                 if param_def:
                     if "min" in param_def:
-                        optimized_params[param_name] = max(param_def["min"], param_value)
+                        optimized_params[param_name] = max(
+                            param_def["min"], param_value)
                     if "max" in param_def:
-                        optimized_params[param_name] = min(param_def["max"], param_value)
-        
+                        optimized_params[param_name] = min(
+                            param_def["max"], param_value)
+
         # Log the optimization for debugging
-        logging.info(f"Auto-optimized parameters for {style_name}: {optimized_params}")
-        
+        logging.info(
+            f"Auto-optimized parameters for {style_name}: {optimized_params}")
+
         return optimized_params
 
     def closeEvent(self, event):
@@ -834,14 +899,17 @@ class WebcamApp(QWidget):
 # 5. Main Function - App Entry Point
 # =============================================================================
 
+
 def main():
     # Setup logging with rotation
     file_handler = RotatingFileHandler(
         "webcam_app.log", maxBytes=5 * 1024 * 1024, backupCount=3
     )
-    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(message)s'))
     stream_handler = logging.StreamHandler(sys.stdout)
-    stream_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    stream_handler.setFormatter(logging.Formatter(
+        '%(asctime)s - %(levelname)s - %(message)s'))
     logging.basicConfig(
         level=logging.WARNING,
         handlers=[file_handler, stream_handler]
@@ -851,6 +919,7 @@ def main():
     window = WebcamApp()
     window.show()
     sys.exit(app.exec_())
+
 
 if __name__ == "__main__":
     main()

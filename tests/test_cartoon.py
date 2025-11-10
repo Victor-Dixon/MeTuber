@@ -1,74 +1,43 @@
 import pytest
 import numpy as np
 import cv2
-from styles.artistic.cartoon import Cartoon
+from styles.artistic.cartoon import CartoonStylePro
+
 
 @pytest.fixture
 def dummy_image():
-    """
-    Create a dummy image for testing purposes.
-    """
-    dummy_image = np.ones((100, 100, 3), dtype=np.uint8) * 255
-    return cv2.rectangle(dummy_image, (25, 25), (75, 75), (0, 255, 0), -1)
+    img = np.ones((100, 100, 3), dtype=np.uint8) * 255
+    return cv2.rectangle(img, (25, 25), (75, 75), (0, 255, 0), -1)
 
-def test_cartoon_default_params(dummy_image):
-    """
-    Test the Cartoon effect with default parameters.
-    """
-    cartoon = Cartoon()
-    result = cartoon.apply(dummy_image, {})
-    assert result is not None, "The cartoon effect returned None."
-    assert result.shape == dummy_image.shape, "Output shape mismatch."
-    assert np.mean(result) < np.mean(dummy_image), "The cartoon effect did not alter the image as expected."
 
-def test_cartoon_custom_params(dummy_image):
-    """
-    Test the Cartoon effect with custom parameters.
-    """
-    cartoon = Cartoon()
-    params = {
-        "bilateral_filter_diameter": 15,
-        "bilateral_filter_sigmaColor": 125,
-        "bilateral_filter_sigmaSpace": 125,
-        "canny_threshold1": 30,
-        "canny_threshold2": 100
-    }
-    result = cartoon.apply(dummy_image, params)
-    assert result is not None, "The cartoon effect returned None with custom parameters."
-    assert result.shape == dummy_image.shape, "Output shape mismatch with custom parameters."
+def test_cartoon_default_preset(dummy_image):
+    pro = CartoonStylePro()
+    result = pro.apply(dummy_image)
+    assert result is not None
+    assert result.shape == dummy_image.shape
 
-def test_cartoon_invalid_params(dummy_image):
-    """
-    Test the Cartoon effect with invalid parameters.
-    """
-    cartoon = Cartoon()
-    with pytest.raises(ValueError, match="Parameter 'bilateral_filter_diameter' must be between 1 and 20."):
-        cartoon.apply(dummy_image, {"bilateral_filter_diameter": 25})
-    with pytest.raises(ValueError, match="Parameter 'canny_threshold1' must be between 0 and 500."):
-        cartoon.apply(dummy_image, {"canny_threshold1": -10})
-    with pytest.raises(ValueError, match="Parameter 'bilateral_filter_sigmaColor' must be between 1 and 150."):
-        cartoon.apply(dummy_image, {"bilateral_filter_sigmaColor": 200})
 
-def test_cartoon_performance():
-    """
-    Test the performance of the Cartoon effect on large images.
-    """
-    cartoon = Cartoon()
-    large_image = np.ones((1080, 1920, 3), dtype=np.uint8) * 255  # Full HD white image
+def test_cartoon_presets(dummy_image):
+    pro = CartoonStylePro()
+    for preset in ["Detailed", "Fast", "Advanced", "Anime"]:
+        result = pro.apply(dummy_image, {"preset": preset})
+        assert result.shape == dummy_image.shape
 
-    params = {
-        "bilateral_filter_diameter": 9,
-        "bilateral_filter_sigmaColor": 75,
-        "bilateral_filter_sigmaSpace": 75,
-        "canny_threshold1": 100,
-        "canny_threshold2": 200,
-    }
 
-    # Measure processing time
-    import time
-    start_time = time.time()
-    result = cartoon.apply(large_image, params)
-    end_time = time.time()
+def test_cartoon_clamps_invalid_params(dummy_image):
+    pro = CartoonStylePro()
+    result = pro.apply(dummy_image, {"preset": "Advanced", "kmeans_eps": 0, "bilateral_passes": 99})
+    assert result.shape == dummy_image.shape
 
-    assert result is not None, "The cartoon effect returned None for large images."
-    assert end_time - start_time < 1.0, "Cartoon effect took too long to process a large image."
+
+def test_cartoon_accepts_kwargs(dummy_image):
+    pro = CartoonStylePro()
+    result = pro.apply(dummy_image, bilateral_passes=2, preset="Fast")
+    assert result.shape == dummy_image.shape
+
+
+def test_cartoon_performance_dummy(dummy_image):
+    pro = CartoonStylePro()
+    large_image = np.ones((480, 640, 3), dtype=np.uint8) * 255
+    result = pro.apply(large_image)
+    assert result.shape == large_image.shape

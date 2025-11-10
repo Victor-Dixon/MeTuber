@@ -9,6 +9,8 @@ import cv2
 import numpy as np
 from typing import Dict, Any, List
 from ..base import Style
+from ..artistic.cartoon import CartoonStylePro
+
 
 class ConsolidatedCartoon(Style):
     """
@@ -19,7 +21,11 @@ class ConsolidatedCartoon(Style):
     category = "Artistic"
     variants = ["Classic", "Fast", "Anime", "Advanced", "Whole Image"]
     default_variant = "Fast"
-    
+
+    def __init__(self):
+        super().__init__()
+        self._pro = CartoonStylePro()
+
     def define_parameters(self):
         """Define parameters for cartoon effects."""
         return [
@@ -32,165 +38,27 @@ class ConsolidatedCartoon(Style):
                 "label": "Effect Intensity"
             },
             {
-                "name": "smoothing",
-                "type": "int", 
-                "default": 50,
-                "min": 0,
-                "max": 100,
-                "label": "Smoothing"
-            },
-            {
-                "name": "edge_strength",
-                "type": "int",
-                "default": 50,
-                "min": 0,
-                "max": 100,
-                "label": "Edge Strength"
-            },
-            {
-                "name": "color_levels",
-                "type": "int",
-                "default": 8,
-                "min": 2,
-                "max": 16,
-                "label": "Color Levels"
+                "name": "preset",
+                "type": "str",
+                "default": "Fast",
+                "options": ["Classic", "Fast", "Anime", "Advanced", "Whole"],
+                "label": "Preset"
             }
         ]
-    
+
     def apply(self, image, params=None):
-        """Apply cartoon effect based on selected variant."""
         if params is None:
             params = {}
-        
-        variant = self.current_variant
-        intensity = params.get("intensity", 50) / 100.0
-        smoothing = params.get("smoothing", 50) / 100.0
-        edge_strength = params.get("edge_strength", 50) / 100.0
-        color_levels = params.get("color_levels", 8)
-        
-        if variant == "Classic":
-            return self._apply_classic_cartoon(image, intensity, smoothing, edge_strength, color_levels)
-        elif variant == "Fast":
-            return self._apply_fast_cartoon(image, intensity, smoothing, edge_strength, color_levels)
-        elif variant == "Anime":
-            return self._apply_anime_cartoon(image, intensity, smoothing, edge_strength, color_levels)
-        elif variant == "Advanced":
-            return self._apply_advanced_cartoon(image, intensity, smoothing, edge_strength, color_levels)
-        elif variant == "Whole Image":
-            return self._apply_whole_image_cartoon(image, intensity, smoothing, edge_strength, color_levels)
-        else:
-            return image
-    
-    def _apply_classic_cartoon(self, image, intensity, smoothing, edge_strength, color_levels):
-        """Classic cartoon effect with bilateral filtering."""
-        # Bilateral filter for smoothing
-        d = int(9 * smoothing) + 1
-        sigma_color = int(75 * smoothing) + 1
-        sigma_space = int(75 * smoothing) + 1
-        color = cv2.bilateralFilter(image, d, sigma_color, sigma_space)
-        
-        # Edge detection
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        t1 = int(100 * edge_strength)
-        t2 = int(200 * edge_strength)
-        edges = cv2.Canny(gray, t1, t2)
-        edges = cv2.dilate(edges, None)
-        
-        # Color quantization
-        div = 256 // color_levels
-        color = color // div * div + div // 2
-        
-        # Combine
-        cartoon = cv2.bitwise_and(color, color, mask=255 - edges)
-        
-        # Blend with original based on intensity
-        return cv2.addWeighted(image, 1 - intensity, cartoon, intensity, 0)
-    
-    def _apply_fast_cartoon(self, image, intensity, smoothing, edge_strength, color_levels):
-        """Fast cartoon effect with uniform quantization."""
-        # Bilateral filter
-        img_blur = cv2.bilateralFilter(image, 9, 75, 75)
-        
-        # Uniform quantization
-        bits = max(2, min(8, color_levels))
-        img_quant = ((img_blur >> (8 - bits)) << (8 - bits))
-        
-        # Edge detection
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        edges = cv2.adaptiveThreshold(
-            cv2.medianBlur(gray, 7), 255,
-            cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 2)
-        edges_colored = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
-        
-        cartoon = cv2.bitwise_and(img_quant, edges_colored)
-        return cv2.addWeighted(image, 1 - intensity, cartoon, intensity, 0)
-    
-    def _apply_anime_cartoon(self, image, intensity, smoothing, edge_strength, color_levels):
-        """Anime-style cartoon effect."""
-        # Multiple bilateral filters for anime look
-        img_color = image
-        for _ in range(2):
-            img_color = cv2.bilateralFilter(img_color, d=9, sigmaColor=75, sigmaSpace=75)
-        
-        # Edge detection
-        img_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        img_blur = cv2.medianBlur(img_gray, 7)
-        edges = cv2.adaptiveThreshold(img_blur, 255,
-                                      cv2.ADAPTIVE_THRESH_MEAN_C,
-                                      cv2.THRESH_BINARY, blockSize=9, C=2)
-        
-        # Color quantization with k-means
-        k = max(2, min(16, color_levels))
-        data = np.float32(img_color).reshape((-1, 3))
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 0.001)
-        _, labels, centers = cv2.kmeans(data, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
-        centers = np.uint8(centers)
-        quantized = centers[labels.flatten()].reshape(img_color.shape)
-        
-        edges_colored = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
-        cartoon = cv2.bitwise_and(quantized, edges_colored)
-        
-        return cv2.addWeighted(image, 1 - intensity, cartoon, intensity, 0)
-    
-    def _apply_advanced_cartoon(self, image, intensity, smoothing, edge_strength, color_levels):
-        """Advanced cartoon effect with mean shift filtering."""
-        # Bilateral filter
-        img_blur = cv2.bilateralFilter(image, 9, 75, 75)
-        
-        # Mean shift filtering
-        spatial_radius = int(10 * smoothing) + 1
-        color_radius = int(30 * smoothing) + 1
-        img_quant = cv2.pyrMeanShiftFiltering(img_blur, spatial_radius, color_radius)
-        
-        # Edge detection
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        edges = cv2.adaptiveThreshold(
-            cv2.medianBlur(gray, 7), 255,
-            cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 2)
-        edges_colored = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
-        
-        cartoon = cv2.bitwise_and(img_quant, edges_colored)
-        return cv2.addWeighted(image, 1 - intensity, cartoon, intensity, 0)
-    
-    def _apply_whole_image_cartoon(self, image, intensity, smoothing, edge_strength, color_levels):
-        """Whole image cartoon effect."""
-        # Downscale and quantize
-        scale = max(0.1, min(0.5, smoothing))
-        small = cv2.resize(image, (0,0), fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)
-        
-        bits = max(2, min(8, color_levels))
-        quant = ((small >> (8 - bits)) << (8 - bits))
-        up = cv2.resize(quant, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)
-        
-        # Edge detection
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        edges = cv2.adaptiveThreshold(
-            cv2.medianBlur(gray, 7), 255,
-            cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 2)
-        edges_colored = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
-        
-        cartoon = cv2.bitwise_and(up, edges_colored)
-        return cv2.addWeighted(image, 1 - intensity, cartoon, intensity, 0)
+        preset_map = {
+            "Classic": "Detailed",
+            "Fast": "Fast",
+            "Anime": "Anime",
+            "Advanced": "Advanced",
+            "Whole": "Fast",
+        }
+        preset = preset_map.get(self.current_variant, "Fast")
+        pro_params = {"preset": preset}
+        return self._pro.apply(image, pro_params)
 
 
 class ConsolidatedSketch(Style):

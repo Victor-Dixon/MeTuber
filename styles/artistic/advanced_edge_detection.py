@@ -141,7 +141,7 @@ class AdvancedEdgeDetection(Style):
         else:
             return (255, 255, 255)
 
-    def apply(self, image, params=None):
+    def apply(self, image, params=None, **kwargs):
         """
         Applies advanced edge detection to the input image with customizable parameters.
         """
@@ -152,6 +152,13 @@ class AdvancedEdgeDetection(Style):
             raise ValueError("Input image must be a NumPy array.")
         if len(image.shape) != 3 or image.shape[2] != 3:
             raise ValueError("Input image must be a BGR color image.")
+
+        # Allow both dict-style and keyword params
+        if params is None:
+            params = {}
+        # Merge with kwargs (kwargs take precedence)
+        if kwargs:
+            params = {**params, **kwargs}
 
         # Validate and sanitize parameters
         params = self.validate_params(params or {})
@@ -178,9 +185,23 @@ class AdvancedEdgeDetection(Style):
         else:
             logger.debug("Valid color_mode detected: %s.", color_mode)
 
-        # Ensure the blur kernel size is odd
+        # Ensure Sobel kernel size is valid (odd, <= 31)
+        if sobel_ksize < 1:
+            sobel_ksize = 1
+        if sobel_ksize > 31:
+            sobel_ksize = 31
+        if sobel_ksize % 2 == 0:
+            sobel_ksize += 1
+        if sobel_ksize > 31:  # after adjustment clamp again
+            sobel_ksize = 31
+
+        # Ensure the blur kernel size is odd and within OpenCV constraints
+        if blur_ksize < 1:
+            blur_ksize = 1
         if blur_ksize % 2 == 0:
             blur_ksize += 1
+        if blur_ksize > 31:
+            blur_ksize = 31
 
         # Convert image to grayscale for edge detection
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

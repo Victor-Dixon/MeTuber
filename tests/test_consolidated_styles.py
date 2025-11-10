@@ -13,6 +13,7 @@ from styles.artistic.unified_cartoon import CartoonStyle
 from styles.artistic.unified_sketch import SketchStyle
 from styles.color_filters.unified_invert import InvertStyle
 from src.core.style_manager import StyleManager
+from styles.artistic.unified_cartoon_pro import CartoonStylePro
 
 
 class TestConsolidatedStyles:
@@ -160,10 +161,11 @@ class TestConsolidatedStyles:
         
         # Test cartoon migrations
         assert mapping["cartoon"]["style"] == "Cartoon"
-        assert mapping["cartoon"]["variant"] == "Basic"
-        
+        assert mapping["cartoon"]["variant"] == "Detailed"
+
         assert mapping["advanced_cartoon"]["style"] == "Cartoon"
         assert mapping["advanced_cartoon"]["variant"] == "Advanced"
+        assert mapping["advanced_cartoon2"]["variant"] == "Anime"
         
         # Test sketch migrations
         assert mapping["pencil_sketch"]["style"] == "Sketch"
@@ -176,10 +178,10 @@ class TestConsolidatedStyles:
     def test_style_complexity_detection(self, style_manager):
         """Test style complexity detection for performance optimization."""
         # Test complexity detection for different styles
-        cartoon_complexity = style_manager.get_style_complexity("Cartoon", "Basic")
+        cartoon_complexity = style_manager.get_style_complexity("Cartoon", "Detailed")
         assert cartoon_complexity in ["low", "medium", "high"]
         
-        advanced_cartoon_complexity = style_manager.get_style_complexity("Cartoon", "Advanced2")
+        advanced_cartoon_complexity = style_manager.get_style_complexity("Cartoon", "Advanced")
         assert advanced_cartoon_complexity in ["low", "medium", "high"]
         
         # Advanced variants should generally be more complex
@@ -187,26 +189,11 @@ class TestConsolidatedStyles:
             assert advanced_cartoon_complexity in ["medium", "high"]
 
     def test_variant_parameter_differences(self):
-        """Test that different variants have different parameter sets."""
-        cartoon = CartoonStyle()
-        
-        # Get parameters for different variants
-        basic_params = cartoon.get_variant_parameters("Basic")
-        advanced_params = cartoon.get_variant_parameters("Advanced")
-        advanced2_params = cartoon.get_variant_parameters("Advanced2")
-        
-        # Basic should have fewer parameters than advanced variants
-        assert len(basic_params) < len(advanced_params)
-        assert len(basic_params) < len(advanced2_params)
-        
-        # Advanced variants should have variant-specific parameters
-        advanced_param_names = [p['name'] for p in advanced_params]
-        assert 'detail_level' in advanced_param_names
-        assert 'smoothness' in advanced_param_names
-        
-        advanced2_param_names = [p['name'] for p in advanced2_params]
-        assert 'sharpen_intensity' in advanced2_param_names
-        assert 'color_quantization' in advanced2_param_names
+        """CartoonStylePro exposes presets via a preset parameter."""
+        cartoon = CartoonStylePro()
+        params = cartoon.get_variant_parameters("Detailed")
+        preset_param = next(p for p in params if p["name"] == "preset")
+        assert set(preset_param["options"]) >= {"Detailed", "Fast", "Advanced", "Anime", "Whole"}
 
     def test_style_info_completeness(self):
         """Test that style info includes all necessary information."""

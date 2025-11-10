@@ -79,13 +79,11 @@ def mock_imports(monkeypatch):
     mock_style.__path__ = []
     mock_style.Style = MagicMock()
     mock_style.Original = MagicMock()
-    mock_style.AdvancedCartoon = MagicMock()
-    mock_style.AdvancedCartoonAnime = MagicMock()
+    mock_style.CartoonStylePro = MagicMock()
     
     monkeypatch.setattr('webcam_filter_pyqt5.Style', mock_style.Style)
     monkeypatch.setattr('webcam_filter_pyqt5.Original', mock_style.Original)
-    monkeypatch.setattr('webcam_filter_pyqt5.AdvancedCartoon', mock_style.AdvancedCartoon)
-    monkeypatch.setattr('webcam_filter_pyqt5.AdvancedCartoonAnime', mock_style.AdvancedCartoonAnime)
+    monkeypatch.setattr('webcam_filter_pyqt5.CartoonStylePro', mock_style.CartoonStylePro)
     monkeypatch.setattr('webcam_filter_pyqt5.pkgutil.walk_packages', lambda *args: [])
     
     return mock_style
@@ -99,13 +97,11 @@ class TestStyleLoading:
         mock_style.__path__ = []
         mock_style.Style = MagicMock()
         mock_style.Original = MagicMock()
-        mock_style.AdvancedCartoon = MagicMock()
-        mock_style.AdvancedCartoonAnime = MagicMock()
+        mock_style.CartoonStylePro = MagicMock()
         
         monkeypatch.setattr('webcam_filter_pyqt5.Style', mock_style.Style)
         monkeypatch.setattr('webcam_filter_pyqt5.Original', mock_style.Original)
-        monkeypatch.setattr('webcam_filter_pyqt5.AdvancedCartoon', mock_style.AdvancedCartoon)
-        monkeypatch.setattr('webcam_filter_pyqt5.AdvancedCartoonAnime', mock_style.AdvancedCartoonAnime)
+        monkeypatch.setattr('webcam_filter_pyqt5.CartoonStylePro', mock_style.CartoonStylePro)
         monkeypatch.setattr('webcam_filter_pyqt5.pkgutil.walk_packages', lambda *args: [])
         
         self.mock_style = mock_style

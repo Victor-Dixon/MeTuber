@@ -186,10 +186,10 @@ class StyleManager:
         """Get mapping of old style names to new consolidated styles and variants."""
         return {
             # Cartoon styles mapping
-            "cartoon": {"style": "Cartoon", "variant": "Basic"},
+            "cartoon": {"style": "Cartoon", "variant": "Detailed"},
             "advanced_cartoon": {"style": "Cartoon", "variant": "Advanced"},
-            "advanced_cartoon2": {"style": "Cartoon", "variant": "Advanced2"},
-            "catoonwholeimage": {"style": "Cartoon", "variant": "WholeImage"},
+            "advanced_cartoon2": {"style": "Cartoon", "variant": "Anime"},
+            "catoonwholeimage": {"style": "Cartoon", "variant": "Whole"},
             
             # Sketch styles mapping
             "pencil_sketch": {"style": "Sketch", "variant": "Pencil"},
