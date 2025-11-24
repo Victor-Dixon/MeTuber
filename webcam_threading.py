@@ -55,15 +55,64 @@ def _list_dshow_devices():
 
 
 def _probe_opencv_device():
-    """Try to discover a working device index via OpenCV as a fallback (returns int index)."""
+    """Try to discover a working device index via OpenCV as a fallback (returns tuple: (index, backend))."""
     try:
         import cv2
-        for idx in range(3):  # probe first 3 indices
-            cap = cv2.VideoCapture(idx, cv2.CAP_DSHOW if os.name == "nt" else cv2.CAP_ANY)
-            ok = cap.isOpened()
-            cap.release()
-            if ok:
-                return idx
+        
+        # Log available backends
+        backends = []
+        if hasattr(cv2, 'videoio_registry'):
+            backends = cv2.videoio_registry.getBackends()
+            logger.info(f"Available OpenCV backends: {backends}")
+        
+        # On Windows, DirectShow doesn't support index-based access well
+        # Use MSMF (Media Foundation) which supports index access, or fall back to default
+        if os.name == "nt":
+            # Try MSMF first (better for index-based access on Windows)
+            backend = cv2.CAP_MSMF if hasattr(cv2, 'CAP_MSMF') else cv2.CAP_ANY
+            logger.info(f"Scanning OpenCV devices with MSMF backend (supports index-based access)")
+        else:
+            backend = cv2.CAP_ANY
+            logger.info(f"Scanning OpenCV devices with default backend")
+        
+        for idx in range(10):  # probe up to 10 indices
+            try:
+                cap = cv2.VideoCapture(idx, backend)
+                if cap.isOpened():
+                    # Try to read a frame to verify it's actually working
+                    ret, frame = cap.read()
+                    if ret and frame is not None:
+                        logger.info(f"Found working OpenCV device at index {idx} with backend {backend}")
+                        cap.release()
+                        return (idx, backend)
+                    cap.release()
+                else:
+                    cap.release()
+            except Exception as e:
+                logger.debug(f"OpenCV device {idx} probe failed: {e}")
+                continue
+        
+        # If no devices found with MSMF on Windows, try default backend
+        if os.name == "nt" and backend != cv2.CAP_ANY:
+            logger.info("No devices found with MSMF, trying default backend...")
+            for idx in range(10):
+                try:
+                    cap = cv2.VideoCapture(idx)  # Default backend
+                    if cap.isOpened():
+                        ret, frame = cap.read()
+                        if ret and frame is not None:
+                            logger.info(f"Found working OpenCV device at index {idx} with default backend")
+                            cap.release()
+                            return (idx, cv2.CAP_ANY)
+                        cap.release()
+                    else:
+                        cap.release()
+                except Exception as e:
+                    logger.debug(f"OpenCV device {idx} probe with default backend failed: {e}")
+                    continue
+                    
+    except ImportError:
+        logger.warning("OpenCV not available for device probing")
     except Exception as e:
         logger.warning(f"OpenCV device probe failed: {e}")
     return None
@@ -82,12 +131,14 @@ def _default_av_format() -> str:
 
 def _build_default_input_options(fps: int = 30, width: int = 1280, height: int = 720) -> Dict[str, str]:
     """
-    Conservative defaults that work for most DirectShow/AVFoundation/V4L2 inputs.
-    Caller may override via ctor.
+    Low-latency defaults optimized for real-time video capture.
+    Small buffer size and no-buffer flags minimize delay.
     """
     opts = {
-        "rtbufsize": "256M",  # Increased buffer for Windows DirectShow
+        "rtbufsize": "512K",  # Small buffer for low latency (was 256M - way too large!)
         "framerate": str(int(max(1, fps))),
+        "fflags": "nobuffer",  # Disable buffering
+        "flags": "low_delay",  # Low delay mode
     }
     # Many stacks accept 'video_size', others accept 'video_size' via WxH
     opts["video_size"] = f"{int(width)}x{int(height)}"
@@ -138,6 +189,8 @@ class WebcamThread(QThread):
         self._stream = None
         self._vcam: Optional["pyvirtualcam.Camera"] = None  # type: ignore
         self.last_frame: Optional[np.ndarray] = None
+        self._use_opencv = False
+        self._opencv_cap = None
 
         # Derived perf knobs
         self.frame_skip = int(self.params.get("frame_skip", 0) or 0)
@@ -203,45 +256,113 @@ class WebcamThread(QThread):
         return self.input_device
 
     def _open_input(self) -> bool:
-        if av is None:
-            self._emit_error("PyAV not installed; cannot open input.")
-            self._stopped_reason = "BACKEND_CLOSED"
-            return False
-            
+        # Force DirectShow on Windows
+        if os.name == "nt":
+            self.av_format = "dshow"
+            logger.info("Windows detected: forcing DirectShow backend")
+        
         # Windows-specific: resolve device name to exact DirectShow device
         if os.name == "nt" and self.av_format == "dshow":
             self.input_device = self._resolve_device_for_windows()
             
-        # Try opening with retries (camera may need a moment to initialize)
-        last_error = None
-        for attempt in range(3):
-            try:
-                logger.info("Attempt %d: Opening device via PyAV: device=%s format=%s options=%s",
-                            attempt + 1, self.input_device, self.av_format, self.input_options)
-                self._container = av.open(self.input_device, format=self.av_format, options=self.input_options)
-                self._stream = next((s for s in self._container.streams if s.type == "video"), None)
-                if self._stream is None:
-                    self._emit_error("No video stream found in input device.")
-                    self._stopped_reason = "BACKEND_CLOSED"
-                    return False
-                self._stream.thread_type = "AUTO"
-                logger.info("Successfully opened camera: %s", self.input_device)
-                return True
-            except Exception as e:
-                last_error = e
-                logger.warning(f"Attempt {attempt + 1} failed: {e}")
-                if attempt < 2:  # Don't sleep on last attempt
-                    time.sleep(0.5 * (attempt + 1))  # Progressive backoff
+        # Try PyAV first (preferred method)
+        if av is not None:
+            last_error = None
+            for attempt in range(3):
+                try:
+                    logger.info("Attempt %d: Opening device via PyAV: device=%s format=%s options=%s",
+                                attempt + 1, self.input_device, self.av_format, self.input_options)
+                    self._container = av.open(self.input_device, format=self.av_format, options=self.input_options)
+                    self._stream = next((s for s in self._container.streams if s.type == "video"), None)
+                    if self._stream is None:
+                        logger.warning("No video stream found in PyAV container")
+                        if self._container:
+                            self._container.close()
+                        self._container = None
+                        break  # Try fallback
+                    self._stream.thread_type = "AUTO"
+                    logger.info("Successfully opened camera via PyAV: %s", self.input_device)
+                    return True
+                except Exception as e:
+                    last_error = e
+                    logger.warning(f"PyAV attempt {attempt + 1} failed: {e}")
+                    if self._container:
+                        try:
+                            self._container.close()
+                        except:
+                            pass
+                        self._container = None
+                    if attempt < 2:  # Don't sleep on last attempt
+                        time.sleep(0.5 * (attempt + 1))  # Progressive backoff
+            
+            if last_error:
+                logger.warning("PyAV failed, trying OpenCV DirectShow fallback...")
+        else:
+            logger.warning("PyAV not available, trying OpenCV DirectShow fallback...")
+        
+        # Fallback: Try OpenCV with MSMF backend (Windows) or default (Linux/Mac)
+        try:
+            import cv2
+            logger.info("Attempting OpenCV fallback...")
+            
+            # Log available backends
+            if hasattr(cv2, 'videoio_registry'):
+                backends = cv2.videoio_registry.getBackends()
+                logger.info(f"Available OpenCV backends: {backends}")
+            
+            # Try to find working device index (returns tuple: (index, backend) or None)
+            probe_result = _probe_opencv_device()
+            if probe_result is not None:
+                working_idx, backend = probe_result
+                logger.info(f"Using OpenCV device index {working_idx} with backend {backend}")
+                # Create a wrapper that uses OpenCV for capture
+                self._opencv_cap = cv2.VideoCapture(working_idx, backend)
+                if self._opencv_cap.isOpened():
+                    # Set buffer size to 1 frame for minimal latency
+                    try:
+                        self._opencv_cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+                        logger.info("OpenCV buffer size set to 1 frame for low latency")
+                    except Exception as e:
+                        logger.debug(f"Could not set OpenCV buffer size: {e}")
                     
-        # All attempts failed
-        logger.exception("Failed to open input device after 3 attempts: %s", last_error)
-        error_msg = "Failed to open input device."
+                    # Verify it works
+                    ret, frame = self._opencv_cap.read()
+                    if ret and frame is not None:
+                        logger.info(f"Successfully opened camera via OpenCV at index {working_idx} (backend: {backend})")
+                        self._use_opencv = True
+                        return True
+                    else:
+                        self._opencv_cap.release()
+                        self._opencv_cap = None
+                else:
+                    self._opencv_cap = None
+            else:
+                logger.warning("OpenCV device probe found no working devices")
+        except ImportError:
+            logger.warning("OpenCV not available for fallback")
+        except Exception as e:
+            logger.exception("OpenCV fallback failed: %s", e)
+        
+        # All methods failed
+        error_msg = "Failed to open input device with all methods (PyAV and OpenCV)."
         if os.name == "nt":
             error_msg += "\n\nWindows Troubleshooting:\n"
-            error_msg += "1. Check Settings → Privacy & Security → Camera (enable camera access)\n"
-            error_msg += "2. Close any apps using the camera (Teams, Zoom, Discord, OBS, etc.)\n"
+            error_msg += "1. Check Settings → Privacy & Security → Camera:\n"
+            error_msg += "   - Enable 'Camera access'\n"
+            error_msg += "   - Enable 'Let apps access your camera'\n"
+            error_msg += "   - Enable 'Allow desktop apps to access your camera' (IMPORTANT!)\n"
+            error_msg += "2. Close all apps using the camera:\n"
+            error_msg += "   - Teams, Zoom, Discord, OBS, Chrome, etc.\n"
+            error_msg += "   - Check Task Manager → Processes → sort by GPU/Power\n"
             error_msg += "3. Try unplugging and replugging the camera\n"
-            error_msg += f"4. Available devices: {', '.join(_list_dshow_devices())}"
+            error_msg += "4. Try a different USB port (prefer rear motherboard ports)\n"
+            dshow_devices = _list_dshow_devices()
+            if dshow_devices:
+                error_msg += f"\n5. Available DirectShow devices: {', '.join(dshow_devices)}"
+            else:
+                error_msg += "\n5. No DirectShow devices detected (check camera connection and drivers)"
+        
+        last_error = last_error if 'last_error' in locals() else None
         self._emit_error(error_msg, last_error)
         self._stopped_reason = "BACKEND_CLOSED"
         return False
@@ -254,6 +375,15 @@ class WebcamThread(QThread):
             pass
         self._container = None
         self._stream = None
+        
+        # Close OpenCV capture if used
+        try:
+            if self._opencv_cap:
+                self._opencv_cap.release()
+        except Exception:
+            pass
+        self._opencv_cap = None
+        self._use_opencv = False
 
     def _open_output(self, width: int, height: int, fps: int) -> bool:
         if pyvirtualcam is None:
@@ -289,6 +419,14 @@ class WebcamThread(QThread):
             self._cleanup(reason=self._stopped_reason or "BACKEND_CLOSED")
             return
 
+        # Determine capture method
+        if self._use_opencv and self._opencv_cap:
+            self._run_opencv_loop()
+        else:
+            self._run_pyav_loop()
+
+    def _run_pyav_loop(self) -> None:
+        """Run the capture loop using PyAV."""
         # Peek first frame to set output geometry
         width, height, fps = 1280, 720, int(self.params.get("max_fps", 30) or 30)
         first_frame = None
@@ -348,11 +486,12 @@ class WebcamThread(QThread):
                     self._push_output(self.last_frame)
                     self.frame_signal.emit(self.last_frame)  # ✅ preview update
 
-                    # Rate control (best-effort)
+                    # Rate control (best-effort) - only sleep if we're ahead of schedule
                     now = time.time()
                     elapsed = now - last_emit
                     if elapsed < self.target_dt:
                         time.sleep(self.target_dt - elapsed)
+                    # If we're behind (elapsed > target_dt), don't sleep - process next frame immediately
                     last_emit = time.time()
 
                 # Periodic heartbeat
@@ -362,6 +501,101 @@ class WebcamThread(QThread):
         except Exception as e:
             logger.exception("WebcamThread exception: %s", e)
             self._emit_error("Capture loop crashed.", e)
+            self._stopped_reason = "EXCEPTION"
+        finally:
+            reason = self._stopped_reason if self._stop is False else "STOP_CALLED"
+            self._cleanup(reason=reason)
+
+    def _run_opencv_loop(self) -> None:
+        """Run the capture loop using OpenCV (MSMF on Windows, default on Linux/Mac)."""
+        import cv2
+        
+        # Get first frame to set output geometry
+        width, height, fps = 1280, 720, int(self.params.get("max_fps", 30) or 30)
+        first_frame = None
+        empty_count = 0
+
+        try:
+            ret, first_frame = self._opencv_cap.read()
+            if ret and first_frame is not None:
+                h, w = first_frame.shape[:2]
+                width, height = w, h
+                logger.info(f"OpenCV capture initialized: {width}x{height}")
+            else:
+                logger.error("Failed to read first frame from OpenCV")
+                self._stopped_reason = "NO_FRAMES"
+                self._cleanup(reason="NO_FRAMES")
+                return
+        except Exception as e:
+            logger.exception("Error during OpenCV initial read: %s", e)
+            self._emit_error("Failed to read from OpenCV device.", e)
+            self._stopped_reason = "NO_FRAMES"
+            self._cleanup(reason="NO_FRAMES")
+            return
+
+        # Open output if requested
+        if self.enable_output:
+            self._open_output(width, height, fps)
+
+        # Main capture loop
+        last_emit = time.time()
+        frame_i = 0
+
+        try:
+            # Push first frame immediately
+            self.last_frame = self._process_frame(first_frame)
+            self._push_output(self.last_frame)
+            self.frame_signal.emit(self.last_frame)  # ✅ preview update
+
+            while not self._stop:
+                # For low latency: flush buffer by reading and discarding old frames
+                # This ensures we always get the latest frame
+                latest_frame = None
+                for _ in range(3):  # Read up to 3 frames to flush buffer
+                    ret, img = self._opencv_cap.read()
+                    if ret and img is not None:
+                        latest_frame = img
+                    else:
+                        break
+                
+                if latest_frame is None:
+                    empty_count += 1
+                    if empty_count > 30:  # 30 consecutive empty frames
+                        logger.warning("Too many empty frames from OpenCV, stopping")
+                        self._stopped_reason = "NO_FRAMES"
+                        break
+                    time.sleep(0.01)  # Small delay before retry
+                    continue
+
+                empty_count = 0  # got a frame
+                img = latest_frame  # Use the latest frame
+
+                # Frame skipping
+                do_skip = self.frame_skip > 0 and (frame_i % (self.frame_skip + 1)) != 0
+                frame_i += 1
+                if do_skip:
+                    continue
+
+                # Style pipeline
+                self.last_frame = self._process_frame(img)
+                self._push_output(self.last_frame)
+                self.frame_signal.emit(self.last_frame)  # ✅ preview update
+
+                # Rate control (best-effort) - only sleep if we're ahead of schedule
+                now = time.time()
+                elapsed = now - last_emit
+                if elapsed < self.target_dt:
+                    time.sleep(self.target_dt - elapsed)
+                # If we're behind (elapsed > target_dt), don't sleep - process next frame immediately
+                last_emit = time.time()
+
+                # Periodic heartbeat
+                if self.last_frame is not None and (time.time() - last_emit) > 1.5:
+                    self.info_signal.emit("Streaming...")
+
+        except Exception as e:
+            logger.exception("OpenCV capture loop exception: %s", e)
+            self._emit_error("OpenCV capture loop crashed.", e)
             self._stopped_reason = "EXCEPTION"
         finally:
             reason = self._stopped_reason if self._stop is False else "STOP_CALLED"

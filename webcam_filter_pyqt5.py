@@ -138,6 +138,166 @@ def list_devices():
         logging.error(f"Could not enumerate devices using FFmpeg: {e}")
     return devices
 
+
+def auto_scan_opencv_devices():
+    """
+    Auto-scan devices using OpenCV (Windows: MSMF backend for index access, Linux/Mac: default).
+    Returns a list of working device indices and their names.
+    """
+    working_devices = []
+    try:
+        import cv2
+        logging.info("Scanning devices using OpenCV...")
+        
+        # Log available backends
+        backends = []
+        if hasattr(cv2, 'videoio_registry'):
+            backends = cv2.videoio_registry.getBackends()
+            logging.info(f"Available OpenCV backends: {backends}")
+        else:
+            logging.info("OpenCV version doesn't support backend enumeration")
+        
+        # On Windows, DirectShow doesn't support index-based access well
+        # Use MSMF (Media Foundation) which supports index access, or fall back to default
+        if os.name == "nt":
+            # Try MSMF first (better for index-based access on Windows)
+            backend = cv2.CAP_MSMF if hasattr(cv2, 'CAP_MSMF') else cv2.CAP_ANY
+            logging.info("Using MSMF backend for Windows (supports index-based access)")
+        else:
+            backend = cv2.CAP_ANY
+        
+        # Scan up to 10 device indices
+        for i in range(10):
+            try:
+                cap = cv2.VideoCapture(i, backend)
+                if cap.isOpened():
+                    # Try to read a frame to verify it's actually working
+                    ret, frame = cap.read()
+                    if ret and frame is not None:
+                        # Try to get device name (may not work on all systems)
+                        device_name = f"Device {i}"
+                        try:
+                            # Some backends support getting device name
+                            backend_name = cap.getBackendName()
+                            logging.info(f"Device {i}: OpenCV backend={backend_name}, working=True")
+                        except:
+                            logging.info(f"Device {i}: working=True (backend info unavailable)")
+                        
+                        working_devices.append({
+                            'index': i,
+                            'name': device_name,
+                            'opencv_index': i,
+                            'backend': backend
+                        })
+                    cap.release()
+                else:
+                    cap.release()
+            except Exception as e:
+                logging.debug(f"Device {i} scan failed: {e}")
+                continue
+        
+        # If no devices found with MSMF on Windows, try default backend
+        if not working_devices and os.name == "nt" and backend != cv2.CAP_ANY:
+            logging.info("No devices found with MSMF, trying default backend...")
+            for i in range(10):
+                try:
+                    cap = cv2.VideoCapture(i)  # Default backend
+                    if cap.isOpened():
+                        ret, frame = cap.read()
+                        if ret and frame is not None:
+                            working_devices.append({
+                                'index': i,
+                                'name': f"Device {i}",
+                                'opencv_index': i,
+                                'backend': cv2.CAP_ANY
+                            })
+                            logging.info(f"Device {i}: Found with default backend")
+                        cap.release()
+                    else:
+                        cap.release()
+                except Exception as e:
+                    logging.debug(f"Device {i} scan with default backend failed: {e}")
+                    continue
+        
+        if working_devices:
+            logging.info(f"Found {len(working_devices)} working OpenCV device(s)")
+        else:
+            logging.warning("No working OpenCV devices found")
+            
+    except ImportError:
+        logging.warning("OpenCV not available for device scanning")
+    except Exception as e:
+        logging.error(f"Error during OpenCV device scan: {e}")
+    
+    return working_devices
+
+
+def find_working_device(device_name=None):
+    """
+    Auto-detect and return a working device.
+    Tries multiple methods:
+    1. FFmpeg DirectShow enumeration (by name)
+    2. OpenCV DirectShow index scanning
+    3. Fallback to first available
+    
+    Returns: (device_string, method_used)
+    """
+    logging.info("=== Starting device auto-detection ===")
+    
+    # Method 1: Try FFmpeg DirectShow enumeration
+    ffmpeg_devices = list_devices()
+    if ffmpeg_devices:
+        logging.info(f"FFmpeg found {len(ffmpeg_devices)} device(s): {ffmpeg_devices}")
+        
+        # If device_name specified, try to match it
+        if device_name:
+            # Remove 'video=' prefix if present
+            search_name = device_name.replace('video=', '').strip()
+            for dev in ffmpeg_devices:
+                dev_name = dev.replace('video=', '').strip()
+                if search_name.lower() in dev_name.lower() or dev_name.lower() in search_name.lower():
+                    logging.info(f"Matched device by name: {dev}")
+                    return dev, "ffmpeg_name_match"
+            
+            # If no match, try first device
+            if ffmpeg_devices:
+                logging.info(f"Using first FFmpeg device: {ffmpeg_devices[0]}")
+                return ffmpeg_devices[0], "ffmpeg_first"
+        else:
+            # No device specified, use first available
+            logging.info(f"Using first FFmpeg device: {ffmpeg_devices[0]}")
+            return ffmpeg_devices[0], "ffmpeg_first"
+    
+    # Method 2: Try OpenCV DirectShow index scanning
+    logging.info("Trying OpenCV DirectShow index scanning...")
+    opencv_devices = auto_scan_opencv_devices()
+    if opencv_devices:
+        # Use first working OpenCV device
+        idx = opencv_devices[0]['opencv_index']
+        # For PyAV, we'll need to convert index to device name
+        # But first, let's try using the index directly with a fallback format
+        device_str = f"video={opencv_devices[0]['name']}"
+        logging.info(f"Using OpenCV device index {idx}: {device_str}")
+        return device_str, "opencv_index"
+    
+    # Method 3: Fallback - try common device names
+    logging.warning("No devices found via FFmpeg or OpenCV. Trying fallback...")
+    fallback_names = [
+        "video=C270 HD WEBCAM",
+        "video=Logitech HD Webcam C270",
+        "video=USB2.0 Camera",
+        "video=Integrated Camera"
+    ]
+    
+    for fallback in fallback_names:
+        logging.info(f"Trying fallback device: {fallback}")
+        # We'll let PyAV/OpenCV try to open it
+        return fallback, "fallback"
+    
+    # Last resort: return None and let the error handler deal with it
+    logging.error("No devices found via any method")
+    return None, "none"
+
 # =============================================================================
 # 3. Dynamic Style Loading
 # =============================================================================
@@ -351,6 +511,20 @@ class WebcamApp(QWidget):
 
         # 1) Device Selector
         devices = list_devices() or ["Enter device manually..."]
+        
+        # Add OpenCV-scanned devices as fallback options
+        opencv_devices = auto_scan_opencv_devices()
+        for ocv_dev in opencv_devices:
+            # Format as "video=Device X (OpenCV Index N)"
+            device_str = f"video=Device {ocv_dev['index']} (OpenCV Index {ocv_dev['opencv_index']})"
+            if device_str not in devices:
+                devices.append(device_str)
+        
+        if not devices or devices == ["Enter device manually..."]:
+            devices = ["Enter device manually...", "Auto-detect on start"]
+        else:
+            devices.insert(0, "Auto-detect on start")
+        
         default_device = self.settings.get(
             "input_device", devices[0] if devices else "")
         device_selector = DeviceSelector(self, devices, default_device)
@@ -565,17 +739,51 @@ class WebcamApp(QWidget):
         input_device = self.device_combo.currentText().strip()
         selected_style = self.style_tab_manager.get_current_style()
 
-        if not input_device:
-            QMessageBox.warning(self, "Input Device Error",
-                                "Please specify a valid input device.")
-            return
+        # Auto-detect device if not specified or if "Enter device manually..." or "Auto-detect on start" is selected
+        if not input_device or input_device == "Enter device manually..." or input_device == "Auto-detect on start":
+            logging.info("No device specified or auto-detect requested, attempting auto-detection...")
+            detected_device, method = find_working_device()
+            if detected_device:
+                input_device = detected_device
+                logging.info(f"Auto-detected device: {input_device} (method: {method})")
+                # Update the combo box to show the detected device
+                if detected_device in [self.device_combo.itemText(i) for i in range(self.device_combo.count())]:
+                    self.device_combo.setCurrentText(detected_device)
+                else:
+                    self.device_combo.addItem(detected_device)
+                    self.device_combo.setCurrentText(detected_device)
+            else:
+                QMessageBox.warning(
+                    self, "Input Device Error",
+                    "No camera device found.\n\n"
+                    "Please check:\n"
+                    "1. Camera is connected\n"
+                    "2. Windows Camera privacy settings are enabled\n"
+                    "3. No other apps are using the camera\n"
+                    "4. Camera drivers are installed"
+                )
+                return
 
         # Convert device name to PyAV-compatible format
         pyav_device = convert_device_name_for_pyav(input_device)
         if not pyav_device:
-            QMessageBox.warning(self, "Input Device Error",
-                                "Invalid device name format.")
-            return
+            # Try auto-detection as fallback
+            logging.warning(f"Invalid device format '{input_device}', trying auto-detection...")
+            detected_device, method = find_working_device(input_device)
+            if detected_device:
+                pyav_device = convert_device_name_for_pyav(detected_device)
+                logging.info(f"Auto-detected fallback device: {pyav_device} (method: {method})")
+            else:
+                QMessageBox.warning(
+                    self, "Input Device Error",
+                    f"Invalid device name format: '{input_device}'\n\n"
+                    "Attempted auto-detection but no working devices found.\n\n"
+                    "Please check:\n"
+                    "1. Camera is connected\n"
+                    "2. Windows Camera privacy settings are enabled\n"
+                    "3. No other apps are using the camera"
+                )
+                return
 
         # If OUTPUT to VirtualCam is requested, validate OBS backend
         if self.vcam_toggle.isChecked():
