@@ -922,6 +922,15 @@ class WebcamApp(QWidget):
     def stop_virtual_camera(self):
         """Stops the webcam thread."""
         if self.thread:
+            # Disconnect signals to prevent memory leaks
+            try:
+                self.thread.error_signal.disconnect()
+                self.thread.info_signal.disconnect()
+                self.thread.frame_signal.disconnect()
+            except (TypeError, RuntimeError):
+                # Signals may not be connected or already disconnected
+                pass
+            
             self.thread.stop()
             # Wait for thread to finish (with timeout)
             if self.thread.isRunning():
@@ -1660,6 +1669,15 @@ class WebcamApp(QWidget):
         """Ensure the thread stops when closing the app."""
         if self.thread and self.thread.isRunning():
             logging.info("Stopping thread before application close...")
+            # Disconnect signals to prevent memory leaks
+            try:
+                self.thread.error_signal.disconnect()
+                self.thread.info_signal.disconnect()
+                self.thread.frame_signal.disconnect()
+            except (TypeError, RuntimeError):
+                # Signals may not be connected or already disconnected
+                pass
+            
             self.thread.stop()
             # Wait for thread to finish (with timeout)
             if self.thread.isRunning():

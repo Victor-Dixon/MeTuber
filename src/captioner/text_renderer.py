@@ -59,8 +59,14 @@ class TextRenderer:
         self.fade_alpha = 0.0
         self.is_visible = False
         
-        # Font cache
+        # Font cache (limited size to prevent memory leaks)
         self.font_cache = {}
+        self.max_font_cache_size = 50
+        
+        # Face detection for smart positioning
+        self.face_detector = None
+        self.enable_face_detection = True
+        self._initialize_face_detection()
         
         self.logger.info("TextRenderer initialized")
     
@@ -173,16 +179,151 @@ class TextRenderer:
         else:
             return self.current_text
     
+    def _initialize_face_detection(self):
+        """Initialize face detection cascade."""
+        try:
+            # Try to load OpenCV's face detection cascade
+            import cv2
+            import os
+            
+            # Try multiple possible paths for the cascade file
+            cascade_paths = [
+                cv2.data.haarcascades + 'haarcascade_frontalface_default.xml',
+                os.path.join(os.path.dirname(cv2.__file__), 'data', 'haarcascade_frontalface_default.xml'),
+                'haarcascade_frontalface_default.xml'
+            ]
+            
+            for path in cascade_paths:
+                try:
+                    if os.path.exists(path):
+                        self.face_detector = cv2.CascadeClassifier(path)
+                        if not self.face_detector.empty():
+                            self.logger.info(f"Face detection initialized from: {path}")
+                            return
+                except Exception as e:
+                    self.logger.debug(f"Failed to load cascade from {path}: {e}")
+                    continue
+            
+            self.logger.warning("Face detection cascade not found. Smart positioning disabled.")
+            self.enable_face_detection = False
+            self.face_detector = None
+            
+        except Exception as e:
+            self.logger.warning(f"Could not initialize face detection: {e}")
+            self.enable_face_detection = False
+            self.face_detector = None
+    
+    def _detect_faces(self, frame: np.ndarray) -> list:
+        """Detect faces in the frame."""
+        try:
+            if not self.enable_face_detection or self.face_detector is None:
+                return []
+            
+            import cv2
+            
+            # Convert to grayscale for face detection
+            if len(frame.shape) == 3:
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            else:
+                gray = frame
+            
+            # Detect faces
+            faces = self.face_detector.detectMultiScale(
+                gray,
+                scaleFactor=1.1,
+                minNeighbors=5,
+                minSize=(30, 30),
+                flags=cv2.CASCADE_SCALE_IMAGE
+            )
+            
+            # Convert to list of (x, y, w, h) tuples
+            return [tuple(face) for face in faces]
+            
+        except Exception as e:
+            self.logger.debug(f"Error detecting faces: {e}")
+            return []
+    
     def _calculate_position(self, frame: np.ndarray) -> Tuple[int, int]:
-        """Calculate optimal text position on frame."""
+        """Calculate optimal text position on frame, avoiding faces."""
         height, width = frame.shape[:2]
         
         # Default position: bottom center
         x = width // 2
         y = height - 100
         
-        # TODO: Add face detection to avoid covering faces
-        # TODO: Add smart positioning based on content
+        # Detect faces if enabled
+        if self.enable_face_detection:
+            faces = self._detect_faces(frame)
+            
+            if faces:
+                # Calculate safe regions (avoid faces)
+                # Text dimensions (estimated - will be refined after text is created)
+                text_height_estimate = self.style.font_size + (self.style.padding * 2) + 20
+                text_width_estimate = width // 2  # Estimate half width for typical caption
+                
+                # Get face regions (convert to bottom-y coordinates for easier comparison)
+                face_regions = []
+                for (fx, fy, fw, fh) in faces:
+                    # Face extends from fy to fy+fh
+                    # Add margin around faces
+                    margin = 20
+                    face_regions.append({
+                        'top': max(0, fy - margin),
+                        'bottom': min(height, fy + fh + margin),
+                        'left': max(0, fx - margin),
+                        'right': min(width, fx + fw + margin),
+                        'center_y': fy + fh // 2,
+                        'center_x': fx + fw // 2
+                    })
+                
+                # Try different positions, prioritizing bottom center
+                candidate_positions = [
+                    (width // 2, height - text_height_estimate - 20),  # Bottom center (default)
+                    (width // 2, text_height_estimate + 20),  # Top center
+                    (text_width_estimate // 2 + 20, height // 2),  # Left middle
+                    (width - text_width_estimate // 2 - 20, height // 2),  # Right middle
+                ]
+                
+                # Score each position based on distance from faces
+                best_position = candidate_positions[0]
+                best_score = float('inf')
+                
+                for pos_x, pos_y in candidate_positions:
+                    # Check if position overlaps with any face region
+                    overlaps_face = False
+                    for face in face_regions:
+                        text_top = pos_y - text_height_estimate // 2
+                        text_bottom = pos_y + text_height_estimate // 2
+                        text_left = pos_x - text_width_estimate // 2
+                        text_right = pos_x + text_width_estimate // 2
+                        
+                        # Check for overlap
+                        if not (text_bottom < face['top'] or text_top > face['bottom'] or
+                               text_right < face['left'] or text_left > face['right']):
+                            overlaps_face = True
+                            break
+                    
+                    if not overlaps_face:
+                        # Calculate distance from nearest face
+                        min_distance = float('inf')
+                        for face in face_regions:
+                            # Distance from text center to face center
+                            distance = ((pos_x - face['center_x'])**2 + (pos_y - face['center_y'])**2)**0.5
+                            min_distance = min(min_distance, distance)
+                        
+                        # Prefer positions farther from faces
+                        if min_distance < best_score:
+                            best_score = min_distance
+                            best_position = (pos_x, pos_y)
+                
+                # If we found a good position, use it
+                if best_score < float('inf'):
+                    x, y = best_position
+                    self.logger.debug(f"Smart positioning: ({x}, {y}) avoiding {len(faces)} face(s)")
+                else:
+                    # All positions overlap faces, use top position as fallback
+                    x, y = width // 2, text_height_estimate + 20
+                    self.logger.debug(f"All positions overlap faces, using top position: ({x}, {y})")
         
         return (x, y)
     
@@ -269,6 +410,12 @@ class TextRenderer:
             font_key = f"{self.style.font_family}_{self.style.font_size}"
             
             if font_key not in self.font_cache:
+                # Limit cache size to prevent memory leaks
+                if len(self.font_cache) >= self.max_font_cache_size:
+                    # Remove oldest entry (simple FIFO)
+                    oldest_key = next(iter(self.font_cache))
+                    del self.font_cache[oldest_key]
+                
                 # Try to load font
                 try:
                     font = ImageFont.truetype(self.style.font_family, self.style.font_size)

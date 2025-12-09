@@ -41,6 +41,7 @@ class HighPerformanceWebcamService:
         self.avg_fps = 0.0
         self._frame_buffer = None  # Pre-allocated buffer
         self._processing_cache = {}  # Cache for processed frames
+        self.max_cache_size = 10  # Limit cache to prevent memory leaks
         self.last_activity_time = time.time()  # Track activity for adaptive processing
         
         # Camera initialization optimization
@@ -264,7 +265,12 @@ class HighPerformanceWebcamService:
             self.logger.error(f"❌ Error applying effect '{self._current_style}': {e}")
             processed_frame = frame  # Return original frame on error
         
-        # Cache the result
+        # Cache the result (with size limit to prevent memory leaks)
+        if len(self._processing_cache) >= self.max_cache_size:
+            # Remove oldest entry (simple FIFO)
+            oldest_key = next(iter(self._processing_cache))
+            del self._processing_cache[oldest_key]
+        
         self._processing_cache[cache_key] = processed_frame
         
         return processed_frame
