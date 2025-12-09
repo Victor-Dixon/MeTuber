@@ -5,14 +5,43 @@ import sys
 import os
 import json
 import subprocess
+import warnings
+
+# Suppress PyQt5 deprecation warning for sipPyTypeDict - MUST be before PyQt5 imports
+import sys
+warnings.filterwarnings('ignore', category=DeprecationWarning, message='.*sipPyTypeDict.*')
+warnings.filterwarnings('ignore', message='.*sipPyTypeDict.*')
+warnings.filterwarnings('ignore', category=DeprecationWarning, module='sip.*')
+
 import av
 import cv2
+# Suppress OpenCV warnings immediately after import
+# Try to set log level (may not be available in all OpenCV versions)
+try:
+    # OpenCV 4.x uses these constants
+    if hasattr(cv2, 'setLogLevel'):
+        # Try different possible constant names
+        if hasattr(cv2, 'LOG_LEVEL_ERROR'):
+            cv2.setLogLevel(cv2.LOG_LEVEL_ERROR)
+        elif hasattr(cv2, 'LOG_LEVEL_SILENT'):
+            cv2.setLogLevel(cv2.LOG_LEVEL_SILENT)
+        else:
+            # Try numeric value (4 = ERROR level in OpenCV 4.x)
+            cv2.setLogLevel(4)
+except (AttributeError, TypeError):
+    # If setLogLevel doesn't exist or fails, just use environment variables
+    pass
+
+os.environ['OPENCV_VIDEOIO_DEBUG'] = '0'
+os.environ['OPENCV_LOG_LEVEL'] = 'ERROR'
+
 import numpy as np
 import pyvirtualcam
 import logging
 from logging.handlers import RotatingFileHandler
 import pkgutil
 import importlib
+
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QGroupBox,
     QFormLayout, QSlider, QPushButton, QMessageBox, QFileDialog, QComboBox, QTabWidget, QCheckBox, QScrollArea
@@ -39,6 +68,15 @@ from styles.artistic.cartoon import CartoonStylePro
 
 # Import the updated WebcamThread
 from webcam_threading import WebcamThread  # Ensure this path is correct
+
+# Import enhanced AI optimizer
+try:
+    from src.gui.modules.enhanced_ai_optimizer import EnhancedAIOptimizer
+    ENHANCED_OPTIMIZER_AVAILABLE = True
+except ImportError:
+    EnhancedAIOptimizer = None
+    ENHANCED_OPTIMIZER_AVAILABLE = False
+    logging.warning("Enhanced AI optimizer not available, using fallback optimization")
 
 # =============================================================================
 # 1. Config Load/Save
@@ -167,6 +205,20 @@ def auto_scan_opencv_devices():
             backend = cv2.CAP_ANY
         
         # Scan up to 10 device indices
+        # Suppress OpenCV warnings during device enumeration
+        cv2_log_level = None
+        try:
+            if hasattr(cv2, 'getLogLevel'):
+                cv2_log_level = cv2.getLogLevel()
+            if hasattr(cv2, 'setLogLevel'):
+                if hasattr(cv2, 'LOG_LEVEL_SILENT'):
+                    cv2.setLogLevel(cv2.LOG_LEVEL_SILENT)
+                else:
+                    # Try numeric value (0 = SILENT in OpenCV 4.x)
+                    cv2.setLogLevel(0)
+        except (AttributeError, TypeError):
+            pass
+        
         for i in range(10):
             try:
                 cap = cv2.VideoCapture(i, backend)
@@ -193,8 +245,16 @@ def auto_scan_opencv_devices():
                 else:
                     cap.release()
             except Exception as e:
-                logging.debug(f"Device {i} scan failed: {e}")
+                # Silently skip devices that fail to open
+                logging.debug(f"Device {i} failed to open: {e}")
                 continue
+        
+        # Restore OpenCV log level
+        try:
+            if cv2_log_level is not None and hasattr(cv2, 'setLogLevel'):
+                cv2.setLogLevel(cv2_log_level)
+        except (AttributeError, TypeError):
+            pass
         
         # If no devices found with MSMF on Windows, try default backend
         if not working_devices and os.name == "nt" and backend != cv2.CAP_ANY:
@@ -420,6 +480,17 @@ class WebcamApp(QWidget):
         self.current_style = None
         self.current_style_params = {}
 
+        # Enhanced AI optimizer
+        if ENHANCED_OPTIMIZER_AVAILABLE:
+            try:
+                self.enhanced_optimizer = EnhancedAIOptimizer()
+                logging.info("✅ Enhanced AI optimizer initialized")
+            except Exception as e:
+                logging.warning(f"Could not initialize enhanced optimizer: {e}")
+                self.enhanced_optimizer = None
+        else:
+            self.enhanced_optimizer = None
+
         # Config settings
         self.settings = load_settings()
         self.snapshot_dir = self.settings.get('snapshot_dir', SNAPSHOT_DIR)
@@ -636,6 +707,13 @@ class WebcamApp(QWidget):
     def _show_bgr_on_preview(self, bgr):
         """Render numpy BGR frame to the preview label."""
         try:
+            # Handle both grayscale (2D) and color (3D) images
+            if len(bgr.shape) == 2:
+                # Convert grayscale to BGR
+                bgr = cv2.cvtColor(bgr, cv2.COLOR_GRAY2BGR)
+            elif len(bgr.shape) == 3 and bgr.shape[2] == 1:
+                # Convert single channel to BGR
+                bgr = cv2.cvtColor(bgr, cv2.COLOR_GRAY2BGR)
             h, w, c = bgr.shape
             rgb = bgr[:, :, ::-1].copy()
             qimg = QImage(rgb.data, w, h, 3 * w, QImage.Format_RGB888)
@@ -845,6 +923,13 @@ class WebcamApp(QWidget):
         """Stops the webcam thread."""
         if self.thread:
             self.thread.stop()
+            # Wait for thread to finish (with timeout)
+            if self.thread.isRunning():
+                self.thread.wait(3000)  # Wait up to 3 seconds
+                if self.thread.isRunning():
+                    logging.warning("Thread did not stop within timeout, terminating...")
+                    self.thread.terminate()
+                    self.thread.wait(1000)  # Wait for termination
             self.thread = None
             self.status_label.setText("Status: Stopped")
             logging.info("Virtual camera stopped.")
@@ -894,28 +979,101 @@ class WebcamApp(QWidget):
         logging.info(f"Info: {message}")
 
     def auto_optimize_parameters(self):
-        """Intelligently optimize parameters for the current style based on frame analysis."""
+        """
+        Intelligently optimize parameters for the current style based on comprehensive frame analysis.
+        Uses enhanced AI optimizer with quality validation when available.
+        """
         # Ensure there's a frame to optimize on
         if not self.thread or self.thread.last_frame is None:
-            show_error_dialog(self, "No frame available for optimization.")
+            show_error_dialog(self, "No frame available for optimization.\n\nPlease start the camera first.")
             return
 
         selected_style = self.current_style
         frame = self.thread.last_frame
+        
+        # Store original parameters for comparison
+        original_params = self.current_style_params.copy()
 
         try:
-            # Check if the style has the old ai_optimize method
-            if hasattr(selected_style, "ai_optimize"):
-                # Use the old AI optimization method
-                optimized_params = selected_style.ai_optimize(
-                    frame, self.current_style_params.copy())
-                if "enable_ai_optimization" in optimized_params:
-                    optimized_params["enable_ai_optimization"] = False
+            # Show progress
+            self.status_label.setText("Status: Analyzing frame and optimizing parameters...")
+            QApplication.processEvents()  # Update UI
+            
+            # Try enhanced optimizer first (with validation)
+            if self.enhanced_optimizer and selected_style:
+                try:
+                    # Create filter application function
+                    def apply_filter(params, input_frame):
+                        """Apply style with given parameters."""
+                        try:
+                            # Create temporary style instance
+                            temp_style = selected_style.__class__()
+                            # Apply parameters
+                            for key, value in params.items():
+                                if hasattr(temp_style, key):
+                                    setattr(temp_style, key, value)
+                            # Apply filter
+                            return temp_style.apply(input_frame.copy())
+                        except Exception as e:
+                            logging.error(f"Error applying filter in optimizer: {e}")
+                            return input_frame
+                    
+                    # Run enhanced optimization with validation
+                    style_name = selected_style.name if hasattr(selected_style, 'name') else str(selected_style.__class__.__name__)
+                    result = self.enhanced_optimizer.optimize_with_validation(
+                        style_name=style_name,
+                        current_params=original_params.copy(),
+                        frame=frame.copy(),
+                        apply_filter=apply_filter,
+                        optimization_method="grid_search",
+                        max_iterations=50
+                    )
+                    
+                    # Check if optimization improved quality
+                    if result.improvement > 0:
+                        optimized_params = result.parameters
+                        self._show_enhanced_optimization_results(result, original_params, selected_style)
+                    else:
+                        # No significant improvement, use fallback
+                        logging.info("Enhanced optimizer found no improvement, using fallback")
+                        optimized_params = self._get_fallback_optimization(selected_style, frame)
+                except Exception as e:
+                    logging.warning(f"Enhanced optimizer failed, using fallback: {e}")
+                    optimized_params = self._get_fallback_optimization(selected_style, frame)
             else:
-                # Use intelligent parameter optimization for unified styles
-                optimized_params = self._intelligent_parameter_optimization(
-                    selected_style, frame)
-
+                # Fallback to original optimization methods
+                optimized_params = self._get_fallback_optimization(selected_style, frame)
+            
+            # Analyze what changed
+            param_changes = []
+            significant_changes = []
+            
+            # Check all parameters in optimized_params
+            for key, new_value in optimized_params.items():
+                old_value = original_params.get(key)
+                # Handle both cases: parameter existed before or is new
+                if old_value is None:
+                    # New parameter was added
+                    param_changes.append((key, "default", new_value))
+                elif old_value != new_value:
+                    # Parameter was changed
+                    # Calculate change percentage for numeric values
+                    if isinstance(old_value, (int, float)) and isinstance(new_value, (int, float)):
+                        if old_value != 0:
+                            change_pct = abs((new_value - old_value) / old_value) * 100
+                        else:
+                            change_pct = 100 if new_value != 0 else 0
+                        
+                        if change_pct > 10:  # Significant change (>10%)
+                            significant_changes.append((key, old_value, new_value, change_pct))
+                    elif isinstance(old_value, str) or isinstance(new_value, str):
+                        # String parameters (like preset names)
+                        change_pct = 100 if old_value != new_value else 0
+                        if change_pct > 0:
+                            significant_changes.append((key, old_value, new_value, change_pct))
+                    
+                    param_changes.append((key, old_value, new_value))
+            
             # Update internal state and UI controls
             self.current_style_params = optimized_params
             self.parameter_controls.update_parameters(
@@ -923,6 +1081,13 @@ class WebcamApp(QWidget):
                 self.current_style_params,
                 self.on_param_changed
             )
+            
+            # Update thread parameters if running
+            if self.thread and self.thread.isRunning():
+                thread_params = dict(self.current_style_params)
+                thread_params['max_fps'] = self.max_fps_slider.value()
+                thread_params['frame_skip'] = self.frame_skip_slider.value()
+                self.thread.update_params(thread_params)
 
             # Save optimized parameters
             style_name = self.style_tab_manager.get_current_style()
@@ -930,49 +1095,440 @@ class WebcamApp(QWidget):
             save_settings(self.settings)
 
             # Show detailed optimization results
-            param_changes = []
-            for key, value in optimized_params.items():
-                if key in self.current_style_params and self.current_style_params[key] != value:
-                    param_changes.append(
-                        f"{key}: {self.current_style_params[key]} → {value}")
-
             if param_changes:
-                # Show first 5 changes
-                changes_text = "\n".join(param_changes[:5])
-                if len(param_changes) > 5:
-                    changes_text += f"\n... and {len(param_changes) - 5} more changes"
+                # Build detailed message
+                changes_text = "Optimization complete! The following parameters were adjusted:\n\n"
+                
+                # Show significant changes first
+                if significant_changes:
+                    changes_text += "Major adjustments (>10% change):\n"
+                    for key, old_val, new_val, pct in significant_changes[:5]:
+                        param_label = next((p.get('label', key) for p in selected_style.parameters if p['name'] == key), key)
+                        if isinstance(old_val, float) and isinstance(new_val, float):
+                            changes_text += f"  • {param_label}: {old_val:.2f} → {new_val:.2f} ({pct:.0f}% change)\n"
+                        else:
+                            changes_text += f"  • {param_label}: {old_val} → {new_val} ({pct:.0f}% change)\n"
+                    changes_text += "\n"
+                
+                # Show other changes
+                other_changes = [c for c in param_changes if not any(c[0] == sc[0] for sc in significant_changes)]
+                if other_changes:
+                    changes_text += "Other adjustments:\n"
+                    for change in other_changes[:5]:
+                        key, old_val, new_val = change[0], change[1], change[2]
+                        param_label = next((p.get('label', key) for p in selected_style.parameters if p['name'] == key), key)
+                        if old_val == "default":
+                            if isinstance(new_val, float):
+                                changes_text += f"  • {param_label}: set to {new_val:.2f}\n"
+                            else:
+                                changes_text += f"  • {param_label}: set to {new_val}\n"
+                        elif isinstance(old_val, float) and isinstance(new_val, float):
+                            changes_text += f"  • {param_label}: {old_val:.2f} → {new_val:.2f}\n"
+                        else:
+                            changes_text += f"  • {param_label}: {old_val} → {new_val}\n"
+                
+                if len(param_changes) > 10:
+                    changes_text += f"\n... and {len(param_changes) - 10} more minor adjustments"
+                
+                changes_text += "\n\nFrame analysis detected:"
+                analysis = self._analyze_frame_comprehensive(frame)
+                changes_text += f"\n  • Brightness: {analysis['brightness_category']} ({analysis['brightness']:.0f}/255)"
+                changes_text += f"\n  • Contrast: {analysis['contrast_category']} ({analysis['contrast']:.1f})"
+                changes_text += f"\n  • Detail level: {analysis['detail_level']} (edge density: {analysis['edge_density']:.1%})"
+                changes_text += f"\n  • Texture: {'sharp' if analysis['texture_sharpness'] > 0.5 else 'soft'}"
+                
                 QMessageBox.information(
-                    self, "Auto Optimize", f"Parameters optimized!\n\nChanges made:\n{changes_text}")
+                    self, "Auto Optimize - Complete", changes_text)
+                self.status_label.setText("Status: Parameters optimized successfully")
             else:
                 QMessageBox.information(
-                    self, "Auto Optimize", "Parameters were already optimal for this frame.")
+                    self, "Auto Optimize", 
+                    "Parameters were already well-optimized for this frame.\n\n"
+                    "No adjustments were needed based on the current frame analysis.")
 
         except Exception as e:
             show_error_dialog(self, f"Parameter optimization failed: {str(e)}")
             logging.exception("Parameter optimization error")
+            self.status_label.setText("Status: Optimization failed - see error message")
+
+    def _analyze_frame_comprehensive(self, frame):
+        """
+        Comprehensive frame analysis for intelligent parameter optimization.
+        Returns a dictionary with various frame characteristics.
+        """
+        import cv2
+        import numpy as np
+        
+        analysis = {}
+        
+        # Convert to grayscale for analysis
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        h, w = gray.shape
+        total_pixels = h * w
+        
+        # Basic statistics
+        analysis['brightness'] = np.mean(gray)  # 0-255
+        analysis['brightness_normalized'] = analysis['brightness'] / 255.0  # 0-1
+        analysis['contrast'] = np.std(gray)  # Standard deviation
+        analysis['contrast_normalized'] = analysis['contrast'] / 128.0  # Rough normalization
+        
+        # Histogram analysis
+        hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
+        hist_peak = np.argmax(hist)
+        hist_spread = np.std(hist)
+        analysis['histogram_peak'] = hist_peak
+        analysis['histogram_spread'] = hist_spread
+        analysis['histogram_skew'] = np.sum(hist * (np.arange(256) - analysis['brightness'])) / (total_pixels * analysis['contrast'] + 1e-6)
+        
+        # Edge analysis
+        edges_canny = cv2.Canny(gray, 50, 150)
+        edge_density = np.sum(edges_canny > 0) / total_pixels
+        analysis['edge_density'] = edge_density
+        
+        # Texture analysis using Laplacian variance (blur detection)
+        laplacian = cv2.Laplacian(gray, cv2.CV_64F)
+        analysis['texture_variance'] = laplacian.var()
+        analysis['texture_sharpness'] = min(1.0, analysis['texture_variance'] / 1000.0)  # Normalized
+        
+        # Color analysis
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        analysis['saturation'] = np.mean(hsv[:, :, 1]) / 255.0  # 0-1
+        analysis['hue_variance'] = np.std(hsv[:, :, 0]) / 180.0  # Normalized
+        
+        # Noise estimation (using high-frequency content)
+        kernel = np.array([[-1, -1, -1], [-1, 8, -1], [-1, -1, -1]])
+        high_freq = cv2.filter2D(gray.astype(np.float32), -1, kernel)
+        analysis['noise_level'] = min(1.0, np.std(high_freq) / 50.0)  # Normalized
+        
+        # Detail level classification
+        if edge_density > 0.15:
+            analysis['detail_level'] = 'very_high'
+        elif edge_density > 0.1:
+            analysis['detail_level'] = 'high'
+        elif edge_density > 0.05:
+            analysis['detail_level'] = 'medium'
+        else:
+            analysis['detail_level'] = 'low'
+        
+        # Brightness classification
+        if analysis['brightness'] < 70:
+            analysis['brightness_category'] = 'very_dark'
+        elif analysis['brightness'] < 120:
+            analysis['brightness_category'] = 'dark'
+        elif analysis['brightness'] > 200:
+            analysis['brightness_category'] = 'very_bright'
+        elif analysis['brightness'] > 160:
+            analysis['brightness_category'] = 'bright'
+        else:
+            analysis['brightness_category'] = 'normal'
+        
+        # Contrast classification
+        if analysis['contrast'] < 25:
+            analysis['contrast_category'] = 'very_low'
+        elif analysis['contrast'] < 40:
+            analysis['contrast_category'] = 'low'
+        elif analysis['contrast'] > 100:
+            analysis['contrast_category'] = 'very_high'
+        elif analysis['contrast'] > 70:
+            analysis['contrast_category'] = 'high'
+        else:
+            analysis['contrast_category'] = 'normal'
+        
+        return analysis
 
     def _intelligent_parameter_optimization(self, style, frame):
-        """Intelligently optimize parameters based on frame characteristics and style type."""
+        """
+        Intelligently optimize parameters based on comprehensive frame analysis.
+        Works with any style by analyzing parameter names and types.
+        """
         import cv2
         import numpy as np
 
         # Start with current parameters
         optimized_params = self.current_style_params.copy()
-
-        # Analyze frame characteristics more thoroughly
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        brightness = np.mean(gray)
-        contrast = np.std(gray)
-        edges = cv2.Canny(gray, 50, 150)
-        edge_density = np.sum(edges > 0) / (frame.shape[0] * frame.shape[1])
-
-        # Additional analysis
-        hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
-        hist_peak = np.argmax(hist)
-        hist_spread = np.std(hist)
-
-        # Style-specific optimizations with more dramatic changes
+        
+        # Comprehensive frame analysis
+        analysis = self._analyze_frame_comprehensive(frame)
+        
+        # Get style parameters
+        style_params = getattr(style, 'parameters', [])
+        param_map = {p['name']: p for p in style_params}
+        
+        # Style-specific optimizations
         style_name = style.name.lower()
+        
+        # Cartoon style optimization
+        if "cartoon" in style_name:
+            self._optimize_cartoon_parameters(optimized_params, analysis, param_map)
+        
+        # Sketch style optimization
+        elif "sketch" in style_name or "pencil" in style_name:
+            self._optimize_sketch_parameters(optimized_params, analysis, param_map)
+        
+        # Edge detection optimization
+        elif "edge" in style_name or "line" in style_name:
+            self._optimize_edge_parameters(optimized_params, analysis, param_map)
+        
+        # Generic optimization for other styles
+        else:
+            self._optimize_generic_parameters(optimized_params, analysis, param_map)
+        
+        # Ensure all parameters are within valid ranges
+        for param_name, param_value in optimized_params.items():
+            if param_name in param_map:
+                param_def = param_map[param_name]
+                if "min" in param_def:
+                    optimized_params[param_name] = max(param_def["min"], param_value)
+                if "max" in param_def:
+                    optimized_params[param_name] = min(param_def["max"], param_value)
+        
+        # Log the optimization for debugging
+        logging.info(f"Auto-optimized parameters for {style_name}: {optimized_params}")
+        
+        return optimized_params
+    
+    def _get_fallback_optimization(self, selected_style, frame):
+        """Fallback optimization using original methods."""
+        # Check if the style has the old ai_optimize method
+        if hasattr(selected_style, "ai_optimize"):
+            # Use the old AI optimization method
+            optimized_params = selected_style.ai_optimize(
+                frame, self.current_style_params.copy())
+            if "enable_ai_optimization" in optimized_params:
+                optimized_params["enable_ai_optimization"] = False
+        else:
+            # Use intelligent parameter optimization for unified styles
+            optimized_params = self._intelligent_parameter_optimization(
+                selected_style, frame)
+        return optimized_params
+    
+    def _show_enhanced_optimization_results(self, result, original_params, selected_style):
+        """Show results from enhanced optimizer."""
+        try:
+            # Build results message
+            changes_text = "✅ Enhanced Auto-Optimize Complete!\n\n"
+            changes_text += f"Quality Score: {result.quality_score:.3f}\n"
+            changes_text += f"Improvement: +{result.improvement*100:.1f}%\n\n"
+            
+            # Show quality metrics
+            changes_text += "Quality Metrics:\n"
+            for metric_name, metric_value in result.metrics.items():
+                if metric_name != 'total':
+                    changes_text += f"  • {metric_name.replace('_', ' ').title()}: {metric_value:.3f}\n"
+            
+            # Show parameter changes
+            param_changes = []
+            for key, new_value in result.parameters.items():
+                old_value = original_params.get(key)
+                if old_value != new_value:
+                    param_label = next(
+                        (p.get('label', key) for p in selected_style.parameters 
+                         if p['name'] == key), key
+                    ) if hasattr(selected_style, 'parameters') else key
+                    param_changes.append((param_label, old_value, new_value))
+            
+            if param_changes:
+                changes_text += "\nParameter Adjustments:\n"
+                for label, old_val, new_val in param_changes[:10]:
+                    if isinstance(old_val, float) and isinstance(new_val, float):
+                        changes_text += f"  • {label}: {old_val:.2f} → {new_val:.2f}\n"
+                    else:
+                        changes_text += f"  • {label}: {old_val} → {new_val}\n"
+            
+            QMessageBox.information(self, "Enhanced Auto-Optimize", changes_text)
+        except Exception as e:
+            logging.error(f"Error showing enhanced optimization results: {e}")
+    
+    def _optimize_cartoon_parameters(self, params, analysis, param_map):
+        """Optimize cartoon-style parameters based on frame analysis."""
+        brightness = analysis['brightness']
+        edge_density = analysis['edge_density']
+        contrast = analysis['contrast']
+        texture_sharpness = analysis['texture_sharpness']
+        
+        # Optimize bilateral filter parameters
+        if 'bilateral_sigmaColor' in param_map:
+            if brightness < 70:  # Very dark
+                params['bilateral_sigmaColor'] = min(200, params.get('bilateral_sigmaColor', 75) + 50)
+            elif brightness > 200:  # Very bright
+                params['bilateral_sigmaColor'] = max(1, params.get('bilateral_sigmaColor', 75) - 30)
+            else:
+                params['bilateral_sigmaColor'] = 75 + int((brightness - 128) * 0.3)
+        
+        if 'bilateral_sigmaSpace' in param_map:
+            params['bilateral_sigmaSpace'] = params.get('bilateral_sigmaColor', 75)
+        
+        if 'bilateral_passes' in param_map:
+            if texture_sharpness < 0.3:  # Blurry image
+                params['bilateral_passes'] = min(4, params.get('bilateral_passes', 1) + 1)
+            elif texture_sharpness > 0.7:  # Sharp image
+                params['bilateral_passes'] = max(0, params.get('bilateral_passes', 1) - 1)
+        
+        # Optimize quantization
+        if 'bits' in param_map:
+            if edge_density > 0.15:  # High detail
+                params['bits'] = max(2, min(8, params.get('bits', 4) + 1))
+            elif edge_density < 0.05:  # Low detail
+                params['bits'] = max(2, params.get('bits', 4) - 1)
+        
+        if 'downscale_factor' in param_map:
+            if edge_density > 0.15:  # High detail - less downscaling
+                params['downscale_factor'] = min(1.0, params.get('downscale_factor', 0.5) + 0.1)
+            elif edge_density < 0.05:  # Low detail - more downscaling
+                params['downscale_factor'] = max(0.1, params.get('downscale_factor', 0.5) - 0.1)
+        
+        # Optimize edge detection
+        if 'canny_t1' in param_map:
+            if edge_density > 0.15:  # High detail - lower thresholds
+                params['canny_t1'] = max(0, params.get('canny_t1', 100) - 30)
+            elif edge_density < 0.05:  # Low detail - higher thresholds
+                params['canny_t1'] = min(500, params.get('canny_t1', 100) + 40)
+            else:
+                # Adaptive based on brightness
+                params['canny_t1'] = int(50 + (brightness / 255.0) * 100)
+        
+        if 'canny_t2' in param_map:
+            if 'canny_t1' in params:
+                params['canny_t2'] = params['canny_t1'] * 2
+            else:
+                if edge_density > 0.15:
+                    params['canny_t2'] = max(0, params.get('canny_t2', 200) - 50)
+                elif edge_density < 0.05:
+                    params['canny_t2'] = min(500, params.get('canny_t2', 200) + 80)
+        
+        if 'adaptive_C' in param_map:
+            if contrast < 25:  # Low contrast
+                params['adaptive_C'] = max(-20, params.get('adaptive_C', 2) - 3)
+            elif contrast > 100:  # High contrast
+                params['adaptive_C'] = min(20, params.get('adaptive_C', 2) + 3)
+        
+        # Optimize edge morphology
+        if 'edge_dilate' in param_map:
+            if edge_density < 0.05:  # Low detail - dilate more
+                params['edge_dilate'] = min(3, params.get('edge_dilate', 0) + 1)
+            elif edge_density > 0.15:  # High detail - dilate less
+                params['edge_dilate'] = max(0, params.get('edge_dilate', 0) - 1)
+    
+    def _optimize_sketch_parameters(self, params, analysis, param_map):
+        """Optimize sketch-style parameters based on frame analysis."""
+        contrast = analysis['contrast']
+        edge_density = analysis['edge_density']
+        brightness = analysis['brightness']
+        
+        # Optimize edge strength/threshold
+        for param_name in ['edge_strength', 'edge_threshold', 'threshold']:
+            if param_name in param_map:
+                if contrast < 25:  # Very low contrast
+                    if param_map[param_name].get('type') == 'float':
+                        params[param_name] = min(1.0, params.get(param_name, 0.5) + 0.3)
+                    else:
+                        params[param_name] = min(500, params.get(param_name, 100) + 50)
+                elif contrast > 100:  # Very high contrast
+                    if param_map[param_name].get('type') == 'float':
+                        params[param_name] = max(0.0, params.get(param_name, 0.5) - 0.3)
+                    else:
+                        params[param_name] = max(0, params.get(param_name, 100) - 50)
+        
+        # Optimize blur
+        for param_name in ['blur_intensity', 'gaussian_blur', 'blur_strength']:
+            if param_name in param_map:
+                if edge_density > 0.15:  # High detail - less blur
+                    if param_map[param_name].get('type') == 'float':
+                        params[param_name] = max(0.0, params.get(param_name, 1.0) - 0.3)
+                    else:
+                        params[param_name] = max(0, params.get(param_name, 5) - 2)
+                elif edge_density < 0.05:  # Low detail - more blur
+                    if param_map[param_name].get('type') == 'float':
+                        params[param_name] = min(5.0, params.get(param_name, 1.0) + 0.5)
+                    else:
+                        params[param_name] = min(20, params.get(param_name, 5) + 3)
+        
+        # Optimize detail level
+        if 'detail_level' in param_map:
+            if edge_density > 0.15:
+                params['detail_level'] = min(5, params.get('detail_level', 3) + 2)
+            elif edge_density < 0.05:
+                params['detail_level'] = max(1, params.get('detail_level', 3) - 2)
+    
+    def _optimize_edge_parameters(self, params, analysis, param_map):
+        """Optimize edge detection parameters based on frame analysis."""
+        edge_density = analysis['edge_density']
+        contrast = analysis['contrast']
+        
+        # Optimize thresholds
+        if 'threshold1' in param_map:
+            if edge_density > 0.15:  # High edge density
+                params['threshold1'] = max(0, params.get('threshold1', 100) - 50)
+            elif edge_density < 0.05:  # Low edge density
+                params['threshold1'] = min(500, params.get('threshold1', 100) + 60)
+        
+        if 'threshold2' in param_map:
+            if 'threshold1' in params:
+                params['threshold2'] = params['threshold1'] * 2.5
+            else:
+                if edge_density > 0.15:
+                    params['threshold2'] = max(0, params.get('threshold2', 200) - 70)
+                elif edge_density < 0.05:
+                    params['threshold2'] = min(500, params.get('threshold2', 200) + 100)
+        
+        # Optimize edge thickness
+        if 'edge_thickness' in param_map:
+            if edge_density > 0.15:
+                params['edge_thickness'] = min(5, params.get('edge_thickness', 2) + 1)
+            elif edge_density < 0.05:
+                params['edge_thickness'] = max(1, params.get('edge_thickness', 2) - 1)
+        
+        # Optimize noise reduction
+        if 'noise_reduction' in param_map:
+            noise_level = analysis['noise_level']
+            if noise_level > 0.5:  # High noise
+                if param_map['noise_reduction'].get('type') == 'float':
+                    params['noise_reduction'] = min(5.0, params.get('noise_reduction', 1.0) + 1.0)
+                else:
+                    params['noise_reduction'] = min(10, params.get('noise_reduction', 3) + 2)
+            elif noise_level < 0.2:  # Low noise
+                if param_map['noise_reduction'].get('type') == 'float':
+                    params['noise_reduction'] = max(0.0, params.get('noise_reduction', 1.0) - 0.5)
+                else:
+                    params['noise_reduction'] = max(0, params.get('noise_reduction', 3) - 1)
+    
+    def _optimize_generic_parameters(self, params, analysis, param_map):
+        """Generic optimization for styles without specific rules."""
+        # Try to intelligently map common parameter names
+        brightness = analysis['brightness']
+        contrast = analysis['contrast']
+        edge_density = analysis['edge_density']
+        
+        # Map common parameter patterns
+        param_mappings = {
+            'threshold': 'edge_density',
+            'strength': 'edge_density',
+            'intensity': 'edge_density',
+            'blur': 'texture_sharpness',
+            'smooth': 'texture_sharpness',
+            'saturation': 'saturation',
+            'brightness': 'brightness_normalized',
+            'contrast': 'contrast_normalized',
+        }
+        
+        for param_name, param_def in param_map.items():
+            param_type = param_def.get('type', 'int')
+            param_lower = param_name.lower()
+            
+            # Try to find a mapping
+            for pattern, analysis_key in param_mappings.items():
+                if pattern in param_lower:
+                    value = analysis[analysis_key]
+                    
+                    # Scale to parameter range
+                    if 'min' in param_def and 'max' in param_def:
+                        min_val = param_def['min']
+                        max_val = param_def['max']
+                        if param_type == 'float':
+                            params[param_name] = min_val + value * (max_val - min_val)
+                        else:
+                            params[param_name] = int(min_val + value * (max_val - min_val))
+                    break
 
         if "cartoon" in style_name:
             # More aggressive cartoon optimization
@@ -1103,7 +1659,15 @@ class WebcamApp(QWidget):
     def closeEvent(self, event):
         """Ensure the thread stops when closing the app."""
         if self.thread and self.thread.isRunning():
+            logging.info("Stopping thread before application close...")
             self.thread.stop()
+            # Wait for thread to finish (with timeout)
+            if self.thread.isRunning():
+                self.thread.wait(3000)  # Wait up to 3 seconds
+                if self.thread.isRunning():
+                    logging.warning("Thread did not stop within timeout, terminating...")
+                    self.thread.terminate()
+                    self.thread.wait(1000)  # Wait for termination
             logging.info("Application closed. WebcamThread stopped.")
         event.accept()
 
@@ -1113,6 +1677,19 @@ class WebcamApp(QWidget):
 
 
 def main():
+    # Ensure OpenCV warnings are suppressed
+    try:
+        if hasattr(cv2, 'setLogLevel'):
+            if hasattr(cv2, 'LOG_LEVEL_ERROR'):
+                cv2.setLogLevel(cv2.LOG_LEVEL_ERROR)
+            elif hasattr(cv2, 'LOG_LEVEL_SILENT'):
+                cv2.setLogLevel(cv2.LOG_LEVEL_SILENT)
+            else:
+                # Try numeric value (4 = ERROR level in OpenCV 4.x)
+                cv2.setLogLevel(4)
+    except (AttributeError, TypeError):
+        pass
+    
     # Setup logging with rotation
     file_handler = RotatingFileHandler(
         "webcam_app.log", maxBytes=5 * 1024 * 1024, backupCount=3

@@ -10,6 +10,7 @@ import subprocess
 from typing import Optional, Dict, Any, Literal
 
 import numpy as np
+import cv2
 
 try:
     import av  # PyAV for capture
@@ -195,6 +196,10 @@ class WebcamThread(QThread):
         # Derived perf knobs
         self.frame_skip = int(self.params.get("frame_skip", 0) or 0)
         self.target_dt = 1.0 / float(max(1, fps))
+        # Performance tracking for adaptive frame skipping
+        self._frame_times = []  # Track processing times
+        self._adaptive_skip = 0  # Adaptive frame skipping
+        self._max_frame_time = 0.1  # 100ms max per frame (10 FPS minimum)
 
     # ---- lifecycle helpers ----
     @property
@@ -202,6 +207,7 @@ class WebcamThread(QThread):
         return self._stopped_reason
 
     def stop(self) -> None:
+        """Request thread to stop. Thread will check this flag and exit cleanly."""
         self._stop = True
 
     def update_params(self, new_params: Dict[str, Any]) -> None:
@@ -210,6 +216,9 @@ class WebcamThread(QThread):
         fps = int(self.params.get("max_fps", 30) or 30)
         self.frame_skip = int(self.params.get("frame_skip", 0) or 0)
         self.target_dt = 1.0 / float(max(1, fps))
+        # Reset performance tracking on restart
+        self._frame_times = []
+        self._adaptive_skip = 0
         # Keep input_options framerate in sync for restarts
         self.input_options["framerate"] = str(fps)
 
@@ -475,14 +484,34 @@ class WebcamThread(QThread):
                     img = frm.to_ndarray(format="bgr24")
                     empty_count = 0  # got a frame
 
-                    # Frame skipping
-                    do_skip = self.frame_skip > 0 and (frame_i % (self.frame_skip + 1)) != 0
+                    # Adaptive frame skipping based on performance
+                    total_skip = self.frame_skip + self._adaptive_skip
+                    do_skip = total_skip > 0 and (frame_i % (total_skip + 1)) != 0
                     frame_i += 1
                     if do_skip:
                         continue
 
-                    # Style pipeline
+                    # Style pipeline with performance tracking
+                    frame_start = time.time()
                     self.last_frame = self._process_frame(img)
+                    frame_time = time.time() - frame_start
+                    
+                    # Track frame processing times
+                    self._frame_times.append(frame_time)
+                    if len(self._frame_times) > 30:  # Keep last 30 frames
+                        self._frame_times.pop(0)
+                    
+                    # Adaptive skipping: if processing is too slow, skip more frames
+                    avg_frame_time = sum(self._frame_times) / len(self._frame_times) if self._frame_times else 0
+                    if avg_frame_time > self._max_frame_time:
+                        # Increase adaptive skip if we're falling behind
+                        self._adaptive_skip = min(5, self._adaptive_skip + 1)
+                        if frame_i % 30 == 0:  # Log every 30 frames
+                            logger.warning(f"Performance lag detected: avg frame time {avg_frame_time:.3f}s, adaptive skip={self._adaptive_skip}")
+                    elif avg_frame_time < self._max_frame_time * 0.5:
+                        # Decrease adaptive skip if we're ahead
+                        self._adaptive_skip = max(0, self._adaptive_skip - 1)
+                    
                     self._push_output(self.last_frame)
                     self.frame_signal.emit(self.last_frame)  # ✅ preview update
 
@@ -570,14 +599,34 @@ class WebcamThread(QThread):
                 empty_count = 0  # got a frame
                 img = latest_frame  # Use the latest frame
 
-                # Frame skipping
-                do_skip = self.frame_skip > 0 and (frame_i % (self.frame_skip + 1)) != 0
+                # Adaptive frame skipping based on performance
+                total_skip = self.frame_skip + self._adaptive_skip
+                do_skip = total_skip > 0 and (frame_i % (total_skip + 1)) != 0
                 frame_i += 1
                 if do_skip:
                     continue
 
-                # Style pipeline
+                # Style pipeline with performance tracking
+                frame_start = time.time()
                 self.last_frame = self._process_frame(img)
+                frame_time = time.time() - frame_start
+                
+                # Track frame processing times
+                self._frame_times.append(frame_time)
+                if len(self._frame_times) > 30:  # Keep last 30 frames
+                    self._frame_times.pop(0)
+                
+                # Adaptive skipping: if processing is too slow, skip more frames
+                avg_frame_time = sum(self._frame_times) / len(self._frame_times) if self._frame_times else 0
+                if avg_frame_time > self._max_frame_time:
+                    # Increase adaptive skip if we're falling behind
+                    self._adaptive_skip = min(5, self._adaptive_skip + 1)
+                    if frame_i % 30 == 0:  # Log every 30 frames
+                        logger.warning(f"Performance lag detected: avg frame time {avg_frame_time:.3f}s, adaptive skip={self._adaptive_skip}")
+                elif avg_frame_time < self._max_frame_time * 0.5:
+                    # Decrease adaptive skip if we're ahead
+                    self._adaptive_skip = max(0, self._adaptive_skip - 1)
+                
                 self._push_output(self.last_frame)
                 self.frame_signal.emit(self.last_frame)  # ✅ preview update
 
@@ -609,10 +658,12 @@ class WebcamThread(QThread):
             if hasattr(self.style, "apply"):
                 # Try keyword arguments first (newer style format)
                 try:
-                    return self.style.apply(bgr, **self.params)
+                    result = self.style.apply(bgr, **self.params)
                 except TypeError:
                     # Fallback to params dict (older style format)
-                    return self.style.apply(bgr, params=self.params)
+                    result = self.style.apply(bgr, params=self.params)
+                
+                return result
             else:
                 return bgr
         except Exception as e:  # Never crash the capture on style errors
@@ -624,6 +675,13 @@ class WebcamThread(QThread):
         if self._vcam is None:
             return
         try:
+            # Handle both grayscale (2D) and color (3D) images
+            if len(bgr.shape) == 2:
+                # Convert grayscale to BGR
+                bgr = cv2.cvtColor(bgr, cv2.COLOR_GRAY2BGR)
+            elif len(bgr.shape) == 3 and bgr.shape[2] == 1:
+                # Convert single channel to BGR
+                bgr = cv2.cvtColor(bgr, cv2.COLOR_GRAY2BGR)
             # pyvirtualcam expects RGB
             rgb = bgr[:, :, ::-1].copy()
             self._vcam.send(rgb)
