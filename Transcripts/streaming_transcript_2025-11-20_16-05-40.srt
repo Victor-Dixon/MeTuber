@@ -1,0 +1,637 @@
+1
+02:18:48,488 --> 02:18:51,816
+Hello can you hear me nowAll right.
+
+2
+02:18:53,147 --> 02:19:01,982
+I guess now it's time to see if the agent
+can hear me as well see if that's working
+
+3
+02:19:04,273 --> 02:19:11,857
+It definitely should be cuz you know it's
+not anything that I created
+
+4
+02:19:12,745 --> 02:19:13,350
+All right
+
+5
+02:19:25,801 --> 02:19:43,357
+So I want to start a conversation but I want
+to do within this conversation is I want to
+simulate a meeting between a CEO of Auto
+dream.os
+
+6
+02:19:44,600 --> 02:19:52,579
+AndI want to I want the topic of the
+meeting. To be about.
+
+7
+02:19:53,222 --> 02:19:58,500
+I want the topic of the meeting to be about
+the future direction of
+
+8
+02:19:59,138 --> 02:20:04,256
+The project what we have nowAnd.
+
+9
+02:20:05,193 --> 02:20:07,576
+The roadmap
+
+10
+02:20:33,196 --> 02:20:34,315
+Just let me know
+
+11
+02:20:35,819 --> 02:20:56,685
+All right let's roll with it imagine you got
+that CEO directions
+
+12
+02:20:56,828 --> 02:21:15,028
+It's orchestrating agents it's got a solid
+feedback loop and it's doing continuous
+execution there you shipped into the Future
+Vision systems we wanted to be the go to
+blueprint by voting work clothes something
+that just run seamlessly and is almost a
+household name and automation space
+
+13
+02:21:13,898 --> 02:21:28,084
+Then you lay off the road map in the next 6
+months maybe we're focusing on stability and
+expanding features over the next year or two
+we're looking at scaling up maybe bring it
+in more Integrations and ensuring that the
+system can be used but
+
+14
+02:21:28,568 --> 02:21:30,703
+And of course you finish with a sense of
+mission
+
+15
+02:21:31,075 --> 02:21:37,689
+Ultimately we want to make sure this is a
+system that not only evolves on its own but
+most people reach a point where they have
+the freedom to do what they want
+
+16
+02:21:38,473 --> 02:21:48,342
+And so it definitely seems like I'm spot on
+
+17
+02:21:49,311 --> 02:22:19,704
+Without even having to talk or run the
+simulation I guess we should go deeper into
+the simulation suppose we were to introduce
+different advisors and so we have a round
+table could be there would be at the round
+table who do we need to be in attendance at
+this strategy meeting
+
+18
+02:22:21,230 --> 02:22:42,868
+Absolutely let's ask some characters to this
+virtual round table so in this imaginary
+strategy meeting you probably want a few key
+advises around the table first off you want
+a lead engineer or the chief technical
+officer this is the person who knows nuts
+and bolts of everything is running under the
+hood they can talk about the technical
+feasibility of the road map and what kind of
+engineering hurdles you might
+
+19
+02:22:43,511 --> 02:22:52,956
+Then you might bring in a product strategist
+or product management
+
+20
+02:22:53,370 --> 02:23:13,434
+You probably also want a financial advisor
+or a business development lead someone who
+can talk about funding sustainability and
+how you turn this into something that
+actually makes money over time and maybe one
+more thing at the table could be for someone
+focused on user experience or community
+building things about how people are
+actually going to interact with it and how
+you work Community around it
+
+21
+02:23:13,618 --> 02:23:27,524
+So and it's imaginary meeting you have a
+nice little round table of your Technique
+
+22
+02:23:34,914 --> 02:23:52,749
+Absolutely so that gives you a good picture
+of who will be running a table you got your
+Tech lead your product strategist your
+financial a business mind and someone
+thinking about user experience and community
+and all of them will be giving you different
+angles on the future direction of the
+project so with that you got a nice little
+round of simulation going
+
+23
+02:24:12,813 --> 02:24:26,234
+Oh that's a whole different kind of meeting
+scenario but no worries we'll just imagine
+everyone just let me know
+
+24
+02:24:28,660 --> 02:24:40,603
+Right no I don't know what you just heard on
+that one but what I would like to do at this
+point is identify what would be considered
+
+25
+02:24:41,413 --> 02:25:08,730
+Or let me put it like this Steve Jobs was
+80% signal and 20% noise what would our
+portionants be what's our ratio when you
+look at that and don't forget like in this
+meeting we can get the cursor swarm agents
+to give you a state of the project so that
+you can have updated contacts on where we
+are if you need that just let me know
+
+26
+02:25:10,295 --> 02:25:38,439
+Got it loud and clear and no worries about
+the little audio pickup sometimes things
+just come through funny so let's break it
+down in terms of that signal to noise ratio
+if Steve Jobs was 80% signal and 20% noise
+we can definitely think about where you and
+your project stand given the way your
+structuring things I'd say you're aiming for
+pretty high signal ratio maybe you're
+something like 75% signal and 25% noise or
+maybe even a bit higher depending on how
+clean a streamlined you want those workflows
+
+27
+02:25:39,259 --> 02:25:52,675
+Louie if you want to pull in the curses warm
+agency at any point and have them give a
+quick state of the project update just let
+me know we can definitely send me like that
+and that way you'll have all the context you
+need to figure out exactly where your signal
+storage ratio stands
+
+28
+02:26:58,306 --> 02:27:02,922
+I don't think he even likes the colors I
+don't think she likes the color green
+
+29
+02:27:05,238 --> 02:27:11,209
+He tried to stay away from being green so I
+haven't seen so much I think she don't like
+to celebrate
+
+30
+02:27:13,027 --> 02:27:17,972
+Like blue that isBecause.
+
+31
+02:27:19,306 --> 02:28:11,884
+And then when you drop the Box you get
+popped and got it picked the box back up
+
+32
+02:28:14,862 --> 02:28:20,882
+It's actually excruciatingCuz you don't want
+to drop the box but the Box get heavy.
+
+33
+02:28:21,677 --> 02:28:27,792
+And the more you do the heavier the Box end
+up being the start which make it harder to
+hold up
+
+34
+02:28:32,691 --> 02:28:42,619
+It's okay though he going to have a chest
+and and we're going to stop
+
+35
+02:28:55,079 --> 02:29:05,597
+If you don't then it just scale over time it
+just keep scaling until it finally get
+checked cuz like I said like I was saying it
+don't matter what you say
+
+36
+02:29:05,976 --> 02:29:14,677
+That's why I keep saying that it matter what
+you do and if you keep bringing home with
+you not supposed to bring home then you
+can't tell me you care
+
+37
+02:29:19,614 --> 02:29:21,045
+That don't mean shit
+
+38
+02:29:22,451 --> 02:29:57,251
+And then went back and did the same shit
+yeah because that's his prerogative control
+like we're not laughing with you we're
+laughing at you
+
+39
+02:30:02,487 --> 02:30:18,043
+No no no the worst that like like I said and
+the worst thing about it is they going to
+just keep doing worse stuff until you
+finally get it that that's that's the thing
+like you you don't want to get but they
+going to break but but just it's just easier
+
+40
+02:30:18,687 --> 02:30:22,407
+To just go ahead just my name is Kunta we
+all had to learn it
+
+41
+02:30:26,272 --> 02:30:34,983
+OK Google
+
+42
+02:30:34,301 --> 02:30:37,357
+Oh you really thinkOh okay babe.
+
+43
+02:30:38,625 --> 02:30:55,144
+Every time I say that it's like okay you
+might have went like I heard him saying I
+feel bad for you last night tonight I don't
+care though tonight probably not you give up
+sleeping I might end up punishment right
+before the time to go back to school fucking
+with my ass like you really lucky
+
+44
+02:30:55,816 --> 02:30:56,569
+With me cuz if you
+
+45
+02:30:57,348 --> 02:31:04,898
+Were and I want you to hear this cuz if you
+was fucking with me you being punishment
+right now like right now like right now in
+punishment position
+
+46
+02:31:06,107 --> 02:31:18,193
+Let me know Chris in Charlie
+
+47
+02:31:19,533 --> 02:31:25,810
+When I hear him I'll be thinking of you
+
+48
+02:31:27,386 --> 02:31:38,982
+He remind me of myself I remember them days
+with Christian God damn Charlie and you see
+where we at I should have never gave up so
+don't don't give up cuz I see what happened
+
+49
+02:31:40,728 --> 02:31:48,006
+It's that important you see you deal with
+Chris and Charlie that's what happened
+Mighty gave up on your ass we see what
+happened
+
+50
+02:31:51,243 --> 02:31:58,129
+No no no I don't want to hear that shit
+either cuz see they be trying to me
+
+51
+02:31:59,429 --> 02:32:16,045
+Google
+
+52
+02:32:24,649 --> 02:32:29,003
+Yeah yeahBut once they get it.
+
+53
+02:32:32,226 --> 02:32:40,630
+I was broken
+
+54
+02:32:44,235 --> 02:32:49,787
+I don't know I don't know what broke me but
+I knew I was broke cuz when I missed the
+school bus
+
+55
+02:32:50,733 --> 02:32:54,641
+I ain't even going onYeah now see it.
+
+56
+02:32:56,135 --> 02:33:10,920
+My ass mama I missed the boys well you
+better walk I ain't walk you and Kiki grew
+up there
+
+57
+02:33:24,217 --> 02:33:32,129
+Come homeCatching the Metro.
+
+58
+02:33:32,987 --> 02:33:34,315
+You got to walk huh
+
+59
+02:33:34,843 --> 02:34:05,912
+Remember what my legs itchy with you after
+school bus tonight question mark
+
+60
+02:34:06,555 --> 02:34:17,616
+I was like 10 minutes away by Foot Locker
+fucking Adventure but I don't think me
+having a car would have helped me
+
+61
+02:34:34,686 --> 02:34:46,477
+But I'm not going to lie to you I know right
+now
+
+62
+02:34:49,831 --> 02:34:56,652
+Always changeYour.
+
+63
+02:35:01,678 --> 02:35:09,069
+On the TVPunished somehow.
+
+64
+02:35:11,314 --> 02:35:14,314
+You need to be at school with him during the
+day I wish
+
+65
+02:35:14,456 --> 02:35:41,321
+It's been ended up happening that's going to
+end up here that's going to be the solution
+you have to stick with that boy on that last
+hour right when he start acting up cuz it's
+right around the same time it's right around
+the same time you can tell when he's like oh
+he changing anything
+
+66
+02:35:42,055 --> 02:35:50,493
+School just started you did do the last
+second check like right before he got out
+like yeah I'm going to get a good day today
+right so so he was like
+
+67
+02:35:51,161 --> 02:36:04,782
+Yeah hell no hell no hell no I'm going to
+have a good day I said you sure you promise
+you going to have a good day yes my mama
+have a good day and then immediately went in
+there and lied
+
+68
+02:36:14,949 --> 02:36:20,095
+You came home in the kitchen called me at
+8:56 so the moment you
+
+69
+02:36:24,496 --> 02:36:31,429
+Had those back off and everythingI see the
+number.
+
+70
+02:36:32,409 --> 02:36:36,408
+And it said Texarkana ain't nobody calling
+me to take the car
+
+71
+02:36:38,903 --> 02:36:45,211
+So every timeI want to.
+
+72
+02:36:46,273 --> 02:36:53,129
+I want it to be where I don't have to but at
+this point I'm going to have to start saving
+the teacher number to my phone
+
+73
+02:36:55,262 --> 02:37:12,802
+It's safe to be going on a field trip on the
+12th of December wait they let them go on a
+field trip no he not I tried to sign up to
+be a short chaperone so hopefully they
+choose me
+
+74
+02:37:13,299 --> 02:37:44,961
+You would think they would right because I
+got the bad child or if he's going then yeah
+yeah I want her right that way when he went
+to Google cuz I wonder what he do that if
+y'all was sitting right there I know he will
+already know you wouldn't do that shit right
+now
+
+75
+02:37:47,108 --> 02:37:50,923
+Know you had left but I lucky you didn't
+spend the block on that ass
+
+76
+02:37:51,968 --> 02:38:00,708
+Boy boy that's what I'm saying no just
+imagine you forgot it backpack Daddy
+
+77
+02:38:01,347 --> 02:38:03,873
+Nothing
+
+78
+02:38:09,376 --> 02:38:23,203
+I like that kind of stuff though you like
+the attention
+
+79
+02:38:30,056 --> 02:38:30,726
+My mama
+
+80
+02:38:31,823 --> 02:38:38,282
+When I was being disrespectful to the
+teacher she couldn't handle what she said
+call her baby
+
+81
+02:38:40,086 --> 02:38:45,304
+ThatEverything.
+
+82
+02:38:53,234 --> 02:38:55,661
+Outside boot camp
+
+83
+02:39:02,251 --> 02:39:03,978
+Us
+
+84
+02:39:04,705 --> 02:39:17,929
+Or put them in a Catholic school where they
+what they asked where they can hit him with
+that ruler when he want to act like you
+don't want to listen cuz that you got them I
+don't place that started acting right
+immediately if the teachers could just do
+that
+
+85
+02:39:18,317 --> 02:39:22,414
+You would have no problemsBut he know they
+can't so.
+
+86
+02:39:25,294 --> 02:39:47,081
+Jordan Jordan really remember it think about
+it at the beginning
+
+87
+02:39:48,313 --> 02:39:55,111
+So having a good time yeah he just having a
+good timeLike I said he just let off the.
+
+88
+02:39:54,320 --> 02:40:00,546
+Let off the wheel but this cuz it's not his
+first year though rightOh it is.
+
+89
+02:40:01,866 --> 02:40:03,189
+That's exactly why
+
+90
+02:40:19,920 --> 02:40:25,610
+Work and stuff
+
+91
+02:40:26,816 --> 02:40:32,735
+So at this point she's letting them hit each
+other back and somebody get you them back
+like
+
+92
+02:40:33,577 --> 02:40:38,732
+That's that's not how School works because
+he's going to go to school and I said that
+
+93
+02:40:39,217 --> 02:40:50,906
+So he's going to go to school thinking that
+he can go and hit somebody you can't and
+recently he just got in trouble he didn't
+hit him but he like he said he put his arms
+
+94
+02:40:51,943 --> 02:40:57,498
+His arm in the hell up basically he put the
+kids arm in the hell up
+
+95
+02:40:58,409 --> 02:41:03,595
+Show me how you get colder the other day
+come hereHow'd you do it.
+
+96
+02:41:06,863 --> 02:41:17,082
+He did that right now the problem was that
+you were touching somebody he said I didn't
+mean anybody I didn't hit anybody but you
+still
+
+97
+02:41:17,864 --> 02:41:24,853
+Touched him when your hands supposed to be
+behind your headNo.
+
+98
+02:41:26,969 --> 02:41:32,709
+My thing is that it feels like he's taking
+most of the stuff from the daycare and bring
+it into the pool
+
+99
+02:41:33,491 --> 02:41:44,442
+And we didn't let him know until yesterday
+but it's not the same like you you have to
+listen and learn at school that daycare was
+a daycare for them to watch you doing
+
+100
+02:41:45,883 --> 02:41:50,670
+Everything you want there forget that shit
+don't don't bring that shit to this school
+clearly
+
+101
+02:41:51,275 --> 02:41:55,548
+Clearly but he's still not getting it it's
+all right
+
+102
+02:41:56,230 --> 02:42:10,248
+Yeah it's it's not a game eventually
+
+103
+02:42:13,967 --> 02:42:41,584
+I said that it's not that at this point at
+this point like I said it's just a matter of
+time and how long he's willing to keep
+having days like this instead of days where
+he could be playing zombies or things like
+that like the reason he's standing here
+instead of playing a game right now it's
+because he's in trouble
+
+104
+02:42:42,664 --> 02:42:53,158
+Otherwise he could be playing a game
+watching TV doing you know anything else
+instead this tablet
+
+105
+02:43:02,385 --> 02:43:19,244
+Okay I'm coming up to
+
+106
+02:43:20,550 --> 02:43:22,344
+The night Uncle Victor
+
+107
+03:10:32,964 --> 03:10:40,327
+Them in my kitchen is clean
+
+108
+03:10:41,942 --> 03:10:43,415
+Send me my kitchens clean
+

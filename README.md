@@ -2,6 +2,39 @@
 
 A professional webcam effects application with real-time video processing capabilities. Transform your webcam into a professional streaming setup with real-time effects, filters, and virtual camera output for OBS, Zoom, Teams, and more.
 
+---
+
+## 📋 Audit Information
+
+**What is Metuber?**  
+MeTuber is a desktop application that applies real-time visual effects to webcam video feeds and outputs the processed video to virtual camera devices (OBS Virtual Camera, UnityCapture) for use in streaming, video conferencing, and content creation applications.
+
+**What does "done" look like?**  
+- User can select a camera device and apply visual effects in real-time
+- Processed video is available as a virtual camera device for other applications
+- Settings and parameters persist across sessions
+- Application handles errors gracefully and provides clear feedback
+
+**How do I run it locally?**  
+See [Quick Start](#-quick-start) section below. Primary entry point: `python webcam_filter_pyqt5.py` (legacy) or `python src/v2_main.py` (V2 modular version).
+
+**Known Limitations:**
+- Windows 10/11 is the primary supported platform (Linux/Mac support is experimental via OpenCV)
+- Requires OBS Studio for OBS Virtual Camera backend (optional, UnityCapture is alternative)
+- Audio captioning features require PyTorch (~1.5GB download) - optional component
+- Some effects are computationally intensive and may cause frame drops on lower-end hardware
+- Camera access requires Windows privacy settings to allow desktop apps
+
+**What is experimental vs stable:**
+- **Stable**: Core video effects, virtual camera output, device detection, parameter controls, settings persistence
+- **Experimental**: V2 modular architecture (`src/v2_main.py`), plugin system (`src/plugins/`), AI parameter optimizer, audio captioning features
+- **Legacy**: Original monolithic implementation (`webcam_filter_pyqt5.py`) - functional but being phased out
+
+**Current Maturity Level:** Beta / Pre-production  
+**Primary Entry Points:** `webcam_filter_pyqt5.py` (stable), `src/v2_main.py` (experimental modular version)
+
+---
+
 ## ✨ Key Features
 
 - **Real-Time Video Effects**: Apply professional-grade filters and effects to your webcam feed with minimal latency
@@ -18,6 +51,31 @@ A professional webcam effects application with real-time video processing capabi
 - **Snapshot Capture**: Save processed frames as images
 - **Settings Persistence**: Automatically saves your preferences and parameters
 - **Modular Design**: Easy to add new effects and styles
+
+## 🤖 Twitch Bots
+
+Twitch IRC bot scaffolds (merged from StreamerTools) live under `twitch_bots/`:
+
+```bash
+pip install -e .
+copy twitch_bots\scaffold\.env.example .env
+# Edit .env: TWITCH_BOT_TOKEN, TWITCH_CHANNEL, TWITCH_BOT_NICK
+
+python -m twitch_bots.echo_bot
+```
+
+See `twitch_bots/README.md` and `docs/STREAMERTOOLS_MERGE.md` for details.
+
+## 🌐 LAN Web Filter Tester
+
+Test every filter from any device on your WiFi/LAN (no PyQt GUI required):
+
+```bash
+pip install -r requirements-core.txt -r requirements-web.txt
+python run_web.py
+```
+
+The server binds to `0.0.0.0` and prints your LAN URL (e.g. `http://192.168.x.x:8765`). Use the web UI to pick a filter, adjust parameters, run single-filter tests, or batch-test all filters. Errors are surfaced explicitly in test mode.
 
 ## 🚀 Quick Start
 
@@ -46,9 +104,19 @@ A professional webcam effects application with real-time video processing capabi
    ```
 
 3. **Install dependencies:**
+   
+   **Option A: Core only (~200MB) - Recommended for most users:**
+   ```bash
+   pip install -r requirements-core.txt
+   ```
+   
+   **Option B: Full install (~2GB) - Includes audio captioning features:**
    ```bash
    pip install -r requirements.txt
    ```
+   
+   **Note**: The full install includes PyTorch (~1.5GB) via `openai-whisper` for speech recognition. 
+   The core installation is sufficient for video effects and virtual camera features.
 
 4. **Run the application:**
    ```bash
@@ -136,6 +204,8 @@ MeTuber/
 │   ├── plugins/              # Plugin system
 │   └── services/             # Service layer
 ├── tests/                    # Test suite
+├── twitch_bots/              # Twitch IRC bots (echo bot + scaffold)
+├── Transcripts/              # Stream transcript archives
 ├── snapshots/                # Saved snapshot images
 ├── config.json               # Saved settings (auto-generated)
 └── requirements.txt          # Python dependencies

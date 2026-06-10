@@ -1,0 +1,240 @@
+1
+00:05:36,900 --> 00:05:38,706
+Staring at
+
+2
+00:05:39,605 --> 00:05:46,339
+You know wife
+
+3
+00:05:48,737 --> 00:05:48,737
+With the
+
+4
+00:09:49,313 --> 00:11:21,527
+See where your mind is so
+
+5
+00:11:22,655 --> 00:11:25,454
+I'm like you ask somebody cuz you are
+initiator
+
+6
+00:11:33,925 --> 00:11:46,650
+Yes in store
+
+7
+00:11:48,807 --> 00:11:56,807
+Will be walking into soUntil first they
+would be up to. It if you don't.
+
+8
+00:12:06,074 --> 00:12:10,411
+Yeah
+
+9
+00:12:22,245 --> 00:12:25,668
+ProvidMy world.
+
+10
+00:12:29,034 --> 00:12:36,304
+Today when I enter his world
+
+11
+00:12:36,525 --> 00:12:38,178
+So that's why
+
+12
+00:12:39,037 --> 00:12:47,177
+Now
+
+13
+00:12:48,018 --> 00:12:48,758
+Exposed to and
+
+14
+00:21:08,634 --> 00:21:18,173
+Yeah
+
+15
+00:22:44,722 --> 00:22:47,637
+It's very soft exactly
+
+16
+00:26:02,273 --> 00:26:48,220
+A boy scouts a football player a member of
+the ROTC and honorable student he was
+hanging around his teacher's classroom
+
+17
+00:26:50,359 --> 00:26:57,213
+Door hereWe go. Just needed the same time.
+
+18
+00:26:59,091 --> 00:27:44,516
+To do the school district says that is not
+what they trained English teacher pause
+office to do it and I didn't say it and no
+one else in the class knows that I said cuz
+I did interview all the time version
+
+19
+00:27:45,564 --> 00:27:55,698
+Trying to understand
+
+20
+00:27:56,702 --> 00:27:57,732
+Need help
+
+21
+00:28:14,599 --> 00:28:21,902
+Can you run the Specifically to you.
+
+22
+00:28:23,447 --> 00:28:24,389
+Old
+
+23
+00:28:34,342 --> 00:28:36,569
+December
+
+24
+00:29:09,531 --> 00:30:11,238
+I have 30 years of data on the Cowboys
+
+25
+00:36:17,901 --> 00:36:23,802
+Comma
+
+26
+00:39:22,165 --> 00:39:22,276
+He got
+
+27
+01:38:32,717 --> 01:38:35,652
+They have no sense of
+
+28
+01:38:40,392 --> 01:38:40,950
+Belong years
+
+29
+01:38:42,173 --> 01:39:27,737
+Real relationships surface level Ben need
+external validation from men they also need
+external validation From Success so if they
+don't become successful they self implode
+the way that they meet these needs in this
+patriarchal society is Success power and
+dominance we see how they're doing this okay
+they are being told that they are providers
+and protectors and a lot of them cannot live
+up to this world okay this is not possible
+for all of them because women
+
+30
+01:39:32,200 --> 01:39:35,879
+They don't make real friends they are
+stuckDown here.
+
+31
+01:39:36,809 --> 01:39:42,199
+This is how they are operating this is not
+safe for anyone
+
+32
+01:39:44,019 --> 01:39:51,150
+Period
+
+33
+01:39:51,609 --> 01:40:45,924
+You have the mail loneliness also this is
+happened historically it never women get
+more access to resources and then fall apart
+control system
+
+34
+01:42:20,123 --> 01:42:22,041
+Have a good day
+
+35
+02:05:12,158 --> 02:05:30,151
+True
+
+36
+02:17:55,464 --> 02:21:17,073
+It's
+
+37
+02:28:18,724 --> 02:28:19,510
+Inside rental
+
+38
+02:28:23,817 --> 02:29:04,614
+Pick up the game priority today
+
+39
+03:47:46,263 --> 03:47:58,718
+So okay so that's kind of confusing here
+because when I see the capabilities and what
+I could do with it I instantly think of
+maybe the agents
+
+40
+03:48:00,838 --> 03:48:02,474
+I really don't know
+
+41
+03:48:03,056 --> 03:48:11,429
+I think this is just over complexity for me
+I'm already running eight agents on my main
+computer I can't really justify
+
+42
+03:48:12,171 --> 03:48:15,595
+Anything other than the web scraping
+
+43
+03:48:16,732 --> 03:48:23,082
+Because running the Thea browser in non
+headless mode
+
+44
+03:48:24,375 --> 03:48:31,384
+Has been causing trouble and then if I add
+this in addition to the fact that we have
+
+45
+03:48:33,612 --> 03:48:46,178
+If you add this in addition to the fact that
+we also have agents that will be hidden
+while the chat gbt browser is open then you
+see now we'll have
+
+46
+03:48:48,160 --> 03:48:55,813
+It's just a complicated process so if we
+were to move that over to the laptop I feel
+like it would be a little easier but I don't
+
+47
+03:48:56,473 --> 03:49:03,355
+See a personal need once we get the Headless
+mode of the theater implementation running I
+mean
+
+48
+03:49:04,496 --> 03:49:05,248
+Yeah
+
+49
+03:49:49,962 --> 03:49:58,070
+That's what also unlocks also allow us to
+create maybe like a scheduler that automates
+post into our websites and social media
+possibly
+
+50
+04:03:33,199 --> 04:03:34,606
+This is taking too long
+

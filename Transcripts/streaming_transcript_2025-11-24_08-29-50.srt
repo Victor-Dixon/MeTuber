@@ -1,0 +1,1602 @@
+1
+00:04:28,901 --> 00:05:28,112
+Really available game engines to develop and
+mature into powerhouses that make creating
+games in them much easier for example Unreal
+Engine or Unity now to back up everything
+that I'm saying and prove it in this video
+I'm going to make a functional belief
+playable MMORPG in under 8 hours by spending
+less than a hundred USD without writing a
+single line of code it's all goes well I
+will put a download link in the description
+of this video for the client so you'll be
+able to download the game open the game
+created character and start playing on my
+server now for this I'm going to be using
+unity and activism I'm using Unity because
+of activism being the easiest to use MMORPG
+framework right now and it won't be
+available in Unreal Engine until the end of
+the year but you could do something similar
+using other MMORPG Frameworks like you
+animal or spatial Os or something like that
+the main draw of addipism for this video is
+that it has a
+
+2
+00:05:28,957 --> 00:05:36,923
+Day free trial and then it's 30 a month so
+let's get startedMy first step is to just
+download and install the latest version of
+unity.
+
+3
+00:05:37,148 --> 00:06:11,788
+The second step is going to be to register
+an account for activism and then download
+activism client itself for step 3 we need to
+make a server that our game world is hosted
+on now out of them has a virtual service
+that you can just open for free on your own
+PC and then connect to it through there for
+testing and building the game but I want my
+server to be online so other people can
+connect and play once I finish this video so
+I will be putting it on a server hosting but
+it is limited to 100 users
+
+4
+00:06:13,303 --> 00:06:21,477
+New project in unity and then install the
+ativism package the framework basically for
+the MMORPG into that new project
+
+5
+00:06:22,013 --> 00:07:10,620
+Got out of it some comes with its own demo
+account creation scene a character creation
+scene and a beginner demo starting zone with
+three classes some vendors questions Etc so
+we'll set it so that it connects to my
+server and then we'll try logging in it
+looks like the demos working fine I can
+connect I can run around in the Demo World
+technically I can give you guys this game
+client and you'd be able to connect to my
+server and play in this mmorp world with me
+right now but that's kind of called asset
+flipping so we don't want to do that we want
+to make our own MMORPG and this demo was
+made like 7 years ago and since the
+Frameworks gone through like a bunch of new
+version and updates most of the stuff here
+doesn't even work so let's start making an
+MMORPG
+
+6
+00:07:11,462 --> 00:08:10,411
+Step 5 we are going to need a starter Zone
+here we are going to be utilizing cinti our
+assets and this is where money may come in
+now Cindy's art you might recognize if
+you're following Titan reach the kickstarter
+MMORPG that's currently raising funds to
+develop their game if you haven't back them
+I highly recommend you do they seem like a
+good bunch of developers because they have
+so many assets that cover so many scenario
+theme song only making a tiny little demo
+for this video I will make the playable area
+pretty small using the textures from The
+Simpsons
+
+7
+00:08:13,318 --> 00:08:19,904
+And some plantsThen we'll put in some
+camp-like stuff.
+
+8
+00:08:22,674 --> 00:08:25,517
+I think that looks good enough for a little
+tiny starting area
+
+9
+00:08:27,801 --> 00:09:00,342
+Step 6 we are going to get rid of the demo
+main world and then set this as the world a
+new character appears in when they log in
+for the first time basically this becomes
+our playable game area and we'll make sure
+this level has everything it needs to work
+with out of business which is basically just
+copy pasting so still I have not needed to
+write a single line of code and there we go
+we made a starting zone for our MMO RPG
+obviously it's pretty ugly the lighting is
+way off I made this in less than 30 minutes
+
+10
+00:09:01,444 --> 00:09:07,178
+Step 7 is going to be the character creation
+the default character just isn't going to
+cut it again we
+
+11
+00:09:06,397 --> 00:10:05,504
+Again we will put in the Cindy modular
+characters which comes with a ton of
+hairstyles Etc but also redesign the
+character selection screen so it's not using
+the art assets from the original game
+because they just don't look that good with
+the Cindy style then we're going to import a
+specific tool for activism made by simply
+lovers that makes it so that the activism
+client immediately free and much more
+flexible but because I'm using a lower
+polygon style it doesn't make sense you know
+you're not tied to this art stuff that's how
+easy it is right now to make an animal look
+the way you want it to it looks like the
+characters working we can move around
+already using our character models Scott the
+correct animation
+
+12
+00:10:40,242 --> 00:11:45,869
+Step 8 we need to redo the character
+creation you want and make it work with our
+new character models following a simple
+tutorial so we just add some buttons to the
+UI make the buttons trigger something on the
+character to change the hair and it is
+saving to our character in The Game World so
+we are going to go through and add buttons
+to customize everything eyebrows beard hair
+color skin color eye color basically just
+copy pasting and then moving it around
+
+13
+00:11:46,401 --> 00:12:02,620
+All of it seems to be working pretty fine
+though I will admit that it took a good hour
+to get this part done DUI looks pretty trash
+but Adam is getting an update to manage you
+want in the future that'll make changing the
+style of all of your buttons and everything
+at once super easy and I don't really care
+what it looks like for this video
+
+14
+00:12:03,138 --> 00:13:02,653
+Step 9 we are going to create our first item
+on Apple we can go into the editor and
+create the item and then customize it to
+tell the game what we want the item to do so
+for example this apple we want to trigger an
+ability when the apple is eaten and the
+ability is channeled when you use it so you
+can't move and if you move you stop
+channeling it so you stop eating basically
+and while it's channeling you get hit points
+but if you move or if you take damage then
+it can't the Apple itself it's going to
+pulse three times and it's going to do that
+five times so three times 15 it's a 15
+second Channel and each of the takes is
+going to heal for 5 HP so if you eat the
+whole Apple you will get 25 HP over 15
+seconds we just have to tell the pulse that
+it's going to pulse a self-healing effect
+and you can just look while I'm doing this
+how customizable the items and abilities are
+in this freely usable tool how easy it is to
+make whatever skills and ability you can
+think of and this one was just a free trial
+so just imagine the tools
+
+15
+00:13:03,422 --> 00:13:47,207
+Guys in lizard or Amazon or cacao are using
+and how easy it can be for them to quickly
+create this stuff next we will go into our
+warrior class and we will delete all the
+demo starting items that he starts with and
+we just want to have the new character start
+with 20 apples after the characters created
+we log in with a new character that is a
+warrior and we got the apples in the
+inventory and we can eat that and they
+Channel and they heal obviously there's no
+animations or sounds for it yet I can add
+that but it's just a whole bunch of time and
+I want to get along to work on and stuff
+like that through all the modular characters
+that we have important already take the
+parts that we
+
+16
+00:13:46,394 --> 00:13:55,244
+Parts that we want our NPC to look like and
+we will save it then we just take all the
+stuff that Adam and they need to recognize
+this as a minute then we
+
+17
+00:13:55,451 --> 00:13:56,558
+Go into the editor we
+
+18
+00:13:58,077 --> 00:14:15,964
+Create an event tell it to use the model let
+me just created and this is a shopkeeper so
+he doesn't we don't really care what the
+stats are and if he is an attack ability
+right now we just want him to have a shot
+inventory tables and will create a inventory
+for Joe
+
+19
+00:14:16,355 --> 00:14:50,073
+I'm going to go ahead and log in as an admin
+account and use the admin tool in the game
+to put the MPC somewhere in the game world
+and make sure that he has that Merchant
+table and some dialogue this automatically
+saves the spawn on the server side not
+client that's why I had to play some during
+runtime but all other players in my Game
+World can now buy and sell apples to joke
+
+20
+00:15:04,528 --> 00:15:06,031
+Immunity Marketplace
+
+21
+00:15:09,902 --> 00:15:41,674
+It's also a beast it's using the correct
+model that we set up and everything should
+be working me also want to set up a loop
+table to decide what the wolf will drop so
+we need to create some trash items like
+broken fangs fur we also want to make sure
+that we can get leather from skinny him so
+we'll make some leather and set up a Skinny
+mood table as well the wolf is done
+
+22
+00:15:42,311 --> 00:16:21,588
+I want to have an unarmed strength skill
+that's going to level up the more times I
+punch people so I'll get stronger the more
+time to fight with my fists so I'm going to
+make it using ability called on strike which
+can work as an auto attack anytime I don't
+have a weapon equipped basically anytime I
+punch the wolf with the skill I'm going to
+get experience in my unarmed strength skill
+and when I punch it enough I will level up
+my skills and that conscious will hurt more
+and I will get possible my first skill that
+can grind literally by punching wolves
+
+23
+00:16:21,999 --> 00:17:21,598
+I'm also going to Tweet the sauce that Adam
+is am uses by default it's got 2,000 HP of
+the gate for our character but I prefer
+smaller numbers so we're going to Nerf all
+of these stats way way way down and now
+we've got the wolf and the characters down
+to roughly 100 HP I can run up I can punch
+it the wolf is still moving a little bit
+funky because of the same problem the server
+doesn't know where the game world war is
+I've got no punch animation it just doesn't
+lightning effects so basically I'm able to
+grind up like this if I wanted to it's a
+functionally playable MMO the process to
+expand on anything I've done so far is
+basically the same I can ask questions and
+dialogue and affection and more skills Etc
+but there's one more set just to prove that
+this is a functioning and the more
+
+24
+00:17:23,639 --> 00:18:21,499
+I sent the client over to my wife's computer
+so she's going to log in and out of business
+already got a party system and Guild systems
+and framework.com
+
+25
+00:18:22,078 --> 00:18:26,985
+That it's totally possible for a small team
+of hard working debts to be a
+
+26
+00:18:26,580 --> 00:18:50,580
+A functioning MMORPG on a low budget I'll
+try and fix the server navigation to the
+Wolves will stop acting weird and I'll put a
+link in the description of this video to the
+client so you guys can just register and
+gain and run around and comfortable for fun
+if you would like to just keep in mind my
+server is limited to 100%
+
+27
+00:18:51,772 --> 00:19:05,990
+Simple MMORPG but that's it for this video
+as always thank you guys for watching have a
+great day I am pooping up
+
+28
+00:19:35,403 --> 00:19:36,331
+Looking nice man
+
+29
+00:19:41,160 --> 00:19:47,910
+Come on then she was over 140 countries
+
+30
+00:19:49,651 --> 00:20:46,485
+Best though that's back upstairs because the
+first thing I had to do was to pick a game
+engine now the game engine at least in this
+instance is a piece of software that helps
+you make a game by essentially taking care
+of the stuff that's hard and boring about
+things like getting graphics
+
+31
+00:20:49,093 --> 00:21:47,702
+I mean the most popular ones are unity like
+twine images
+
+32
+00:21:48,521 --> 00:22:03,040
+And put it on PlayStation 5 that is
+technically possible if not financially
+
+33
+00:22:04,155 --> 00:22:18,250
+It is the most popular
+
+34
+00:23:10,251 --> 00:24:19,519
+Nothing like literally nothing nothing they
+had said going in one year and out the other
+like I couldn't even make a character Appeal
+on the screen and move around it was
+terrible it was my own thought remember that
+video I made about tutorials games
+
+35
+00:24:20,604 --> 00:24:30,505
+Idiot like I had wasted weeks of my life and
+I didn't know
+
+36
+00:24:30,913 --> 00:24:37,628
+If I was even cut out for game development
+like if I can't even watch it shortly
+
+37
+00:24:47,629 --> 00:24:56,712
+Just pretend and never happened it was it
+sucked it was horrible
+
+38
+00:24:57,275 --> 00:25:56,697
+But then I thought the bank Adobe Premiere
+this is the software that I used to make all
+the videos on this channel reviews
+
+39
+00:25:57,804 --> 00:26:36,870
+Tonight but I had two things on my side one
+is that I don't need to learn everything all
+in Monica as long as I'm always trying at
+least one new thing and each video I make I
+can slowly build up a breakfast bar of
+effects and knowledge video reviews
+
+40
+00:26:37,996 --> 00:27:36,814
+Learn the answer Basics and nothing more
+step two familiarize myself with those
+Basics through repetition and simple and
+then three slowly over time build a
+repertoire of tools in Premiere as I build
+and build and build my knowledge test
+
+41
+00:27:38,092 --> 00:27:41,362
+With my tools
+
+42
+00:27:46,296 --> 00:27:50,792
+Couldn't comfort with the software to
+experiment myself and figure things out
+
+43
+00:27:51,608 --> 00:28:00,225
+But the context??
+
+44
+00:28:02,713 --> 00:28:22,984
+????
+
+45
+00:28:29,008 --> 00:29:03,131
+I'm not starting completely from zero when
+it comes to game developed I am familiar
+with the fundamentals of programs profile
+
+46
+00:29:03,652 --> 00:31:20,581
+Learn how to do and yet that's true but it's
+enough to get me started I can make stuff
+appear on the screen make it move around
+make collisions happens and they are these
+kind of genre agnostic things that I will
+need to know no matter what I make going
+forward it is the Baseline that I understand
+Google
+
+47
+00:31:21,145 --> 00:32:20,483
+To worry about art or design or rules or
+anything like that that's already done for
+you all you need to care about is code and
+you get this really clear objective can I
+take this game and recreate it immunity by
+myself and so the first game I did this with
+was was really simple and yes one thing too
+
+48
+00:32:34,329 --> 00:33:27,658
+Collision so when the bird hits the pipe
+that's a game over but if the bird goes
+between two points a trigger and as a store
+to where you are and so that involves
+sending information from one game object to
+another fundamental lesson and then I finish
+it off with some sound effects and some
+basic stuff like that
+
+49
+00:33:28,893 --> 00:33:29,483
+This felt
+
+50
+00:33:30,183 --> 00:34:29,367
+Amazing you know it looks dreadfully
+unimpressive like Well Done jackets you
+stole the most simple game ever made I hope
+you're trying to get stuff but myself I took
+this game that exists in unity
+
+51
+00:34:34,588 --> 00:34:36,931
+Four dimensional rotational
+
+52
+00:34:37,412 --> 00:35:09,424
+Accent and my brain just have my ears and I
+try to read about them so that was quite
+difficult but I did discover this tool
+broken function in unity
+
+53
+00:35:10,598 --> 00:35:32,613
+The most important thing is that I was
+proving that I knew how to use unity and I
+was also building my familiarity with the
+tools the things I had to solve when I was
+making that game I couldn't have done when I
+started like I can now because I kind of
+know where to put it and nowhere to look I
+know it's time to Google
+
+54
+00:35:36,725 --> 00:36:03,729
+Somewhere to stop and I think right now
+should we want to step three to stop
+building my own games and Start experiment
+and sure I'm going to run into problems that
+are things I don't know how to do and there
+are problems I will fix that I've got that
+confidence and that comfort with the tools
+now I understand Unity
+
+55
+00:36:04,710 --> 00:37:03,673
+At least play around and at the very least I
+know what to type into Google or I know how
+to construct a question for someone who is
+National now I can't guarantee that this
+style of learning will work for me everyone
+learns in different way and maybe you do
+just like having someone exciting to you
+someone who gets very easily boards to
+experiment and play around with things
+
+56
+00:37:04,785 --> 00:37:07,252
+Well let me know if that'll be useful in the
+comments
+
+57
+00:37:05,979 --> 00:37:15,587
+Useful in the comments down below and if I
+have time I might be able to swing in a
+quick tutorial video to go along with this
+series finale thank you so much for watching
+
+58
+00:37:50,928 --> 00:37:55,321
+Bear
+
+59
+00:38:08,726 --> 00:39:13,975
+Episode reviews
+
+60
+00:39:24,705 --> 00:40:23,062
+So a big goal with development what's to
+give you a super transparent look at what
+it's like to make your own video game and so
+I've tried to show you every step of the
+process from learning the game engine to
+making your first prototypes from running
+feedback sections too design problems I've
+tried to show you everything so that you can
+see what it might be like if you too Channel
+
+61
+00:40:26,058 --> 00:41:07,542
+For if you run into a programming problem
+when you're working on your game you
+probably don't have a huge Discord full of
+people willing to help you out at the job of
+a hat or direct access to the depths that
+unity and if you need plane testers for your
+game
+
+62
+00:41:08,029 --> 00:41:41,274
+You are inspired and influenced by my story
+to go out there and try and make your own
+games but I think before we dive into how
+the game actually did I think it's worth
+putting that that's the Restless
+
+63
+00:41:42,123 --> 00:41:48,973
+And so if you were to make your own game you
+need to set your expectationsRealistically.
+
+64
+00:41:49,761 --> 00:42:36,253
+So in the last episode of developing I
+hovered my mouse cursor over that big green
+release app button and then on November 13th
+at 5:00 p.m.
+
+65
+00:42:36,941 --> 00:42:50,470
+Playing a game right now which while they're
+not exact sales numbers does give you an
+idea of how popular okay minutes changed
+
+66
+00:42:51,247 --> 00:43:00,259
+So far
+
+67
+00:43:08,658 --> 00:43:30,657
+What's up how you been extremely press the
+back button on my browser and went back to
+the main theme set and realize that oh right
+unlike the super delayed wish list numbers
+valve does actually tell you pretty much up
+to date comma
+
+68
+00:43:48,498 --> 00:43:48,498
+Because
+
+69
+00:46:27,206 --> 00:46:40,168
+Then valve would like its cut the company
+wants 30% of your Revenue as a little thank
+you gift for directing millions of people to
+game infrastructure
+
+70
+00:46:41,050 --> 00:47:00,408
+One two three four five please
+
+71
+00:47:01,013 --> 00:47:45,407
+Now this money will end up in the gmtk
+business bank account at some point
+Imaginext Now videos
+
+72
+00:48:00,632 --> 00:48:38,991
+Exactly but living in the UK and paying
+corporation tax that's going to be another
+American one two three four 13 14 15
+
+73
+00:48:47,242 --> 00:49:03,816
+Minutes
+
+74
+00:49:04,479 --> 00:49:08,320
+Still a huge amount of money but it is a
+little shocking and a little
+
+75
+00:49:09,365 --> 00:49:28,806
+Did you see this compared to the 100 that we
+started with and so if you take nothing else
+from this whole Development Center
+
+76
+00:49:32,495 --> 00:50:21,623
+Anytime soon because an influx of new
+players means an influx of new bugs and as
+soon as mine of magnet was out people were
+being forums onto the GMT rooms period
+
+77
+00:50:24,597 --> 00:50:33,282
+The biggest deal in the world and that meant
+I can take the first four days of the game
+march to chest relax
+
+78
+00:50:33,785 --> 00:51:02,695
+Cover digest and sucked against
+
+79
+00:51:06,282 --> 00:51:37,195
+Perspective I thought of a much better wait
+I mean I can probably repeat the same that's
+that ridiculous some people will also having
+trouble with the gameplay
+
+80
+00:51:38,102 --> 00:53:02,657
+Things that 99% of normal game players would
+probably never run into but speedrunners
+could use physics glitches and bugs to make
+you need run faster or jump much much
+happier and interesting to me and even
+beyond that I decided to keep the release
+version of the game
+
+81
+00:53:05,278 --> 00:53:07,129
+With a patch and then
+
+82
+00:53:21,293 --> 00:53:22,123
+I know nothing
+
+83
+00:53:26,829 --> 00:54:27,823
+I would like to do a console version next
+year and least on the switch but no
+immediate plans so please inevitable level
+editor oh and speaking of inevitable did you
+know that every YouTuber on the internet I
+do have my own plush toy to try super
+plushies super cute version of Magnus from
+the game it is currently a few days later so
+if you would do me a solid and all the one
+let me fantastic otherwise
+
+84
+00:54:34,364 --> 00:54:35,284
+Please send me
+
+85
+00:54:43,995 --> 00:54:45,736
+Bro
+
+86
+00:55:02,735 --> 00:55:42,116
+Around every
+
+87
+00:55:52,017 --> 00:55:54,869
+About the numbers we talked about the money
+
+88
+00:56:01,776 --> 00:56:17,565
+Review which is pretty awesome though
+probably slightly biased by
+
+89
+00:56:18,233 --> 00:57:54,295
+A bit more realistic but all of those
+reviews are amazing really really happy to
+be in terms of positive sentiment I think
+people just generally do it was a fun video
+game to play which is nice and found that at
+least some of the puzzles produce that
+satisfying haha moment I've been chasing
+this time praise the general feel the Polish
+the presentation the
+
+90
+00:57:55,114 --> 00:58:13,590
+Issue was definitely the length of the game
+Mind of a magnet is about 2 hours long and
+for some people that just less than wanting
+more the others in wanting a reef and a few
+people did take that opportunity but nearest
+Money
+
+91
+00:58:24,776 --> 00:58:28,116
+Please
+
+92
+00:58:29,062 --> 00:58:59,619
+Ultimately I decided to just look at other
+games of a similar length
+
+93
+00:59:00,141 --> 00:59:59,648
+And press the game with thoughts though I
+make sure to always give myself enough
+wiggle room for all of the inevitable launch
+status
+
+94
+01:00:00,861 --> 01:00:24,574
+Bible with the rent development in the end I
+haven't found that the game is playful and
+enjoyable for a very general and Casual
+audience of people it's right that I can
+just give the game to anybody and they'll
+probably be able to play at least the first
+couple worlds and it's been great to see so
+many people send me photos that kids
+
+95
+01:00:25,496 --> 01:00:27,293
+Nope that does not sound good at
+
+96
+01:00:26,327 --> 01:01:01,568
+And so that does feel good however I do
+regret that I didn't have time to put in
+content that was better suited to anymore
+
+97
+01:01:02,849 --> 01:01:20,518
+Safe uninspiring unimaginative which that
+one did kind of catch me by surprise that
+the more I think about it the more I can
+kind of see what those people are coming
+from I mean this game is not going to blow
+yourself it is not the most Innovative game
+of the year
+
+98
+01:01:20,953 --> 01:01:34,706
+Or even of November it is a pretty box
+standard by the Numbers life that video game
+and also as a solo developed project for the
+most part
+
+99
+01:01:35,310 --> 01:01:47,593
+It's not a very personal experience you
+don't get a lot of me in this game so while
+I'm a little sad that people saw it in that
+way I can at least understand
+
+100
+01:01:48,446 --> 01:01:50,755
+Better and you know what
+
+101
+01:01:51,365 --> 01:01:59,268
+That is kind of thing
+
+102
+01:02:00,615 --> 01:02:32,543
+But I wasn't 100% happy or confident with
+the game but still putting it out there for
+people to buy and play that's right and
+review
+
+103
+01:02:33,399 --> 01:02:41,215
+The cringe is real and that's how I felt for
+most of the first week of the game but
+ultimately
+
+104
+01:02:41,537 --> 01:03:41,240
+I came to the realization that this was
+never the point of developing it was not
+about trying to make the best game ever made
+of if I had done that by accident it was
+hard to make it look good it was hard to
+make it feel good it was hard to decide to
+fix as someone who typically works on a
+YouTube video for free weeks it was hard to
+work on the same project and keep that
+motivation going for three years
+
+105
+01:03:44,035 --> 01:04:01,742
+At various stages of completion basically it
+is a miracle that this game even exists and
+so the fact that it doesn't completely suck
+
+106
+01:04:01,956 --> 01:04:12,127
+Is just a nice bonus on top if you want me
+but okay
+
+107
+01:04:13,095 --> 01:05:07,323
+By the end of development it was basically
+effortless to put together or to change or
+to iterate on one of the levels in this game
+and so while this stuff certainly took
+
+108
+01:05:06,527 --> 01:05:56,321
+Suddenly took time to produce it saved so
+much time down the mine and I don't regret
+any of the time I spent building this tools
+another good use of my time I think was
+working on the juice that presentation the
+Polish the game feel I don't think it's too
+big-headed of me to say this game feels
+pretty good to play and it's not nice
+animations
+
+109
+01:05:58,051 --> 01:06:34,820
+Another big win was playtesting now all of
+it it took me a long time for I was able to
+show the game to anybody but once I did I
+didn't really stop and over the course of
+several years I constantly and consistently
+showed the game to friends and family
+members and strangers on Twitter and people
+that events and meetups by listening to
+feedback from other people be significantly
+worse
+
+110
+01:06:35,210 --> 01:07:34,699
+If I just ignored what everyone thought of
+again that should be obvious but that's
+repeating I'm also pretty happy with
+accessibility support it has full control
+
+111
+01:07:35,772 --> 01:08:34,639
+You can just skip any level in the game as
+long as you've been stopping it for about
+three or four minutes so the game never has
+a total brick wall and there's no reason to
+look up a guide leave the game
+
+112
+01:08:37,538 --> 01:09:16,953
+Was rushing too fast into production??????
+
+113
+01:09:17,557 --> 01:09:44,158
+Pre-production is that you could be really
+fast and Nimble about making changes because
+they're easy and fast and cheap you can try
+10 different solutions to a design problem
+and it doesn't matter because you just can
+throw everything away anyway you're not
+committed to anything that if you do what I
+did and move too
+
+114
+01:09:48,240 --> 01:09:51,161
+Repeating yourself
+
+115
+01:09:51,852 --> 01:10:14,936
+Spending your wheels having to throw away
+lots of love basically what I'm trying to
+say is you shouldn't have to change all of
+the art Assets in your game within the last
+few months of development because you hadn't
+previously figured out how a camera that is
+and I believe this is a technical term
+
+116
+01:10:16,129 --> 01:11:15,592
+Dumb dumb decision another thing actually
+entering option is that I never really had a
+good plan for how to make the game no road
+map no Milestones nothing of that game
+didn't matter
+
+117
+01:11:16,437 --> 01:11:28,706
+And then switch to a controlled it will
+continue moving from where that point was
+
+118
+01:11:29,872 --> 01:12:29,171
+Look like a day to figure out and is not
+that important things and I wish I had spent
+time another thing that went wrong
+
+119
+01:12:30,409 --> 01:12:50,666
+Like across innocent and I started to
+realize that some of the world's greatest
+puzzle game designers like Jonathan Blow and
+Alan Hazelden Steven Lavelle have spent
+years like that whole careers just learning
+the Trump puzzle design yeah
+
+120
+01:12:55,451 --> 01:13:46,793
+And so it shouldn't be a surprise element
+problems
+
+121
+01:13:47,576 --> 01:13:52,160
+Limited
+
+122
+01:14:26,488 --> 01:14:50,320
+Why you always messing with me
+
+123
+01:14:51,327 --> 01:14:55,792
+Do you want Infinity
+
+124
+01:14:58,230 --> 01:14:59,599
+You know
+
+125
+01:15:01,370 --> 01:15:10,619
+You sleeping alone so
+
+126
+01:15:13,478 --> 01:15:20,424
+Yeah
+
+127
+01:15:21,513 --> 01:15:48,884
+Will I make another game that is a question
+I've been thinking about a lot lately and
+it's a question that people asking are you
+going to make another video
+
+128
+01:15:50,154 --> 01:15:58,771
+Not sure if I'm ever going to do but if Mind
+Over magnet is
+
+129
+01:15:59,403 --> 01:16:01,952
+The only game I ever met
+
+130
+01:16:03,347 --> 01:16:22,697
+I'm okay shortcomings opportunity
+
+131
+01:16:25,309 --> 01:16:42,096
+It is a cool video game a real game that
+went from idea to release and is now been
+played by thousands of people
+
+132
+01:16:42,783 --> 01:16:46,432
+Bye
+
+133
+01:16:53,745 --> 01:17:05,060
+For me so
+
+134
+01:17:06,005 --> 01:17:57,738
+So I want to say a massive thank you to
+everyone this watch this series as Watch Me
+Slowly lose my mind and have supported the
+game I want to thank you if you were there
+in 20215 a.m. tomorrow
+
+135
+01:17:58,512 --> 01:18:02,621
+But I'm excited to find out
+
+136
+01:18:03,141 --> 01:18:18,560
+So much for watching don't forget about me
+exclamation point
+
+137
+01:19:19,164 --> 01:19:24,396
+This season is better when we're together
+
+138
+01:19:28,549 --> 01:19:43,241
+Is this a commentary on where humanity is
+headed
+
+139
+01:20:00,606 --> 01:20:11,519
+The street you up cuz you're a little broken
+you have any great day you know since just
+because the title talks about little
+nightmares 3D oh that has to happen
+
+140
+01:20:13,309 --> 01:20:18,616
+To make this video 18 hours long
+
+141
+01:20:21,368 --> 01:20:25,093
+Time
+
+142
+01:20:25,837 --> 01:20:40,465
+A little nightmares 3 I don't think it's any
+secret how I feel about this franchise
+little nightmares setting special place in
+my heart you know who doesn't live in my
+heart at the end of two
+
+143
+01:21:02,513 --> 01:21:19,796
+Games
+
+144
+01:21:21,074 --> 01:21:52,265
+Little nightmare Street part 1 man let's put
+this junk on about a 75 Edition
+
+145
+01:21:53,081 --> 01:22:00,181
+Let's get itAll right choose a character we
+got this character. And then we got the
+black.
+
+146
+01:22:01,473 --> 01:22:04,608
+Think it's a big surprise which one we're
+going to go with you
+
+147
+01:22:06,971 --> 01:22:10,569
+Bro
+
+148
+01:22:39,585 --> 01:22:45,032
+Pay attentionYou got to lock it.
+
+149
+01:22:46,296 --> 01:22:47,752
+Let's figure out the story together
+
+150
+01:22:48,554 --> 01:23:21,861
+Sick you got some type of sickness I'm
+paying attention to everything so I just got
+to wait
+
+151
+01:23:23,174 --> 01:23:26,128
+In my control
+
+152
+01:23:47,988 --> 01:24:01,942
+Weapon see where I'm going with this
+
+153
+01:24:06,697 --> 01:24:14,475
+Again tutorial that you can do that I won't
+beIt's me.
+
+154
+01:24:31,286 --> 01:24:42,370
+Put it in Boots
+
+155
+01:25:11,841 --> 01:25:17,640
+Like swallows to like see what's going on
+
+156
+01:25:18,753 --> 01:25:30,614
+So
+
+157
+01:25:37,443 --> 01:25:38,084
+It's Ebola
+
+158
+01:26:04,354 --> 01:26:06,300
+Reminders
+
+159
+01:26:10,138 --> 01:26:15,708
+The bond that we had with those characters
+
+160
+01:26:16,389 --> 01:26:26,465
+Just for me I'll put y'all almost right now
+
+161
+01:26:45,408 --> 01:26:50,348
+I'll send it up for something
+
+162
+01:26:59,006 --> 01:27:37,200
+Over here wait okay so with the ball out
+can't jump oh okay okay I got to see thank
+you
+
+163
+01:27:38,133 --> 01:27:58,261
+Frozen
+
+164
+01:28:01,388 --> 01:28:07,640
+What's happeningBecause the story.
+
+165
+01:28:17,816 --> 01:28:18,721
+We need questions
+
+166
+01:28:26,739 --> 01:28:31,904
+Don't trip don't know I hate that
+
+167
+01:28:34,710 --> 01:28:40,673
+OkayLook around using rice stick.
+
+168
+01:28:49,983 --> 01:28:57,669
+Please
+
+169
+01:29:01,546 --> 01:29:05,192
+I'm not trying to be freaked out over there
+
+170
+01:29:11,597 --> 01:29:12,478
+Question mark
+
+171
+01:29:37,550 --> 01:29:44,207
+Birds are hanging I'm really trying to come
+at thisPiece of paper like the first thing.
+
+172
+01:29:46,570 --> 01:29:49,593
+Here
+
+173
+01:30:11,915 --> 01:30:15,908
+Pick the pressing right hereIt's like.
+
+174
+01:30:19,923 --> 01:30:21,868
+Fucking standing
+
+175
+01:30:28,853 --> 01:30:50,012
+Right
+
+176
+01:30:51,555 --> 01:30:58,985
+There we go thank youChipotle.
+
+177
+01:31:01,490 --> 01:31:03,300
+Bedroom
+
+178
+01:31:22,226 --> 01:31:38,582
+I'm going to bed my phone
+
+179
+01:31:43,579 --> 01:31:51,083
+Work please
+
+180
+01:32:31,273 --> 01:33:07,266
+Picking up
+
+181
+01:33:30,423 --> 01:33:38,370
+Yeah
+
+182
+01:33:43,093 --> 01:33:50,474
+See let's seeThe lock. With our fight. But
+the door is.
+
+183
+01:33:51,209 --> 01:33:58,635
+Checks soWhat the hell.
+
+184
+01:34:01,628 --> 01:34:02,028
+Yeah
+
+185
+01:34:37,873 --> 01:34:42,612
+Birthday deserve itThat's good.
+
+186
+01:36:15,040 --> 01:36:22,140
+Somebody snoringOkay trying to jump on here.
+All right.
+
+187
+01:36:52,049 --> 01:36:53,407
+Now
+
+188
+01:37:10,171 --> 01:37:14,729
+Deeper than running again
+
+189
+01:37:22,887 --> 01:37:24,604
+Do that anymore
+
+190
+01:37:46,605 --> 01:38:13,801
+Reminder
+
+191
+01:38:29,952 --> 01:38:37,111
+Let me see them but I'm hereWe'll be falling
+in right now.
+
+192
+01:38:41,182 --> 01:38:46,392
+To get that wrench out there
+
+193
+01:38:51,054 --> 01:38:56,606
+Okay all right
+
+194
+01:40:05,655 --> 01:40:12,655
+Making umbrellas
+
+195
+01:40:14,405 --> 01:40:19,749
+So small peopleLike any birds and making
+umbrellas.
+
+196
+01:40:27,846 --> 01:40:30,072
+Soon
+
+197
+01:41:00,020 --> 01:41:01,624
+Google
+
+198
+01:41:14,960 --> 01:41:17,212
+Singing in my ear right now
+
+199
+01:41:31,783 --> 01:41:41,595
+Mystical baby
+
+200
+01:42:01,550 --> 01:42:01,840
+Get this right
+
+201
+01:42:35,861 --> 01:42:36,715
+Stay With Me
+
+202
+01:42:37,812 --> 01:42:47,752
+Thanks it's only one way we're going to
+survive this and that's together all right
+before that happened
+
+203
+01:43:04,434 --> 01:43:07,994
+Celebrity suck my ass for weeks
+
+204
+01:43:18,007 --> 01:45:27,037
+I mean a freaking solitary confinement
+
+205
+01:45:36,924 --> 01:45:38,674
+Please
+
+206
+01:46:10,700 --> 01:46:18,102
+OkayUnited desert anymore like.
+
+207
+01:46:19,217 --> 01:46:19,692
+Here
+
+208
+01:46:21,130 --> 01:46:28,276
+That goes out goes out and it's another one
+
+209
+01:47:07,280 --> 01:47:11,500
+Start the baby LibertyI say wait.
+
+210
+01:47:18,285 --> 01:47:18,557
+Er
+
+211
+01:47:20,438 --> 01:47:29,448
+Completely
+
+212
+01:49:04,702 --> 01:49:08,308
+Sorry your mom didn't give you the right
+formula
+
+213
+01:49:11,552 --> 01:49:26,540
+2 minutes
+
+214
+01:49:27,815 --> 01:49:27,815
+Can
+
+215
+02:12:17,632 --> 02:12:22,319
+Is that all rightDid she go with you.
+
+216
+02:15:19,955 --> 02:15:26,203
+All right I was just blowing you up cuz I
+wanted to make sure that I have my mama
+stuck at the airport
+
+217
+02:17:46,092 --> 02:18:08,708
+Yes yes
+
+218
+02:18:48,101 --> 02:18:48,183
+Mango
+
+219
+02:40:01,940 --> 02:40:09,443
+Okay
+
+220
+02:40:24,872 --> 02:40:34,508
+Switch it down there again when I switch it
+either way I can get to the different menus
+but all these buttons on the menu don't work
+so I want all the buttons to work that's it
+
+221
+02:40:35,825 --> 02:40:42,956
+Just trying to make it easier becauseLike
+that message with the command thing is kind
+of lame.
+
+222
+02:40:43,720 --> 02:40:49,402
+And I prefer to justYou know what I'm saying
+to get around.
+
+223
+02:45:30,068 --> 02:46:32,330
+You
+
+224
+02:49:51,532 --> 02:49:58,013
+Check my name
+
+225
+02:50:07,012 --> 02:50:20,780
+So how do you how you don't know where to
+get you don't know they're not in your
+pocket what you say you're not teacher
+
+226
+02:50:43,050 --> 02:50:48,969
+My Microsoft?.
+
+227
+02:56:00,811 --> 02:56:02,779
+Perfect shot in the dark at the
+
+228
+02:56:03,778 --> 02:56:13,109
+Discord buttons I just figured that they
+didn't fix them all and that's probably more
+so I'm going to continue to
+
+229
+02:56:14,332 --> 02:56:20,861
+Spam that message to this agentSo let's go
+ahead and just grab that.
+
+230
+02:56:21,235 --> 02:56:22,900
+Send it a couple
+
+231
+02:58:50,124 --> 02:58:56,933
+Post and it's desperate in its step logs
+then we know that agent 2 is active because
+agent too
+
+232
+02:58:57,334 --> 02:59:04,801
+Just made a developOr even if we could track
+every time an agent sends or receives.
+
+233
+02:59:05,890 --> 02:59:21,010
+Sends a message in the time so like if we
+definitely if we do like the time oh got to
+get that one real quick well I don't know
+that might be unnecessary complexity but I'm
+just thinking about a situation where we
+take the
+
+234
+02:59:22,827 --> 02:59:34,495
+The logs and the time from when the agent
+says something or not necessarily says
+something but when they were supposed to
+receive a message
+
+235
+02:59:40,554 --> 02:59:45,831
+I don't know if that worksWhen I think about
+that a lot it just doesn't work because.
+
+236
+02:59:50,297 --> 02:59:54,006
+How will we know when the agent actually
+receives it
+
+237
+02:59:55,201 --> 03:00:02,497
+See we can tell when it gets to the queue of
+the agentAnd all we're doing is just killing
+the Q.
+
+238
+03:00:06,753 --> 03:00:14,395
+InterestingSomething to think about
+something to know but it's nothing that I
+can do anything about right now it is.
+
+239
+03:00:17,718 --> 03:00:23,023
+It would be interesting to take the time of
+when they sent the
+
+240
+03:00:23,467 --> 03:00:26,798
+Of when they sent the message and
+
+241
+03:00:28,336 --> 03:00:34,764
+Knowing of when they sent the message we
+automatically know when they received the
+message well
+
+242
+03:00:37,237 --> 03:00:39,581
+When it got implemented in the queue
+
+243
+03:00:44,981 --> 03:00:55,390
+It's hard because the the associated status
+update that should come from that message
+it's Dynamic and
+
+244
+03:00:55,704 --> 03:00:59,787
+It's really no clue or no telling
+
+245
+03:01:03,337 --> 03:01:03,993
+Okay
+
+246
+03:01:08,833 --> 03:01:31,700
+So we can disregard the fact of the sending
+of the message as far as like a station
+where we can tell an agent did something cuz
+an agent doesn't have to do anything to
+receive a message but we do know an agent is
+active
+
+247
+03:01:44,526 --> 03:01:45,834
+I don't know where my markers are
+
+248
+03:24:01,969 --> 03:24:12,831
+No because we need to researchers and we was
+going to answer if she can use the car so we
+can go get the groceries because
+
+249
+03:24:13,643 --> 03:24:16,094
+When research is supposed to be the first
+time she said
+
+250
+03:24:18,498 --> 03:24:24,407
+She said after hours she said about it so
+that's what car was asking so I come down to
+ask you
+
+251
+03:24:25,252 --> 03:24:28,006
+But if she said yeah
+
+252
+03:24:35,162 --> 03:25:42,920
+Never mind
+
+253
+03:25:49,054 --> 03:25:55,191
+Ariel poop you know who got this ball is
+that the big bull or the small one
+
+254
+03:26:07,593 --> 03:26:11,405
+Oh yeah
+
+255
+03:29:38,070 --> 03:29:38,707
+Focus
+
+256
+03:34:54,549 --> 03:34:56,643
+Not exactly right now give me like
+
+257
+03:35:02,169 --> 03:35:08,767
+What happened to those sports that I
+hadSomebody robbed me for my Forks Over.
+
+258
+03:35:12,513 --> 03:35:18,379
+I had forks I had a pork and at 24 I got you
+working there was a pork over here I was
+like I took my phone
+
+259
+03:35:22,783 --> 03:35:22,783
+It's
+

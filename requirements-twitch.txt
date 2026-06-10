@@ -1,0 +1,2 @@
+# Twitch bot scaffolds — no third-party dependencies (stdlib only).
+# Install with: pip install -e .

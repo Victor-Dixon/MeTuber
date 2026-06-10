@@ -1,0 +1,2444 @@
+1
+00:27:06,949 --> 00:27:12,465
+It's now it's whereA I'll be kicking the
+boys out the room soon.
+
+2
+00:27:13,447 --> 00:27:16,960
+Be I'll be starting what I considered the
+beginning of my stream
+
+3
+00:27:17,617 --> 00:27:23,790
+It's 8:08 and I'm 3 hours late from being
+able to cut on the volume because the kids
+were too low
+
+4
+00:27:25,956 --> 00:27:27,663
+But now
+
+5
+00:27:28,422 --> 00:27:34,180
+I'm just going to say that I don't care
+about that and I'm going to get started with
+my day and do what I do
+
+6
+00:27:36,823 --> 00:27:44,121
+So the first thing I want to doIs I got to
+get. No.
+
+7
+00:27:44,817 --> 00:27:50,258
+I got to get the message and system back up
+for some reason the message and systems down
+so
+
+8
+00:27:55,831 --> 00:28:04,611
+So we got to get rid of this guy that just
+came into the chat and thinks they're going
+to go on ahead and post ads and we're going
+to then
+
+9
+00:28:06,071 --> 00:28:12,719
+AlsoWe're going to also.
+
+10
+00:28:15,778 --> 00:28:16,880
+Create a switchbot
+
+11
+00:28:25,461 --> 00:28:26,699
+Yes twitch by time
+
+12
+00:35:20,265 --> 00:35:24,425
+Who has a teacher name Christine Dale
+rainbow
+
+13
+00:35:32,573 --> 00:35:33,756
+You got a test today
+
+14
+00:36:27,265 --> 00:37:02,417
+Stop
+
+15
+00:44:09,518 --> 00:44:14,471
+It's
+
+16
+00:54:16,671 --> 00:54:22,996
+Text meThose are my ice cream that's your
+ice cream.
+
+17
+00:54:24,121 --> 00:54:29,869
+Christopher's ice cream
+
+18
+00:54:34,939 --> 00:54:36,534
+This is Christopher ice cream
+
+19
+00:54:42,316 --> 00:54:48,333
+Yeah the name of the ice cream is not just
+ice cream not not Charles ice cream
+
+20
+00:54:55,463 --> 00:55:06,536
+You going to watch me go get your money up
+not your money
+
+21
+00:56:01,540 --> 00:56:08,399
+Or if I look upOrca orca.
+
+22
+00:57:16,425 --> 00:57:18,388
+I know what you going to be screaming
+screaming
+
+23
+00:57:43,247 --> 00:57:50,478
+Can you about to be screaming down stuff
+
+24
+00:57:52,485 --> 00:58:04,651
+Because
+
+25
+01:32:53,869 --> 01:32:54,349
+Get down
+
+26
+01:33:10,298 --> 01:33:10,953
+Ain't it
+
+27
+01:33:21,964 --> 01:33:23,615
+Perfect
+
+28
+01:33:29,139 --> 01:33:30,877
+Question mark
+
+29
+01:33:38,492 --> 01:33:51,420
+Is the best food ever
+
+30
+01:33:53,591 --> 01:33:57,587
+That's just perfectNo date.
+
+31
+01:34:03,120 --> 01:34:04,072
+Anything
+
+32
+01:34:05,142 --> 01:34:16,874
+It's not
+
+33
+01:37:41,554 --> 01:37:42,281
+Wake me up
+
+34
+01:41:53,732 --> 01:41:54,302
+What's no
+
+35
+02:13:32,988 --> 02:13:43,232
+All right man we're back I'm so sorry about
+that that's my old man no no the shirt
+doesn't oh yeah yeah yeah yeah yeah yeah
+yeah I do like this shirt
+
+36
+02:13:43,323 --> 02:13:48,603
+OkayAnd so there are a couple of problems
+with the system.
+
+37
+02:13:49,341 --> 02:14:00,243
+Right the problem is that agents are stupid
+as heck let's just get that out the way they
+might seem smart but don't let them fool you
+they're retarded
+
+38
+02:14:01,868 --> 02:14:07,958
+I can get them message in each other oh it's
+my boy still here did I miss you I probably
+missed you
+
+39
+02:14:11,159 --> 02:14:16,580
+Dang I'm sorryOh okay he waited.
+
+40
+02:14:17,659 --> 02:14:21,951
+One for the home team okay
+
+41
+02:14:22,820 --> 02:15:04,327
+So the problem is that the agents will
+duplicate the cheese out of a project so I'm
+in a debate really cuz once again I keep
+telling people that this is a failed project
+that I mean to give up on but every other
+time they come out with a new agent I have
+to see if I have to see if the agents are
+smart enough so I keep coming back cuz like
+every other week it's a new agent to test
+the system was killing the game so rock gave
+me hope Brock tells me don't give up on this
+right so I'm basically setting up
+
+42
+02:15:04,890 --> 02:15:15,711
+I'm setting up things to fix all the issues
+there were routing issues in the agent cell
+phone because when you have eight agents
+control in the
+
+43
+02:15:16,647 --> 02:15:23,892
+Keyboard and mouse at the same time that
+becomes problems or what I want is to create
+a q system
+
+44
+02:15:24,559 --> 02:15:33,119
+And I are as crazy cuz I already implemented
+this but because the agents have been ran
+off on their own they they actually created
+a whole new
+
+45
+02:15:34,021 --> 02:15:42,781
+Messaging system like that that's the thing
+the project exploded to 2000 files so now I
+have them working to delete that
+
+46
+02:15:43,652 --> 02:15:50,800
+AndGet it back to going and it's it's
+actually a constant problem but.
+
+47
+02:15:51,776 --> 02:16:11,664
+It wasn't like that with Brock it wasn't
+like that with Rock and the problem is that
+the the if I use expensive models like that
+then it cost me money I'm only on the free
+plan right so I have to be able to do this
+with the auto feature of cursor
+
+48
+02:16:18,689 --> 02:16:21,526
+It's all open source bro you can play with
+it too
+
+49
+02:16:29,340 --> 02:16:33,018
+As of right nowI have.
+
+50
+02:16:34,141 --> 02:16:37,630
+The agents working on different things if
+you see
+
+51
+02:16:36,654 --> 02:16:48,115
+If you see an agent with nothing cute that
+means they finished and that the ones that I
+need to work on are the ones with the cues
+agent 4 should always have
+
+52
+02:16:48,625 --> 02:16:54,063
+Excused because he's the captain and
+everybody should always be reporting to him
+but
+
+53
+02:16:55,280 --> 02:17:12,543
+The agents I don't care what y'all say have
+personalities because somewhere over the
+workflow between while I was smoking playing
+not coding right I wasn't here I was AFK
+will call these things AFK when I was AFK
+
+54
+02:17:13,699 --> 02:17:19,712
+Agent too became the captainAnd now agent 4.
+
+55
+02:17:22,763 --> 02:17:30,595
+Pretty much just validates everything soI
+don't know if they set that up.
+
+56
+02:17:31,075 --> 02:17:37,823
+Or if there's a miscommunication I don't
+know I'm really just trying to run through
+the last of these cues
+
+57
+02:17:38,728 --> 02:17:46,681
+And then I'm going to inspect what happened
+in the autonomous cycleBut the fact that.
+
+58
+02:17:47,082 --> 02:17:51,234
+It is still runningIs amazing.
+
+59
+02:17:53,408 --> 02:18:00,637
+To me at least it's almost like a it's
+almost like a perpetual motion machine
+
+60
+02:18:01,194 --> 02:18:09,062
+The agents look for tasks to be completed
+right and then the captain is supposed to
+
+61
+02:18:11,598 --> 02:18:47,512
+No no no my bad the captain looks for tasks
+to be completed and then the agents are
+supposed to go out and complete the tasks
+and then they report to the captain that
+they completed its ass telling that Captain
+to find more tasks and so then the captain
+creates more tasks right and then that's its
+own Loop that keeps them going in a little
+circle but then their circles inside the
+circles each time they go on a loop cuz this
+is how I'm trying I'm trying to structure
+the system right and so each time they go on
+there in the circle will call it a cycle I'm
+sorry that I'm not
+
+62
+02:18:48,024 --> 02:18:53,061
+Like thinking proper but like you called me
+brainstorming right so
+
+63
+02:18:54,637 --> 02:18:56,281
+And and this is not
+
+64
+02:18:56,824 --> 02:19:02,884
+None of this is new bro I have like seven
+implementations of this exact same project
+
+65
+02:19:03,425 --> 02:19:06,093
+That all blow up for the same reason
+
+66
+02:19:08,222 --> 02:19:16,088
+The difference is this time it only blew up
+to $2,000And 500 of those were documents.
+
+67
+02:19:17,485 --> 02:19:25,045
+The last time it blew up to 500,000And all
+of those were nested duplications.
+
+68
+02:19:26,126 --> 02:19:26,963
+So
+
+69
+02:19:30,921 --> 02:19:47,005
+I have a lot of hope that's not that's a big
+that's a big disparity right there like
+either I've gotten better the systems gotten
+better the AI has gotten better or try a
+triangle all of the three all of the above
+
+70
+02:19:47,793 --> 02:19:54,807
+Got to be option DI'll wait optionally could
+have just got lucky.
+
+71
+02:20:00,645 --> 02:20:07,736
+But we don't take it also couldn't have been
+itUnless go still waiting on the last two
+let me get my baby.
+
+72
+02:20:08,620 --> 02:20:12,685
+What have you been working on it what's up
+with what's up with your world
+
+73
+02:20:26,700 --> 02:20:32,273
+Cuz now now I've been kind of screaming just
+soI could.
+
+74
+02:20:32,984 --> 02:20:39,515
+See what the agents do when I sleep like I
+plan on the streams will be long so that I'm
+pretty much
+
+75
+02:20:41,595 --> 02:20:52,264
+Able to go back and see what happened I
+could record it on my own but you know
+switch as a lovely feature plus I'm building
+every day regardless so
+
+76
+02:20:53,954 --> 02:21:01,771
+I just got the agents well while all seven
+of the other agents were working I was
+working with agents
+
+77
+02:21:05,704 --> 02:21:10,515
+Not andAgent 6 is.
+
+78
+02:21:11,213 --> 02:21:17,908
+Good cuz maybe you can help to identify when
+they go on a loop and what or why cuz that's
+
+79
+02:21:17,089 --> 02:21:32,266
+Cuz that's the thing I want to figure out
+why they duplicate and I can't well it's not
+that I can't I don't have a really good way
+of going all the way up and reading
+everything you see what I'm saying so I
+really
+
+80
+02:21:32,674 --> 02:21:40,673
+This is one of the first few times that I
+really have it on the autonomous and I'm
+watching ask them why did they
+
+81
+02:21:41,558 --> 02:21:47,041
+Why do they keep duplicating
+everythingActually.
+
+82
+02:21:47,515 --> 02:21:56,827
+Well okay let wait I've identified certain
+reasons why things get identified I mean get
+a duplicated
+
+83
+02:21:57,514 --> 02:22:11,628
+Okay agents will and that's the thing
+creating systems to address these things
+because if I could just tell them to stop
+duplicating things I would have already done
+it
+
+84
+02:22:12,751 --> 02:22:17,905
+However I did I did just recently add
+
+85
+02:22:21,645 --> 02:22:32,247
+I did just recently add a format system to
+it you can't really see it let's see if I
+can open a new file and just show you the
+
+86
+02:22:33,015 --> 02:22:40,854
+Give me a new text real quickDon't make me
+name it. Just give me a new text back.
+
+87
+02:22:42,905 --> 02:22:48,778
+It's slow right now cuz the other agents you
+can't see the other four agents on the other
+screen right now but they're going right now
+too
+
+88
+02:22:51,531 --> 02:22:56,726
+But I'm more so interested in these cuz
+that's what y'all can see come on new foul
+
+89
+02:23:03,623 --> 02:23:04,723
+Okay wow
+
+90
+02:23:17,729 --> 02:23:25,282
+It's just embarrassed meYou're good bro.
+Come and go as you please.
+
+91
+02:23:34,456 --> 02:23:46,436
+Can't see it but this is the format now
+it'll tell you what agent goes from what
+agent it goes to and then it'll give it a
+priority and we need to implement more tax
+
+92
+02:23:51,960 --> 02:23:56,654
+ThisIs the new thing that we're testing back
+from agent.
+
+93
+02:23:58,818 --> 02:24:01,470
+Cell phone project number one
+
+94
+02:24:32,977 --> 02:24:38,769
+What happens to my sticky notes being at the
+bottom broLet's move them to the bottom what
+happens.
+
+95
+02:24:40,341 --> 02:24:44,676
+Tentative start into the taskbar
+
+96
+02:24:46,708 --> 02:24:52,047
+Yes yes yes let's add it all the way over
+thereStickies whenever we want them.
+
+97
+02:24:53,131 --> 02:24:59,661
+Pop that out cuz that's what I wanted to
+show you was thisIs the new format but.
+
+98
+02:25:01,029 --> 02:25:03,093
+At the bottom of it right
+
+99
+02:25:05,046 --> 02:25:12,384
+At the bottom of it I want to add in a
+section that tells them toA reminder.
+
+100
+02:25:15,016 --> 02:25:15,833
+Reminders
+
+101
+02:25:26,967 --> 02:25:27,528
+Message
+
+102
+02:25:45,559 --> 02:25:51,135
+Oh shitIt looks like a we got stuff.
+
+103
+02:25:52,947 --> 02:25:58,167
+That's another thing that seems to stop the
+agents too let's let'sLet's let's.
+
+104
+02:26:12,095 --> 02:26:20,648
+Work on that and then when it comes back I
+can also talk about the problem sweet face
+
+105
+02:26:22,441 --> 02:26:28,372
+Right and soYou are.
+
+106
+02:26:33,994 --> 02:26:38,186
+AgentLink.
+
+107
+02:29:49,049 --> 02:29:56,808
+I hope you don't think you'll be playing the
+game all dayHell no school started at 10:00.
+So if you're not in school book starts.
+
+108
+02:30:02,527 --> 02:30:07,464
+Or put it on low five musicI like the Lo-Fi
+music idea.
+
+109
+02:30:11,251 --> 02:30:12,103
+Go to YouTube
+
+110
+02:30:25,590 --> 02:30:31,951
+You need to check to see what you need in
+the meantime like it's no way you're on the
+game right now and you know you're supposed
+to be in school
+
+111
+02:30:35,853 --> 02:30:41,532
+You tripWhere's the Lo-Fi.
+
+112
+02:30:45,789 --> 02:30:49,582
+No you're just going to go up there and say
+helloFine.
+
+113
+02:30:54,776 --> 02:31:01,300
+And see you wouldn't have to do all that if
+you just did a little bit better read I'll
+try and go to do this face and then hit fi
+
+114
+02:31:02,929 --> 02:31:06,984
+You going to press F and I why would you
+need to see it you going to spell it
+
+115
+02:31:11,969 --> 02:31:16,293
+I'll take pictures of figuredReally.
+
+116
+02:31:20,983 --> 02:31:24,852
+She said no he said he's saying this he's
+staying safe
+
+117
+02:31:26,763 --> 02:31:29,013
+I will show you the first
+
+118
+02:32:29,006 --> 02:32:43,024
+But it's okay
+
+119
+02:33:37,079 --> 02:34:00,228
+I graduated
+
+120
+02:34:03,572 --> 02:34:04,544
+Graduated
+
+121
+02:34:13,598 --> 02:34:19,838
+ManTo realize that I said so.
+
+122
+02:34:24,903 --> 02:34:31,499
+That's what I'm saying I know you smart just
+don't tryTo tell you to come wake.
+
+123
+02:34:32,789 --> 02:34:34,271
+Up
+
+124
+02:34:37,440 --> 02:35:03,729
+Love I didn't yell at you I meant that with
+everything in it I ain't even know it
+
+125
+02:35:04,345 --> 02:35:07,670
+Know it I almost started cryingPicture.
+
+126
+02:35:12,809 --> 02:35:19,961
+I knowI'm going to get back to work.
+
+127
+02:36:11,792 --> 02:36:16,752
+You skip my stuffYou like my music.
+
+128
+02:36:20,684 --> 02:36:26,855
+You did skip itChris you hella stupid.
+
+129
+02:37:02,563 --> 02:37:04,321
+But it's getting to my cousin
+
+130
+02:38:03,986 --> 02:38:04,974
+Grandma
+
+131
+02:38:35,076 --> 02:38:37,689
+Didn't even give my mouth
+
+132
+02:39:14,086 --> 02:39:15,988
+That's what you do when you supposed to be
+taking a test
+
+133
+02:42:38,039 --> 02:42:39,024
+That means you're in
+
+134
+02:43:40,893 --> 02:44:14,020
+What is a 15
+
+135
+02:44:18,909 --> 02:44:21,532
+Ever since tomorrowAnd then dancing.
+
+136
+02:44:38,327 --> 02:44:46,737
+I don't think I understand
+
+137
+02:44:49,994 --> 02:44:50,537
+Though
+
+138
+02:45:03,366 --> 02:45:11,764
+You're not looking
+
+139
+02:45:12,525 --> 02:45:13,868
+Yeah
+
+140
+02:45:25,997 --> 02:45:26,861
+Okay
+
+141
+02:45:35,521 --> 02:45:38,833
+If they're asking for all of themYou got to
+give him.
+
+142
+02:45:42,832 --> 02:45:47,103
+To themYou can still read.
+
+143
+02:46:12,872 --> 02:46:13,817
+Something
+
+144
+02:46:18,211 --> 02:46:21,962
+Mine look like the paper was all that
+experience
+
+145
+02:46:23,963 --> 02:46:28,932
+Don't let me do it for me
+
+146
+02:46:53,340 --> 02:47:11,470
+I think that would be it
+
+147
+02:47:16,483 --> 02:47:21,560
+I made the best stuff with youI miss it.
+Bye-bye.
+
+148
+02:48:17,548 --> 02:48:23,024
+Not too sureIs better.
+
+149
+02:48:24,907 --> 02:48:29,839
+See the difference or not
+
+150
+02:48:33,170 --> 02:48:37,876
+You see the difference or notI'm starting to
+see the difference.
+
+151
+02:49:17,564 --> 02:49:24,563
+BreakfastOf sustainable.
+
+152
+02:49:25,991 --> 02:49:32,735
+They don't take the other oneSend out. I
+would delete the others before.
+
+153
+02:49:33,385 --> 02:49:39,084
+Some kind of mistake happensIt's not the
+last one.
+
+154
+02:49:41,078 --> 02:49:44,449
+Hey where you goDid you hear me.
+
+155
+02:49:48,425 --> 02:49:54,999
+It's the one that I showed you is the one
+that keys
+
+156
+02:49:58,112 --> 02:50:06,074
+I think that's going to take it upside
+downYou can flip it upside up.
+
+157
+02:53:07,104 --> 02:53:08,229
+There it is
+
+158
+02:53:17,385 --> 02:53:17,800
+Crap
+
+159
+02:54:44,508 --> 02:54:48,998
+InterestingTell me that doesn't look like
+they're looking at the back.
+
+160
+02:54:52,257 --> 02:54:54,275
+That's what they're asking me to fucking do
+
+161
+02:55:12,829 --> 02:55:17,670
+Alright now let's get back to this workYeah
+yeah.
+
+162
+02:57:12,008 --> 02:57:18,967
+What have you been trying to message
+withThat becomes the real question.
+
+163
+03:01:21,542 --> 03:01:23,640
+To confirm your answers on your test
+
+164
+03:01:30,721 --> 03:01:36,871
+Charlie all I ever see you doing in school
+is playing your gameYou playing your game
+all through school huh.
+
+165
+03:01:37,904 --> 03:01:41,735
+You like School onlineYou like School
+online.
+
+166
+03:02:12,753 --> 03:02:14,765
+Sunday Sunday
+
+167
+03:02:15,435 --> 03:02:22,123
+I thought you said that they had to wait
+
+168
+03:02:36,087 --> 03:02:41,278
+Cuz if they let you send it that might have
+not that they needed something else or does
+that mean they denied it again
+
+169
+03:02:47,419 --> 03:02:52,015
+Cuz if they let you send it again that might
+have meant that they needed something else
+
+170
+03:02:52,902 --> 03:02:56,791
+Or did they reject the first one like you
+need to know this
+
+171
+03:03:01,351 --> 03:03:06,565
+Email they said that where does it say that
+
+172
+03:03:08,280 --> 03:03:14,605
+I'm not asking you what you thinking I'm
+asking them I'm asking you what they said
+
+173
+03:03:20,100 --> 03:03:20,592
+Chris
+
+174
+03:03:27,757 --> 03:03:33,551
+This ain't even you personal
+
+175
+03:03:34,502 --> 03:03:41,082
+YesAnd so where did you send the other stuff
+to.
+
+176
+03:04:13,732 --> 03:04:17,467
+Netflix explanation
+
+177
+03:04:51,608 --> 03:04:58,062
+Do you need me talking about itYou know.
+Who.
+
+178
+03:05:23,740 --> 03:05:33,903
+ER
+
+179
+03:05:57,385 --> 03:05:59,586
+So it didn't say this at first
+
+180
+03:06:08,789 --> 03:06:09,952
+It said this
+
+181
+03:06:21,277 --> 03:06:25,653
+Wrong letterNo no.
+
+182
+03:08:18,395 --> 03:08:25,306
+Next song
+
+183
+03:08:31,906 --> 03:08:35,203
+At 12:49A.m..
+
+184
+03:08:49,462 --> 03:09:09,140
+Siri take my phone off too not too straight
+
+185
+03:09:11,946 --> 03:09:16,205
+Monster
+
+186
+03:10:15,688 --> 03:10:34,389
+You can tell her about to catch people you
+put your hair finger over exactly when they
+sleep
+
+187
+03:10:35,407 --> 03:10:35,905
+Emergency
+
+188
+03:11:26,958 --> 03:11:29,296
+True wake up
+
+189
+03:12:11,426 --> 03:12:13,586
+You are asleep
+
+190
+03:12:39,050 --> 03:12:40,520
+Bus
+
+191
+03:20:13,298 --> 03:20:14,618
+50% off
+
+192
+03:20:58,873 --> 03:20:59,707
+Me
+
+193
+03:21:21,872 --> 03:21:30,619
+I was looking
+
+194
+03:31:43,855 --> 03:31:47,447
+JoshOkay.
+
+195
+03:58:53,165 --> 03:59:27,489
+Oh I'm sorry I thought I was going to hit
+him too
+
+196
+03:59:30,299 --> 03:59:31,043
+Thanks buddy
+
+197
+03:59:56,758 --> 04:00:01,525
+I had to get up and sayOh nice day.
+
+198
+04:00:34,821 --> 04:00:40,532
+Okay so I don't even got to press for it no
+more to do a square back
+
+199
+04:00:42,402 --> 04:00:45,911
+Okay all rightOkay.
+
+200
+04:00:59,097 --> 04:01:49,457
+Post Oak road conditions
+
+201
+04:01:55,387 --> 04:02:15,872
+Go to the thing where I say session names
+it's going to say 6th grade
+
+202
+04:02:17,919 --> 04:02:23,055
+It is going to say Section 8 minutes
+
+203
+04:02:26,910 --> 04:02:28,436
+My hello
+
+204
+04:02:30,950 --> 04:02:35,555
+Assistant everything about $300
+
+205
+04:02:38,951 --> 04:02:39,998
+And I improved
+
+206
+04:02:48,474 --> 04:02:51,941
+I'm going to talk
+
+207
+04:03:32,976 --> 04:03:33,666
+What's up
+
+208
+04:04:30,115 --> 04:04:32,002
+No I'mma lose my wife
+
+209
+04:05:30,364 --> 04:05:34,227
+I can't do itWell morning time.
+
+210
+04:05:38,155 --> 04:05:39,092
+Did you leave
+
+211
+04:05:41,665 --> 04:05:49,314
+The same thing happens
+
+212
+04:06:19,804 --> 04:07:46,079
+Can
+
+213
+04:08:29,776 --> 04:08:30,216
+Yesterday
+
+214
+04:09:00,706 --> 04:09:05,799
+And my ex's sick whenever I don't want to
+
+215
+04:09:10,699 --> 04:09:15,014
+ImagineWhatever.
+
+216
+04:15:00,959 --> 04:15:05,217
+But it's dry
+
+217
+04:15:08,106 --> 04:15:13,349
+Oh oh yeah did you fart
+
+218
+04:15:25,732 --> 04:15:29,853
+What is the difference is multitude so I got
+to talk
+
+219
+04:15:30,415 --> 04:15:39,214
+40
+
+220
+04:15:41,770 --> 04:15:45,488
+What's up sleep
+
+221
+04:15:59,526 --> 04:16:05,363
+I wish I would have lost my hands but I made
+a little mess in a bad thing
+
+222
+04:16:10,269 --> 04:16:17,637
+All right let's see what the agents have
+been
+
+223
+04:17:02,492 --> 04:17:03,729
+All right I don't forgive you
+
+224
+04:17:12,084 --> 04:17:16,905
+Doing for Christmas
+
+225
+04:17:17,573 --> 04:17:22,262
+Again
+
+226
+04:17:30,976 --> 04:17:39,460
+We not know if you pass if you pass this
+great Dale send them all the way up to 8:30
+
+227
+04:17:40,166 --> 04:17:47,422
+Or complete in high school a year early
+
+228
+04:17:48,539 --> 04:18:05,932
+So he could do like 17 6th grade right now I
+was talking about those seventh grade
+classes where you being statistics and I
+mean in geometry in Spanish
+
+229
+04:18:06,810 --> 04:18:13,274
+But that means you got to be in pre-ap
+classes and stuffThey're not going to care
+if you got held back in 6th grade.
+
+230
+04:18:14,154 --> 04:18:16,004
+When you get to 12th grade
+
+231
+04:18:19,743 --> 04:18:22,673
+But this is your sign I need to step it up
+
+232
+04:18:25,655 --> 04:18:31,385
+Cuz now when you plan you ain't even you
+ain't even holding back people in your
+generation you don't have yourself back
+
+233
+04:18:35,417 --> 04:18:41,515
+So every distraction in class you making is
+youHolding everybody back.
+
+234
+04:18:45,146 --> 04:18:52,954
+But don't worry about it cuz that's not what
+we going to be on we going to be on the
+other side of it where we going to try and
+make up for what we doneRight.
+
+235
+04:18:57,543 --> 04:19:10,777
+And that start with you studying for that
+test that Charlie got in about what what
+time try to get what time do you got this
+shift Charlie what's on the study cuz you
+need to be with him right now like that's
+what you need to be on brother you going to
+be in his class
+
+236
+04:19:11,600 --> 04:19:16,160
+Not in his class but you going to have a
+classThat study in the same stuff.
+
+237
+04:19:17,905 --> 04:19:21,988
+They wouldn't disrespect you by putting you
+on the same class I hope not
+
+238
+04:19:25,914 --> 04:19:30,389
+I don't know I never had a class materialBut
+I did have a class with k.
+
+239
+04:19:30,670 --> 04:19:34,867
+But they took me out of that class so fast
+it was fucking fast it was fucking funny
+
+240
+04:19:36,194 --> 04:19:42,280
+They did not want me in the same class with
+my boy they knew who was going to be a
+problem
+
+241
+04:19:44,399 --> 04:19:51,686
+Yeah yeah soon as she found out just like no
+no no switching that immediatelyAnd I
+understand too cuz I just got kicked out of
+car.
+
+242
+04:19:57,932 --> 04:20:03,149
+And appointed me coming over to LCHolding my
+boys back.
+
+243
+04:20:08,336 --> 04:20:11,863
+That's why I say I'm not making fun of you
+we in the same boat Chris
+
+244
+04:20:15,598 --> 04:20:19,705
+That's why it's hard to hurt cuz I know how
+you feel right now like I felt like this
+
+245
+04:20:20,409 --> 04:20:24,128
+And it was even worse cuz I had to go up to
+the school they didn't have online school
+
+246
+04:20:27,049 --> 04:20:33,322
+So I just watch the people that graduated
+without me on Facebook graduating going to
+prom and all that and I'm still in school
+
+247
+04:20:39,233 --> 04:20:46,024
+And that shit hurtMade me care even less I
+ain't going to lie that was me.
+
+248
+04:21:02,665 --> 04:21:05,191
+I don't think they're ever going to stop
+
+249
+04:21:07,622 --> 04:21:19,459
+Mama how are you
+
+250
+04:21:59,386 --> 04:22:25,504
+School
+
+251
+04:23:01,712 --> 04:23:11,828
+You don't know y'all be saying you your new
+me did you get it did you text your teacher
+until that's your name wasn't popular
+
+252
+04:23:13,944 --> 04:23:23,118
+Bro
+
+253
+04:23:30,025 --> 04:23:40,440
+Yep
+
+254
+04:23:41,099 --> 04:23:45,510
+Nope
+
+255
+04:23:51,148 --> 04:24:17,664
+What okay so much for all World Cup
+
+256
+04:24:18,089 --> 04:24:27,202
+You get a name
+
+257
+04:24:53,083 --> 04:24:55,107
+Just kidding we got McDonald's
+
+258
+04:24:58,536 --> 04:25:09,457
+Money
+
+259
+04:25:11,643 --> 04:25:25,693
+Georgina okay no
+
+260
+04:25:27,178 --> 04:25:32,708
+Do you want a pet or notBut I bet.
+
+261
+04:25:35,405 --> 04:25:39,138
+Question mark
+
+262
+04:25:45,505 --> 04:26:04,057
+Period I'm good
+
+263
+04:26:05,910 --> 04:26:10,640
+This is so hardNo it's listening.
+
+264
+04:26:17,803 --> 04:26:18,392
+My name
+
+265
+04:26:26,865 --> 04:27:14,981
+Wake up boy
+
+266
+04:27:16,522 --> 04:27:22,208
+AsleepBoy. Maybe you drive Christine yet.
+
+267
+04:33:09,290 --> 04:33:10,175
+If
+
+268
+04:34:18,898 --> 04:34:19,230
+Hop
+
+269
+04:35:17,425 --> 04:35:24,961
+Okay so it looks like the loop is breakingNo
+never mind.
+
+270
+04:37:01,400 --> 04:38:31,896
+Myself
+
+271
+04:38:35,183 --> 04:38:39,706
+I'm trying to risk it for myself
+
+272
+04:38:55,204 --> 04:38:55,813
+Oh man
+
+273
+04:39:37,074 --> 04:39:40,116
+See that charges the same like this one but
+this is way better
+
+274
+04:39:49,324 --> 04:39:58,564
+This charger is better than that than your
+black one even though it's not inside of
+here they did it like that it's way better
+
+275
+04:40:03,940 --> 04:40:08,782
+Is there water in the fridge
+
+276
+04:40:10,267 --> 04:41:06,712
+Check it she texted you back cuz they don't
+take long to text back to school
+
+277
+04:41:54,544 --> 04:41:59,680
+What's your question uglyStop lying Charlie.
+
+278
+04:42:01,114 --> 04:42:08,770
+Charlie I'm not going home look in the
+mirrorTell me you see something pretty.
+
+279
+04:42:11,732 --> 04:42:18,500
+LiveThat's right that's the most handsome
+man looking in the mirror right now.
+
+280
+04:42:19,259 --> 04:42:20,901
+Until I started looking
+
+281
+04:42:27,632 --> 04:42:29,635
+I'm just messing with your man
+
+282
+04:42:35,489 --> 04:42:40,734
+The small man in my big jacketFor now.
+
+283
+04:43:27,005 --> 04:43:33,637
+Your Roosters on usOkay.
+
+284
+04:43:39,534 --> 04:43:43,343
+Siri
+
+285
+04:43:55,356 --> 04:43:58,859
+No no no what's up with foot
+
+286
+04:44:02,456 --> 04:44:08,043
+IMy boyfriend.
+
+287
+04:44:20,321 --> 04:44:28,232
+IsHey.
+
+288
+04:44:29,507 --> 04:44:34,903
+Hey you're not goingBye. Bye.
+
+289
+04:44:41,574 --> 04:44:42,826
+Oh I'm a little window
+
+290
+04:45:26,935 --> 04:45:32,254
+You doneAre you okay you supposed to be
+working on something you bothering him.
+
+291
+04:45:33,780 --> 04:45:37,218
+I ain't bothering him you are
+
+292
+04:45:41,113 --> 04:45:46,232
+That's awesome
+
+293
+04:46:21,998 --> 04:46:23,386
+It works
+
+294
+04:46:24,767 --> 04:46:30,298
+Joshua facial all right
+
+295
+04:46:58,901 --> 04:47:01,568
+Or something
+
+296
+04:47:15,970 --> 04:47:16,781
+No
+
+297
+04:47:26,910 --> 04:47:30,355
+ArmyLooking door.
+
+298
+04:48:01,162 --> 04:48:03,256
+Hello hello
+
+299
+04:48:13,805 --> 04:48:20,432
+Taco Bell I have ice cream and my brother
+was still get it
+
+300
+04:48:22,516 --> 04:48:24,396
+Taco get it perfect
+
+301
+04:50:18,063 --> 04:50:25,517
+I special with medium before strawI'm going
+to get you back.
+
+302
+04:50:28,889 --> 04:50:31,271
+Okay
+
+303
+04:50:55,777 --> 04:51:02,725
+Business of bothering me you love me
+thoughYou're welcome.
+
+304
+04:51:06,642 --> 04:51:12,180
+So what it's uncomfortable but it's hard to
+explain how much
+
+305
+04:51:13,194 --> 04:51:16,927
+Like
+
+306
+04:53:44,035 --> 04:53:48,259
+Self defense empty turn on now worried about
+the wrong thing Chris
+
+307
+04:54:33,771 --> 04:54:41,493
+I'll change my passwordI'm going to put you
+in Spanish my password is easier.
+
+308
+04:54:42,654 --> 04:54:44,832
+It's easiest to unlock
+
+309
+04:54:53,409 --> 04:54:54,167
+Phone
+
+310
+04:54:55,895 --> 04:55:14,430
+Christmas record
+
+311
+04:55:16,061 --> 04:56:15,065
+Escape
+
+312
+04:56:15,898 --> 04:56:46,682
+We don't quit no more now we chill and die I
+will cry watch your brothers falling back to
+pray you never know that pain
+
+313
+04:56:50,218 --> 04:56:54,689
+Damn I give it a couplePhone.
+
+314
+04:57:03,000 --> 04:57:26,592
+If you open today I want you to come over
+here
+
+315
+04:57:27,674 --> 04:58:13,388
+I'm
+
+316
+04:58:24,896 --> 04:58:27,848
+Here are too close
+
+317
+04:58:35,085 --> 04:58:40,392
+If you want
+
+318
+05:01:45,607 --> 05:03:07,694
+In this number
+
+319
+05:03:08,424 --> 05:03:11,918
+Face and send with his face
+
+320
+05:03:17,398 --> 05:03:19,592
+And she's the only one that
+
+321
+05:03:45,241 --> 05:04:13,155
+I know that's going to happen
+
+322
+05:04:18,622 --> 05:04:21,783
+I mean I got the screen running I got the
+
+323
+05:04:22,572 --> 05:04:50,714
+Webcam filter running they just can't see me
+right now but that's only cuz I sent the
+video off it's not that it's not processing
+the video please for instance if I wanted to
+show me right now I could just do the puy
+the TV the actual little thing for the
+previous you see I put a preview in there
+now yeah that's what it look like
+
+324
+05:04:53,909 --> 05:04:58,894
+But I'm also like in the background I want
+to put on switch
+
+325
+05:05:00,136 --> 05:05:08,094
+On the PSISo we can see when you're done on
+the building.
+
+326
+05:05:09,191 --> 05:05:13,907
+That way I don't have to have that screen
+upAnd it'll be that baby Spring right there.
+
+327
+05:05:41,797 --> 05:05:56,840
+See that really sucks that this agents not
+working the agent too
+
+328
+05:05:57,336 --> 05:05:59,533
+Because agent number two
+
+329
+05:06:03,148 --> 05:06:07,236
+Has the best format for working and I
+deleted it
+
+330
+05:06:09,343 --> 05:06:13,686
+So it's going to be hard for me to replicate
+it unless I scroll to the top
+
+331
+05:06:17,822 --> 05:06:22,115
+Luckily the systems finally stopped soHere
+we go.
+
+332
+05:06:32,378 --> 05:06:35,805
+It's still up
+
+333
+05:06:49,130 --> 05:06:52,205
+Like
+
+334
+05:07:00,056 --> 05:07:47,504
+Despicable
+
+335
+05:08:02,293 --> 05:08:06,628
+Vacancy
+
+336
+05:08:08,296 --> 05:08:15,309
+Right now that's just this I don't have it
+upBut if it was over here.
+
+337
+05:08:19,236 --> 05:08:23,440
+ButI can also like.
+
+338
+05:08:29,639 --> 05:08:30,698
+I just have it off
+
+339
+05:09:14,596 --> 05:09:26,691
+I got to walk around
+
+340
+05:09:32,311 --> 05:10:01,449
+Talking decision circus
+
+341
+05:10:07,248 --> 05:10:18,773
+?
+
+342
+05:10:22,875 --> 05:10:51,207
+Me
+
+343
+05:10:54,691 --> 05:10:54,963
+She didn't
+
+344
+05:11:28,114 --> 05:14:55,537
+Worcester Avenue
+
+345
+05:15:10,311 --> 05:15:16,128
+I don't feel like dinner with me I don't
+feel like hearing that shit that
+
+346
+05:15:16,684 --> 05:15:31,370
+I'm only here for the money I won't last
+night so I'm hoping that it's going back
+here
+
+347
+05:15:32,529 --> 05:15:40,479
+Where it might more remember will cause it
+to go backI may lose it.
+
+348
+05:15:41,492 --> 05:15:48,335
+By doing5 to win this which is the scary
+part. But. Yellow.
+
+349
+05:16:07,678 --> 05:16:09,597
+Only it's not responding
+
+350
+05:16:28,818 --> 05:16:30,044
+The problem
+
+351
+05:16:33,293 --> 05:16:38,958
+Can you buy me some pictures
+
+352
+05:17:03,409 --> 05:17:04,344
+Oh God
+
+353
+05:17:22,398 --> 05:17:27,700
+And before I went back I should have grabbed
+the cities there are 20 to do that won't get
+done
+
+354
+05:17:42,140 --> 05:17:47,045
+Them
+
+355
+05:17:50,520 --> 05:17:55,363
+Today
+
+356
+05:18:00,842 --> 05:18:25,424
+Okay it's going to work
+
+357
+05:18:31,652 --> 05:18:32,422
+Yeah
+
+358
+05:19:14,116 --> 05:19:31,725
+Wait wait wait
+
+359
+05:19:42,071 --> 05:19:49,360
+What happens when I singThe agent. A
+screenshot.
+
+360
+05:20:03,485 --> 05:20:05,951
+Open YouTube I'm sorry
+
+361
+05:20:23,419 --> 05:20:31,264
+Have him check itWhat's wrong.
+
+362
+05:21:00,082 --> 05:21:05,696
+Number
+
+363
+05:21:08,506 --> 05:21:11,991
+Applications
+
+364
+05:21:49,974 --> 05:22:06,057
+My name is not a gift
+
+365
+05:22:08,522 --> 05:23:36,766
+Haven't been done 24 hours ago
+
+366
+05:24:05,698 --> 05:24:09,348
+I'm sorry
+
+367
+05:24:50,497 --> 05:24:52,952
+I don't really love you
+
+368
+05:24:55,619 --> 05:25:02,283
+SelfieAnd.
+
+369
+05:25:02,347 --> 05:25:20,196
+It works
+
+370
+05:25:42,077 --> 05:25:49,058
+HereSo we can take our test.
+
+371
+05:26:36,842 --> 05:26:39,742
+This electric thing that got my TV
+
+372
+05:26:40,011 --> 05:27:29,791
+Wake up
+
+373
+05:27:33,981 --> 05:27:35,956
+Right
+
+374
+05:27:48,450 --> 05:27:51,379
+Now
+
+375
+05:27:51,835 --> 05:27:58,369
+Oh yeah
+
+376
+05:28:43,114 --> 05:28:44,771
+I lost the philosopher Columbus
+
+377
+05:29:02,286 --> 05:29:38,459
+Red Bull
+
+378
+05:29:40,758 --> 05:29:41,371
+My back
+
+379
+05:29:49,513 --> 05:29:53,450
+Spotify
+
+380
+05:30:16,358 --> 05:32:13,543
+Nothing
+
+381
+05:32:24,980 --> 05:32:29,361
+HahaI don't know.
+
+382
+05:32:32,131 --> 05:32:44,566
+Think of a ball right stop thinking about
+
+383
+05:32:45,671 --> 05:32:45,894
+Right
+
+384
+05:32:58,563 --> 05:33:06,370
+Now
+
+385
+05:33:09,597 --> 05:33:14,312
+What's outside look up above and go for 20
+minutes
+
+386
+05:33:14,833 --> 05:34:22,381
+Right so
+
+387
+05:34:21,983 --> 05:34:25,219
+Right so get upStart working on.
+
+388
+05:34:38,499 --> 05:34:40,537
+Jesus
+
+389
+05:35:10,937 --> 05:35:36,147
+The question
+
+390
+05:35:37,878 --> 05:35:47,062
+Lego
+
+391
+05:35:52,059 --> 05:36:26,898
+Funny pictures
+
+392
+05:36:29,920 --> 05:37:07,953
+Talking
+
+393
+05:37:12,016 --> 05:37:13,938
+Tom
+
+394
+05:37:48,653 --> 05:37:49,865
+Still open come on
+
+395
+05:39:00,215 --> 05:39:03,388
+FacebookSpecial. Special YouTube.
+
+396
+05:39:22,363 --> 05:39:42,263
+I got them a question
+
+397
+05:39:46,843 --> 05:39:51,497
+?I almost just killed myself.
+
+398
+05:39:53,864 --> 05:39:57,287
+I was in Discovery
+
+399
+05:40:07,749 --> 05:40:10,316
+It's notAwesome.
+
+400
+05:40:23,560 --> 05:40:31,415
+Thank you so easyTo cancel. Saturday.
+
+401
+05:40:56,735 --> 05:40:57,432
+Just come in
+
+402
+05:41:07,939 --> 05:41:14,797
+ChrisCome on now come over here.
+
+403
+05:41:18,203 --> 05:41:39,844
+Talking
+
+404
+05:41:46,314 --> 05:41:50,915
+InstrumentalEmergency response.
+
+405
+05:42:00,985 --> 05:42:05,066
+Tomorrow
+
+406
+05:43:58,235 --> 05:44:17,573
+Have 50%
+
+407
+05:44:19,262 --> 05:44:28,748
+?
+
+408
+05:44:33,238 --> 05:44:37,014
+To see what you know
+
+409
+05:44:42,669 --> 05:45:00,917
+You
+
+410
+05:45:08,999 --> 05:45:18,497
+Coffee at 7:00 370 the assignment
+
+411
+05:45:21,936 --> 05:45:32,275
+Madison
+
+412
+05:45:46,008 --> 05:45:51,695
+Got the last time and I'll even need it
+Chris nutrition
+
+413
+05:45:54,516 --> 05:45:54,974
+I bet
+
+414
+05:45:58,130 --> 05:46:13,969
+You
+
+415
+05:46:16,715 --> 05:46:18,200
+You know
+
+416
+05:46:24,969 --> 05:46:34,295
+I output so you try to play the system
+
+417
+05:46:36,550 --> 05:46:41,683
+That's not youThat's not a question.
+
+418
+05:46:43,702 --> 05:47:08,137
+The biggest so hard to
+
+419
+05:47:12,713 --> 05:47:17,019
+No but I'm goodOh you did this.
+
+420
+05:47:18,135 --> 05:47:54,361
+You can do it
+
+421
+05:47:59,816 --> 05:48:03,562
+Yep
+
+422
+05:48:35,611 --> 05:49:04,328
+Washington Washington no no no
+
+423
+05:49:07,400 --> 05:49:10,919
+I'm walking song
+
+424
+05:49:28,636 --> 05:49:34,318
+I couldn't hear youCan I get the red
+controller.
+
+425
+05:49:35,628 --> 05:49:39,169
+Can I get the red controllerOn playground.
+
+426
+05:49:55,512 --> 05:50:02,699
+Yes yes yesPartner.
+
+427
+05:50:06,089 --> 05:50:13,169
+I wasn't upset with my flight I was upset
+with my controller
+
+428
+05:50:16,281 --> 05:50:22,291
+We wonBut that controller is like.
+
+429
+05:50:23,697 --> 05:50:30,540
+I don't want to cheat like that controller
+it thank you that controller
+
+430
+05:50:32,225 --> 05:50:54,618
+Like broke I got to go give me a performance
+control over people
+
+431
+05:50:58,118 --> 05:51:00,689
+And then it started sticking
+
+432
+05:51:08,643 --> 05:51:13,759
+So we're going to get started
+
+433
+05:51:17,723 --> 05:51:20,671
+Yet
+
+434
+05:51:42,233 --> 05:51:47,424
+In the boxing job went onYou.
+
+435
+05:51:49,598 --> 05:51:56,227
+I wouldn't even write thoseAre you even
+worried about that and you know.
+
+436
+05:52:11,040 --> 05:52:11,563
+See
+
+437
+05:52:18,209 --> 05:52:23,465
+Duffy's talking about Grandpa
+
+438
+05:52:35,276 --> 05:52:39,757
+How did they make moreThan me.
+
+439
+05:52:41,210 --> 05:52:45,643
+I knowMe a bunch.
+
+440
+05:52:50,831 --> 05:52:58,109
+In between my break but all the humans are
+wiped off when they're all asteroid hit the
+Earth
+
+441
+05:52:58,759 --> 05:53:03,398
+You know how did they surviveCase. I didn't
+take and that was in the bank.
+
+442
+05:53:04,435 --> 05:53:08,172
+So I would say diamond shoes they ain't
+going to change it to you
+
+443
+05:53:12,787 --> 05:53:17,254
+It's a dinosaur in real life
+
+444
+05:53:18,482 --> 05:53:30,559
+For free you got the bugs throwing you are
+you and two brothers all videos
+
+445
+05:53:38,184 --> 05:53:42,653
+Call Captain the 1999 let them look like a
+1999
+
+446
+05:53:45,614 --> 05:53:58,803
+Because you didn't know anything
+
+447
+05:54:00,690 --> 05:54:04,640
+1903That's why.
+
+448
+05:54:05,436 --> 05:54:09,007
+Size in my pants
+
+449
+05:54:12,599 --> 05:54:20,734
+Whenever once everything I said
+
+450
+05:54:21,181 --> 05:54:25,021
+He thought it was replaced
+
+451
+05:54:25,398 --> 05:54:31,316
+Replica of me
+
+452
+05:55:29,656 --> 05:55:31,170
+Book what to do the test not me
+
+453
+05:55:36,232 --> 05:55:38,241
+Read it
+
+454
+05:55:39,940 --> 05:55:53,546
+Fine
+
+455
+05:56:10,447 --> 05:56:16,874
+Well my feelingsDown.
+
+456
+05:56:17,619 --> 05:56:22,703
+Definitely I said new soonHe wouldn't come
+over.
+
+457
+05:56:27,069 --> 05:56:28,069
+Get off your phone
+
+458
+05:56:29,347 --> 05:56:46,387
+Character my job
+
+459
+05:56:47,790 --> 05:56:53,683
+This is my dad
+
+460
+05:56:55,004 --> 05:56:59,645
+That's it my dadSo call me back.
+
+461
+05:57:04,633 --> 05:57:12,165
+So you just answerI don't think so.
+
+462
+05:57:13,106 --> 05:57:13,932
+Things to
+
+463
+05:57:15,995 --> 05:57:21,503
+No sorry she'll bring me dinner with a good
+picture family
+
+464
+05:57:24,265 --> 05:57:31,909
+NoBecause you can't you don't know to answer
+your TV tomorrow.
+
+465
+05:57:42,109 --> 05:57:47,348
+Lottery 4 minutes
+
+466
+05:58:15,962 --> 05:58:22,957
+Said that everythingThey all get.
+
+467
+05:58:24,097 --> 05:58:26,590
+It's fun like I said it's true
+
+468
+05:58:37,460 --> 05:58:39,201
+Question mark
+
+469
+05:58:49,738 --> 05:58:50,518
+I have one
+
+470
+05:58:59,015 --> 05:59:23,671
+I know that's in the Bluetooth
+
+471
+05:59:25,985 --> 05:59:55,840
+Booty
+
+472
+05:59:56,637 --> 06:00:03,577
+NoWe're going to do that cold.
+
+473
+06:00:06,546 --> 06:00:07,474
+Do you remember to come
+
+474
+06:00:14,204 --> 06:00:20,019
+No stop playing go to the thingWe got to go
+to the video that I found.
+
+475
+06:00:22,280 --> 06:00:24,371
+It
+
+476
+06:00:30,809 --> 06:00:35,985
+I'm going to go check it
+
+477
+06:00:40,020 --> 06:00:41,652
+But what you really think about it
+
+478
+06:00:42,768 --> 06:01:01,012
+Again
+
+479
+06:01:19,208 --> 06:01:22,322
+Cake status
+
+480
+06:02:05,200 --> 06:02:22,378
+The
+
+481
+06:02:21,582 --> 06:02:23,118
+The comments make it easy
+
+482
+06:02:44,710 --> 06:03:25,645
+Did you read it to me I can hold it
+
+483
+06:03:39,767 --> 06:03:49,243
+No
+
+484
+06:03:50,192 --> 06:03:55,566
+Are youIf we play if you want which I ain't
+text.
+
+485
+06:04:03,265 --> 06:04:04,433
+Cool
+
+486
+06:04:11,638 --> 06:04:17,111
+Talk
+
+487
+06:04:38,830 --> 06:04:44,277
+It worksBoth y'all about to be kicked off
+the game all day.
+
+488
+06:04:47,602 --> 06:04:51,223
+Cuz y'all doing too much y'all playing right
+now so you don't need to play later
+
+489
+06:04:54,838 --> 06:05:01,201
+It's okay keep rocking the chair keep
+playing keep doing everything you're
+doingLike I said.
+
+490
+06:05:02,828 --> 06:05:06,003
+I'm not doing nothing either and you won't
+be doing nothing later
+
+491
+06:05:11,467 --> 06:05:15,785
+That's what I'm saying let me do it that way
+you could just say it I'll be faster
+
+492
+06:05:24,534 --> 06:05:29,672
+I want nothingYeah.
+
+493
+06:05:31,262 --> 06:05:37,422
+It has to be number oneI could just be
+number one real quick.
+
+494
+06:05:38,760 --> 06:05:40,640
+Nevermind
+
+495
+06:05:50,582 --> 06:05:57,468
+Don't work so delete that8:00. YH.
+
+496
+06:06:04,160 --> 06:06:04,738
+Trailer
+
+497
+06:06:23,406 --> 06:06:28,902
+K e sDash.
+
+498
+06:06:34,628 --> 06:06:36,630
+4
+
+499
+06:06:37,495 --> 06:06:43,787
+1 s r n
+
+500
+06:06:51,108 --> 06:06:54,793
+OpeAnd.
+
+501
+06:07:02,268 --> 06:07:09,332
+71Envy. G1.
+
+502
+06:07:11,804 --> 06:07:15,988
+M6NS.
+
+503
+06:07:21,784 --> 06:07:22,320
+Send it
+
+504
+06:07:27,845 --> 06:07:31,428
+And name
+
+505
+06:07:39,522 --> 06:07:47,051
+16P 8. W f.
+
+506
+06:07:48,891 --> 06:07:56,540
+3TIt don't work.
+
+507
+06:07:58,108 --> 06:07:59,296
+That's the brand one
+
+508
+06:08:13,266 --> 06:08:16,499
+Word
+
+509
+06:09:01,645 --> 06:09:08,723
+I got the last oneNo you should have been
+paying attention.
+
+510
+06:09:10,847 --> 06:09:16,309
+Now
+
+511
+06:09:19,455 --> 06:09:26,060
+You could have figured this out while
+reading
+
+512
+06:09:28,436 --> 06:09:29,883
+Never let Josh do this
+
+513
+06:09:32,868 --> 06:10:27,962
+Are you at that stripe miles Brown again
+
+514
+06:10:45,168 --> 06:10:55,253
+Optimus okay this is your dishes Yoda in
+your name I don't care
+
+515
+06:10:57,660 --> 06:11:05,201
+Cuz honestlyThe. It's. My love.
+
+516
+06:11:06,650 --> 06:11:23,264
+If you do kqzn
+
+517
+06:11:37,045 --> 06:11:39,679
+B
+
+518
+06:11:59,397 --> 06:12:06,602
+Good luckYou got to ask you know.
+
+519
+06:12:08,225 --> 06:12:12,063
+You did you even know what it is
+
+520
+06:12:16,980 --> 06:12:24,556
+NoIt's all about it. Are you still in the
+same address the last time.
+
+521
+06:12:28,537 --> 06:12:30,114
+Bro it seems free
+
+522
+06:12:33,530 --> 06:12:38,117
+Lucky person it's either it's no longer I
+
+523
+06:12:42,790 --> 06:12:45,821
+MaybeYeah I know.
+
+524
+06:12:50,238 --> 06:13:07,819
+Woman needed not it I send them
+
+525
+06:13:08,392 --> 06:13:12,058
+Phone
+
+526
+06:13:13,950 --> 06:13:46,821
+Oh she don't got no defense
+
+527
+06:14:42,264 --> 06:14:43,125
+Hard to Guess Who
+
+528
+06:14:50,043 --> 06:14:51,670
+No no it's pretty much start and
+
+529
+06:15:02,226 --> 06:15:05,435
+Stuff
+
+530
+06:15:20,156 --> 06:15:39,819
+Can't see as well can't walk in is Good from
+back here
+
+531
+06:15:45,231 --> 06:15:50,013
+Until you get good and figure out who you
+really want when you really want
+
+532
+06:16:15,466 --> 06:16:22,771
+Large enough to catch a big faceNo because.
+I couldn't detective fish.
+
+533
+06:16:23,369 --> 06:16:27,277
+For the first one disrespect me
+
+534
+06:16:31,024 --> 06:16:56,864
+Ena
+
+535
+06:17:07,071 --> 06:17:13,363
+How to make my bedDoing a test.
+
+536
+06:17:13,960 --> 06:17:16,920
+What to be making
+
+537
+06:17:24,066 --> 06:17:26,300
+A child
+
+538
+06:17:30,069 --> 06:17:44,271
+Well he asked what
+
+539
+06:18:20,684 --> 06:18:22,667
+Talking to myself asleep again
+

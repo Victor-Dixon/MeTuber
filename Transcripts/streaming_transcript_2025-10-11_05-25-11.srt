@@ -1,0 +1,501 @@
+1
+09:37:19,256 --> 09:37:20,124
+Okay
+
+2
+09:37:33,854 --> 09:38:04,700
+I was up at 2:00 a.m.
+
+3
+09:38:05,458 --> 09:38:07,017
+So the first thing
+
+4
+09:38:08,103 --> 09:38:14,083
+That I've noticing is that there are a lot
+of other agents
+
+5
+09:38:15,765 --> 09:38:16,510
+Messages
+
+6
+09:38:20,454 --> 09:38:32,129
+Being sent to agent number one so that lets
+me know that the validation system for the
+messaging system is either not working
+broken or has been removed
+
+7
+09:38:33,886 --> 09:38:36,048
+Since we need to go in and we need to fix
+that
+
+8
+09:38:37,695 --> 09:38:43,552
+And then I also have to go through all eight
+agents
+
+9
+09:38:44,526 --> 09:38:49,591
+Threads to see exactly what happened like I
+let them run
+
+10
+09:38:50,164 --> 09:38:53,678
+For an extended amount of time so
+
+11
+09:38:54,903 --> 09:39:07,046
+I'm hoping that I can gather more insights
+into how I can make this autonomous
+development more streamlined and easy
+
+12
+09:39:07,541 --> 09:39:13,499
+CuzAt this point I can consistently get them
+working.
+
+13
+09:39:14,268 --> 09:39:40,181
+For hours on end I can go to sleep and
+they'll continue running so it's no longer
+about continuing them running or keeping
+them going and and I've done it and it even
+better way than I started cuz at first I had
+a overnight script that would randomly send
+a message that just said continue working
+but now the messages should be more
+efficient because
+
+14
+09:39:40,630 --> 09:39:47,851
+They are just direct messages between the
+agents the problem currently is that
+
+15
+09:39:48,778 --> 09:39:56,343
+WhenThe agents work. They tend to.
+Duplicate.
+
+16
+09:39:57,752 --> 09:40:03,272
+OverComplicate. And.
+
+17
+09:40:04,074 --> 09:40:07,533
+Just generate a lot of AI slop
+
+18
+09:40:09,509 --> 09:40:13,030
+And those are the things that I have to
+address in the next
+
+19
+09:40:14,404 --> 09:40:22,187
+Cycle before I can really just send them to
+work autonomously again but it was exciting
+to see the agents
+
+20
+09:40:24,566 --> 09:40:25,039
+Create
+
+21
+09:40:25,574 --> 09:40:46,313
+Or recreate the Discord commander and I
+wasn't here for that like I think that is
+the most amazing thing about this system and
+I can't wait to see how the agents
+distribute it or if the captain decided to
+take it upon its own hands like
+
+22
+09:40:47,045 --> 09:40:52,940
+And I was literally autonomous development I
+drove to work and got a message that my my
+stuff was working
+
+23
+09:40:54,675 --> 09:40:55,883
+I'm going forward
+
+24
+09:40:57,136 --> 09:41:04,727
+We seek to increase efficiency in the
+development workflows we seek to
+
+25
+09:41:06,381 --> 09:41:12,433
+Solve the complexities ofThings like.
+
+26
+09:41:14,684 --> 09:41:29,314
+The message routing and not the message
+right and then I spoke up before this time
+I'm speaking or referring to the fact that
+if the captain agent broadcast
+
+27
+09:41:34,220 --> 09:41:38,368
+Message to the Swarm then he will
+effectively send off eight messages
+
+28
+09:41:39,626 --> 09:41:45,526
+When each agent receives this message they
+will message the captain back
+
+29
+09:41:45,785 --> 09:41:49,353
+If they messaged if they all message the
+captain back
+
+30
+09:41:50,372 --> 09:41:56,872
+The captain gets one response at a time and
+each one of them cues so what we then have
+is eight
+
+31
+09:41:57,978 --> 09:42:04,691
+Two eight messagesEight messages in the
+captain's. Message queue and so.
+
+32
+09:42:05,860 --> 09:42:09,748
+Over time this becomes a bigger
+
+33
+09:42:12,360 --> 09:42:54,129
+It becomes a gap and it's a problem because
+let's say after those eight agents sent the
+acknowledgment message to the captain they
+went off and they sent the message to
+another agent to get to work then those
+agents don't have anything in their queue
+they only had one so agent one is on cycle
+one Asian one sends a message to agent for
+and that message to agent too agent 2 sends
+a message to agent for again because of his
+own board and message and then he'll send a
+message back to agent one because he'll have
+that message in his q and he'll be able to
+respond now in that same time frame
+
+34
+09:42:55,970 --> 09:43:10,075
+Agent for will have received eight messages
+and have to respond to each one of them
+individually what I need to do is to try to
+try to create something where multiple
+agents can message one
+
+35
+09:43:10,833 --> 09:43:23,608
+All the agents can respond to a single point
+and then after all the agents have responded
+it's send that to the captain so it receives
+all the agents responses at once
+
+36
+09:43:24,075 --> 09:43:39,297
+And that way we could possibly keep a better
+track of the Cycles I don't know if this
+will work but that's where my mind's taking
+me so the next couple of days of development
+will be starting to push towards there I see
+
+37
+09:43:40,062 --> 09:44:39,674
+The light at the end of the tunnel with this
+project and I can definitely feel like we're
+going to get this thing up and running oh
+another thing I wanted to mention I was
+looking through the logs at some of the
+threads they there was a situation where
+okay so first what prompted it was I started
+a competition series because the
+competitions when you send the agents to
+work proactively in a competition based
+environment they tend to thrive so that's
+the move clearly that's the move you set
+them to a competition you put things toward
+you put weight towards points that way you
+can make a priority system based off of what
+you want so if you want something done like
+for instance let's say I really wanted the
+Discord Commander done I put it at 10,000
+points as soon as an agent sees that they
+will start going home and trying to get that
+done first one gets it done complete the
+order you see
+
+38
+09:44:40,255 --> 09:44:55,682
+Or complains the order and they start they
+can break it down into multiple points or
+maybe I should add that is where if a big
+test something like that is worth 10,000
+points then agents could break it down into
+smaller Point projects
+
+39
+09:44:57,425 --> 09:45:04,871
+But the idea is to use that as a way to let
+the captain know when we have
+
+40
+09:45:06,162 --> 09:45:08,789
+CompletedThe project.
+
+41
+09:45:12,720 --> 09:45:23,491
+I can give more details on that later but I
+only brought that up just to say I forgot
+give me a second I got to pump the ashes I
+just dropped it load on you
+
+42
+09:45:35,852 --> 09:45:37,055
+Sorry Mama
+
+43
+09:45:48,917 --> 09:45:59,654
+You can buy diamonds with Roblox bro
+
+44
+09:46:02,087 --> 09:46:04,829
+Yeah alien class cost like 900
+
+45
+09:46:08,392 --> 09:46:10,698
+Which is the one that cost $900 Charlie
+
+46
+09:46:12,664 --> 09:46:23,904
+Bro you capping one of them cost y'all right
+
+47
+09:46:34,598 --> 09:46:39,296
+You know it don't really matter cuz at the
+end of the day even if you was right you
+still going to
+
+48
+09:46:38,516 --> 09:46:43,958
+You still going to be ugly and you got to
+live with that forever it's nothing you
+could do about that okay
+
+49
+09:46:47,429 --> 09:46:50,642
+Yeah but I rather be ugly than have asthma
+
+50
+09:47:02,562 --> 09:47:08,950
+I said thatOh you're right.
+
+51
+09:47:21,247 --> 09:47:24,634
+Opposite day in January 25th is January 5th
+
+52
+09:47:32,158 --> 09:47:44,820
+Oh yeah so that's why I brought it up I
+remember now I remember okay so the reason
+why I brought up the competition is because
+agent 7 won the competition
+
+53
+09:47:47,395 --> 09:47:58,722
+Agent 7 I'm assuming gave a matter of fact
+why are we assuming anything when we got the
+file it up for you
+
+54
+09:48:09,878 --> 09:48:19,624
+Give me a second I just got to switch the
+screen over here let's go here we'll meet
+this one you can see okay let's go up and
+see what happened with
+
+55
+09:48:36,707 --> 09:48:41,938
+Matter of fact Let me show my face y'all
+y'all ain't seen my face in a minute
+
+56
+09:48:43,923 --> 09:48:51,064
+It's still ugly don't don't get it
+twistedSweet Chris get it from he look just
+like.
+
+57
+09:48:52,153 --> 09:48:53,682
+He'll know it but he really my son
+
+58
+09:48:59,647 --> 09:49:07,326
+It don'tShut up why you always got to
+correct me when I say that.
+
+59
+09:49:09,377 --> 09:49:15,449
+Dang y'all literally been doing that my
+whole life we'll be going to the store like
+these my kids though that's my step daddy
+
+60
+09:49:17,657 --> 09:49:33,154
+You're oh really so I wouldn't be at the at
+the grocery store shopping for food and
+being into somebody else babies
+
+61
+09:49:35,173 --> 09:49:38,943
+Now I know you just heard me call that lady
+your mother fucking
+
+62
+09:49:45,714 --> 09:49:51,024
+I already know uglyLie see the main
+corporate.
+
+63
+09:49:55,239 --> 09:49:56,909
+CourtCorporate.
+
+64
+09:50:21,577 --> 09:50:29,349
+I just wanted to seeI know I got to work.
+Another funny thing about being right Chris.
+
+65
+09:50:30,385 --> 09:50:35,807
+Even if you're rightYou still ugly.
+
+66
+09:50:40,535 --> 09:50:45,516
+I don't knowYou give me in trouble when you
+don't do your school work that's not really
+cool.
+
+67
+09:50:48,641 --> 09:50:50,600
+And you still ugly on top of that
+
+68
+09:50:53,829 --> 09:50:57,905
+You only pull Zoe and she got a potty mouth
+that make you garbage
+
+69
+09:51:00,197 --> 09:51:06,905
+I hope y'all didn't kiss cuz she got a party
+nowYou did KISS it didn't now you got a
+potty mouth.
+
+70
+09:51:11,124 --> 09:51:12,658
+Good good
+
+71
+09:51:17,848 --> 09:51:20,265
+Where you replaceReplace Zoey with Javion.
+
+72
+09:51:20,548 --> 09:51:37,197
+Okay we'll take Zoe back I'm sorry what I
+said I like Zoe that's my best friend I'mma
+had her own Roblox bro don't don't go that
+way just because I don't like throat Zoe bro
+it's okay it's okay we like Zoe we like Zoey
+no no no fuck no no no no no no no
+
+73
+09:51:37,293 --> 09:51:39,476
+It's okayWhat.
+
+74
+09:51:44,374 --> 09:51:46,788
+Oh and Javion just your play brother
+
+75
+09:51:54,084 --> 09:51:59,395
+ElaineElaine.
+
+76
+09:52:23,748 --> 09:52:26,711
+Is it going to embarrass me today I think
+it's going to open right up
+
+77
+09:52:31,981 --> 09:52:38,898
+I'd put my money on me too broDid they open
+right up no.
+
+78
+09:52:59,696 --> 09:53:02,827
+On
+
+79
+09:53:14,923 --> 09:53:17,412
+1250 Charlie 60 70
+
+80
+09:54:13,720 --> 09:54:20,537
+And nobody to talkAlone so fast.
+
+81
+09:54:21,935 --> 09:54:22,953
+And it works
+
+82
+09:54:24,409 --> 09:54:56,945
+I wish you could attended here
+
+83
+09:55:52,397 --> 09:55:52,397
+In
+
+84
+09:56:31,775 --> 09:56:37,805
+It's hardNot me. Bodyguard blue body parts.
+
+85
+09:56:38,632 --> 09:56:39,826
+Moving parts
+
+86
+09:59:08,613 --> 09:59:11,586
+I told you butHope he's a lot better.
+
+87
+09:59:14,247 --> 09:59:40,334
+Stop
+
+88
+10:01:10,783 --> 10:01:27,814
+What up
+
+89
+10:01:30,423 --> 10:01:30,947
+What up
+
+90
+10:01:38,362 --> 10:01:40,790
+So much
+
+91
+10:01:56,130 --> 10:01:57,256
+Who's your dog
+
+92
+10:02:36,955 --> 10:02:42,786
+QuotesI'm.
+
+93
+10:06:33,507 --> 10:06:44,827
+Sonoma kids
+
