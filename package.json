@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "scripts": {
+    "metuber:ws": "node runtime/ws/phone_ws_bridge.js"
+  },
+  "dependencies": {
+    "ws": "^8.21.0"
+  }
+}
