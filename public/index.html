@@ -133,8 +133,9 @@
             <div class="grid grid-cols-2 gap-3 mt-4">
               <button id="startCam" class="tech-button rounded-2xl text-cyan-100 font-bold py-4">Start Camera</button>
               <button id="flipCam" class="tech-button rounded-2xl font-bold py-4">Flip Camera</button>
-              <button id="record" class="rounded-2xl bg-red-500/90 border border-red-300/30 font-bold py-4 animate-pulse">Start Recording</button>
-              <button id="stop" disabled class="rounded-2xl bg-white/10 text-white/40 font-bold py-4">Stop Recording</button>
+              <button id="record" class="rounded-2xl bg-red-500/90 border border-red-300/30 font-bold py-4 animate-pulse">Record Camera</button>
+              <button id="recordScreen" class="tech-button rounded-2xl font-bold py-4">Record Screen</button>
+              <button id="stop" disabled class="rounded-2xl bg-white/10 text-white/40 font-bold py-4 col-span-2">Stop Recording</button>
             </div>
 
             <h2 class="text-xl font-black mt-5">Filter Plugins</h2>
@@ -389,9 +390,7 @@ function renderFilterPlugins() {
 
 renderFilterPlugins();
 
-recordBtn.onclick = async () => {
-  if (!stream) await startCamera();
-
+async function startRecordingFromStream(sourceStream, label = "camera") {
   chunks = [];
   const activePlugin = window.MeTuberFilterRegistry.get(activeFilterId);
   const recordStream = activePlugin && activePlugin.canvasFilter && processedCanvas.captureStream
@@ -412,22 +411,56 @@ recordBtn.onclick = async () => {
     uploadBlob(blob, "webm").then(result => {
       logDebug("RECORDING_UPLOADED", result);
       refreshLibrary();
+      if (teamSocket && teamSocket.readyState === WebSocket.OPEN) {
+        teamSocket.send(JSON.stringify({ type:"clip-uploaded", clip:result }));
+      }
     });
     setStatus("Recording ready and uploaded.");
   };
 
   recorder.start();
   recordBtn.disabled = true;
+  document.getElementById("recordScreen").disabled = true;
   stopBtn.disabled = false;
-  stopBtn.className = "rounded-2xl bg-red-700 font-bold py-4";
-  setStatus("Recording...");
+  stopBtn.className = "rounded-2xl bg-red-700 font-bold py-4 col-span-2";
+  setStatus("Recording " + label + "...");
+}
+
+recordBtn.onclick = async () => {
+  if (!stream) await startCamera();
+  await startRecordingFromStream(stream, "camera");
+};
+
+document.getElementById("recordScreen").onclick = async () => {
+  try {
+    if (!navigator.mediaDevices.getDisplayMedia) {
+      setStatus("Screen recording not supported in this browser.");
+      logDebug("SCREEN_RECORD_UNSUPPORTED", { userAgent: navigator.userAgent });
+      return;
+    }
+
+    const screenStream = await navigator.mediaDevices.getDisplayMedia({
+      video: true,
+      audio: true
+    });
+
+    await startRecordingFromStream(screenStream, "screen");
+
+    screenStream.getVideoTracks()[0].onended = () => {
+      if (recorder && recorder.state !== "inactive") recorder.stop();
+    };
+  } catch (err) {
+    setStatus("Screen record error: " + err.message);
+    logDebug("SCREEN_RECORD_ERROR", { error: err.message });
+  }
 };
 
 stopBtn.onclick = () => {
   if (recorder && recorder.state !== "inactive") recorder.stop();
   recordBtn.disabled = false;
+  document.getElementById("recordScreen").disabled = false;
   stopBtn.disabled = true;
-  stopBtn.className = "rounded-2xl bg-white/10 text-white/40 font-bold py-4";
+  stopBtn.className = "rounded-2xl bg-white/10 text-white/40 font-bold py-4 col-span-2";
 };
 
 
@@ -435,7 +468,9 @@ const timeline = [];
 let teamSocket = null;
 
 async function uploadBlob(blob, ext = "webm") {
-  const res = await fetch(`/api/upload?ext=${encodeURIComponent(ext)}`, {
+  const room = document.getElementById("roomName")?.value || "main-room";
+  const user = document.getElementById("userName")?.value || "creator";
+  const res = await fetch(`/api/upload?ext=${encodeURIComponent(ext)}&room=${encodeURIComponent(room)}&user=${encodeURIComponent(user)}`, {
     method: "POST",
     body: blob
   });
