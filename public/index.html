@@ -31,7 +31,10 @@
       </div>
 
       <div class="p-4">
-        <video id="preview" class="normal w-full rounded-3xl bg-black aspect-[9/16] object-cover border border-white/10" autoplay playsinline muted></video>
+        <div class="relative">
+          <video id="preview" class="normal w-full rounded-3xl bg-black aspect-[9/16] object-cover border border-white/10" autoplay playsinline muted></video>
+          <canvas id="processedCanvas" class="hidden absolute inset-0 w-full h-full rounded-3xl bg-black object-cover border border-white/10"></canvas>
+        </div>
 
         <div class="grid grid-cols-2 gap-3 mt-4">
           <button id="startCam" class="rounded-2xl bg-cyan-400 text-black font-bold py-4">Start Camera</button>
@@ -62,6 +65,9 @@ let chunks = [];
 let facingMode = "user";
 
 const preview = document.getElementById("preview");
+const processedCanvas = document.getElementById("processedCanvas");
+const processedCtx = processedCanvas.getContext("2d", { willReadFrequently: true });
+let canvasFilterLoop = null;
 const statusEl = document.getElementById("status");
 const download = document.getElementById("download");
 const recordBtn = document.getElementById("record");
@@ -105,14 +111,65 @@ function basePreviewClass() {
   return "w-full rounded-3xl bg-black aspect-[9/16] object-cover border border-white/10";
 }
 
+function stopCanvasFilter() {
+  if (canvasFilterLoop) cancelAnimationFrame(canvasFilterLoop);
+  canvasFilterLoop = null;
+  processedCanvas.classList.add("hidden");
+  preview.classList.remove("hidden");
+}
+
+function startCanvasFilter(plugin) {
+  preview.classList.add("hidden");
+  processedCanvas.classList.remove("hidden");
+
+  const draw = () => {
+    if (!preview.videoWidth || !preview.videoHeight) {
+      canvasFilterLoop = requestAnimationFrame(draw);
+      return;
+    }
+
+    processedCanvas.width = preview.videoWidth;
+    processedCanvas.height = preview.videoHeight;
+
+    processedCtx.drawImage(preview, 0, 0, processedCanvas.width, processedCanvas.height);
+
+    try {
+      const imageData = processedCtx.getImageData(0, 0, processedCanvas.width, processedCanvas.height);
+      const fn = window.MeTuberCanvasFilters?.[plugin.canvasFilter];
+      if (typeof fn === "function") {
+        processedCtx.putImageData(fn(imageData, activeParams), 0, 0);
+      }
+    } catch (err) {
+      logDebug("CANVAS_FILTER_FRAME_ERROR", { plugin: plugin.id, error: err.message });
+    }
+
+    canvasFilterLoop = requestAnimationFrame(draw);
+  };
+
+  draw();
+}
+
 function applyActiveFilter() {
   try {
+    const plugin = window.MeTuberFilterRegistry.get(activeFilterId);
+    if (!plugin) throw new Error("missing plugin " + activeFilterId);
+
+    if (plugin.canvasFilter) {
+      preview.style.filter = "none";
+      startCanvasFilter(plugin);
+      setStatus("Canvas Filter: " + plugin.name);
+      logDebug("CANVAS_FILTER_APPLIED", { activeFilterId, canvasFilter: plugin.canvasFilter });
+      return;
+    }
+
+    stopCanvasFilter();
     const filter = window.MeTuberFilterRegistry.getFilter(activeFilterId, activeParams);
     preview.className = basePreviewClass();
     preview.style.filter = filter;
-    setStatus("Filter: " + activeFilterId);
+    setStatus("Filter: " + plugin.name);
     logDebug("FILTER_APPLIED", { activeFilterId, activeParams, filter });
   } catch (err) {
+    stopCanvasFilter();
     preview.style.filter = "none";
     setStatus("Filter error: " + err.message);
     logDebug("FILTER_ERROR", { activeFilterId, error: err.message });
@@ -193,7 +250,16 @@ recordBtn.onclick = async () => {
   if (!stream) await startCamera();
 
   chunks = [];
-  recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+  const activePlugin = window.MeTuberFilterRegistry.get(activeFilterId);
+  const recordStream = activePlugin && activePlugin.canvasFilter && processedCanvas.captureStream
+    ? processedCanvas.captureStream(30)
+    : stream;
+
+  if (activePlugin && activePlugin.canvasFilter) {
+    stream.getAudioTracks().forEach(track => recordStream.addTrack(track));
+  }
+
+  recorder = new MediaRecorder(recordStream, { mimeType: "video/webm" });
 
   recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
   recorder.onstop = () => {

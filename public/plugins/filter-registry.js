@@ -137,3 +137,99 @@ window.MeTuberFilterRegistry = {
     return plugin.cssFilter || "none";
   }
 };
+
+// Runtime canvas filters: real frame processing, not CSS-only.
+window.MeTuberCanvasFilters = {
+  edgeDetect(imageData) {
+    const src = imageData.data;
+    const w = imageData.width;
+    const h = imageData.height;
+    const out = new Uint8ClampedArray(src.length);
+
+    const gray = new Uint8ClampedArray(w * h);
+    for (let i = 0, p = 0; i < src.length; i += 4, p++) {
+      gray[p] = (src[i] * 0.299 + src[i+1] * 0.587 + src[i+2] * 0.114) | 0;
+    }
+
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const i = y * w + x;
+        const gx =
+          -gray[i-w-1] - 2*gray[i-1] - gray[i+w-1] +
+           gray[i-w+1] + 2*gray[i+1] + gray[i+w+1];
+        const gy =
+          -gray[i-w-1] - 2*gray[i-w] - gray[i-w+1] +
+           gray[i+w-1] + 2*gray[i+w] + gray[i+w+1];
+
+        const mag = Math.min(255, Math.sqrt(gx*gx + gy*gy));
+        const o = i * 4;
+        out[o] = out[o+1] = out[o+2] = mag;
+        out[o+3] = 255;
+      }
+    }
+
+    imageData.data.set(out);
+    return imageData;
+  },
+
+  cartoon(imageData) {
+    const d = imageData.data;
+
+    for (let i = 0; i < d.length; i += 4) {
+      d[i] = Math.floor(d[i] / 48) * 48;
+      d[i+1] = Math.floor(d[i+1] / 48) * 48;
+      d[i+2] = Math.floor(d[i+2] / 48) * 48;
+      d[i] = Math.min(255, d[i] * 1.18);
+      d[i+1] = Math.min(255, d[i+1] * 1.12);
+      d[i+2] = Math.min(255, d[i+2] * 1.08);
+    }
+
+    return imageData;
+  },
+
+  anime(imageData) {
+    const d = imageData.data;
+
+    for (let i = 0; i < d.length; i += 4) {
+      d[i] = Math.floor(d[i] / 36) * 36;
+      d[i+1] = Math.floor(d[i+1] / 36) * 36;
+      d[i+2] = Math.floor(d[i+2] / 36) * 36;
+
+      d[i] = Math.min(255, d[i] * 1.28 + 8);
+      d[i+1] = Math.min(255, d[i+1] * 1.18 + 6);
+      d[i+2] = Math.min(255, d[i+2] * 1.25 + 10);
+    }
+
+    return imageData;
+  }
+};
+
+window.MeTuberFilterRegistry.plugins.unshift(
+  {
+    id: "edge-detection",
+    name: "Edge Detection",
+    category: "Favorite",
+    description: "Real Sobel edge detection canvas filter.",
+    cssFilter: "none",
+    canvasFilter: "edgeDetect",
+    parameters: {}
+  },
+  {
+    id: "real-cartoon",
+    name: "Real Cartoon",
+    category: "Favorite",
+    description: "Posterized cartoon color processing.",
+    cssFilter: "none",
+    canvasFilter: "cartoon",
+    parameters: {}
+  },
+  {
+    id: "anime-cartoon",
+    name: "Anime Cartoon",
+    category: "Favorite",
+    description: "Anime-style boosted posterized color.",
+    cssFilter: "none",
+    canvasFilter: "anime",
+    parameters: {}
+  }
+);
