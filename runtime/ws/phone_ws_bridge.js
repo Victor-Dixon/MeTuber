@@ -14,6 +14,24 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (req.url.startsWith("/plugins/")) {
+    const safePath = path.normalize(req.url).replace(/^([.][.][/\\])+/, "");
+    const file = path.join(process.cwd(), "public", safePath);
+    if (!file.startsWith(path.join(process.cwd(), "public"))) {
+      res.writeHead(403, {"content-type":"application/json"});
+      res.end(JSON.stringify({ ok: false, error: "forbidden" }));
+      return;
+    }
+    if (!fs.existsSync(file)) {
+      res.writeHead(404, {"content-type":"application/json"});
+      res.end(JSON.stringify({ ok: false, error: "plugin_not_found" }));
+      return;
+    }
+    res.writeHead(200, {"content-type":"application/javascript"});
+    res.end(fs.readFileSync(file));
+    return;
+  }
+
   if (req.url === "/health") {
     res.writeHead(200, {"content-type":"application/json"});
     res.end(JSON.stringify({ ok: true, service: "metuber-ws", port: Number(PORT) }));

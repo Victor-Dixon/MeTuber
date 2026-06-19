@@ -40,14 +40,13 @@
           <button id="stop" disabled class="rounded-2xl bg-white/10 text-white/40 font-bold py-4">Stop Recording</button>
         </div>
 
-        <div class="grid grid-cols-3 gap-2 mt-4">
-          <button class="filterBtn rounded-xl bg-white/10 py-3" data-filter="normal">Normal</button>
-          <button class="filterBtn rounded-xl bg-white/10 py-3" data-filter="cinema">Cinema</button>
-          <button class="filterBtn rounded-xl bg-white/10 py-3" data-filter="dream">Dream</button>
-          <button class="filterBtn rounded-xl bg-white/10 py-3" data-filter="noir">Noir</button>
-          <button class="filterBtn rounded-xl bg-white/10 py-3" data-filter="warm">Warm</button>
-          <button class="filterBtn rounded-xl bg-white/10 py-3" data-filter="glitch">Glitch</button>
-        </div>
+        <div id="filterGrid" class="grid grid-cols-2 gap-2 mt-4"></div>
+        <div id="parameterPanel" class="mt-4 grid gap-3"></div>
+
+        <details class="mt-4 rounded-2xl bg-black/40 border border-white/10 p-3">
+          <summary class="cursor-pointer text-sm text-cyan-300 font-bold">Debug</summary>
+          <pre id="debugPanel" class="mt-3 text-xs whitespace-pre-wrap text-white/70"></pre>
+        </details>
 
         <p id="status" class="text-sm text-white/60 mt-4">Idle.</p>
         <a id="download" class="hidden mt-4 block rounded-2xl bg-emerald-400 text-black text-center font-black py-4" download="metuber-recording.webm">Download Recording</a>
@@ -55,6 +54,7 @@
     </section>
   </main>
 
+<script src="/plugins/filter-registry.js"></script>
 <script>
 let stream;
 let recorder;
@@ -90,12 +90,104 @@ document.getElementById("flipCam").onclick = async () => {
   catch (err) { setStatus("Flip error: " + err.message); }
 };
 
-document.querySelectorAll(".filterBtn").forEach(btn => {
-  btn.onclick = () => {
-    preview.className = btn.dataset.filter + " w-full rounded-3xl bg-black aspect-[9/16] object-cover border border-white/10";
-    setStatus("Filter: " + btn.dataset.filter);
-  };
-});
+const filterGrid = document.getElementById("filterGrid");
+const parameterPanel = document.getElementById("parameterPanel");
+const debugPanel = document.getElementById("debugPanel");
+let activeFilterId = "normal";
+let activeParams = {};
+
+function logDebug(message, data) {
+  const line = `[${new Date().toISOString()}] ${message}` + (data ? "\n" + JSON.stringify(data, null, 2) : "");
+  debugPanel.textContent = line + "\n\n" + debugPanel.textContent;
+}
+
+function basePreviewClass() {
+  return "w-full rounded-3xl bg-black aspect-[9/16] object-cover border border-white/10";
+}
+
+function applyActiveFilter() {
+  try {
+    const filter = window.MeTuberFilterRegistry.getFilter(activeFilterId, activeParams);
+    preview.className = basePreviewClass();
+    preview.style.filter = filter;
+    setStatus("Filter: " + activeFilterId);
+    logDebug("FILTER_APPLIED", { activeFilterId, activeParams, filter });
+  } catch (err) {
+    preview.style.filter = "none";
+    setStatus("Filter error: " + err.message);
+    logDebug("FILTER_ERROR", { activeFilterId, error: err.message });
+  }
+}
+
+function renderParameterPanel(plugin) {
+  parameterPanel.innerHTML = "";
+  activeParams = {};
+
+  const params = plugin.parameters || {};
+  Object.entries(params).forEach(([key, spec]) => {
+    activeParams[key] = spec.default;
+
+    const wrap = document.createElement("label");
+    wrap.className = "block rounded-2xl bg-white/10 p-3";
+
+    const title = document.createElement("div");
+    title.className = "text-sm font-bold";
+    title.textContent = spec.label || key;
+
+    const input = document.createElement("input");
+    input.type = spec.type === "range" ? "range" : "text";
+    input.min = spec.min ?? "";
+    input.max = spec.max ?? "";
+    input.step = spec.step ?? "";
+    input.value = spec.default ?? "";
+    input.className = "w-full mt-2";
+
+    const value = document.createElement("div");
+    value.className = "text-xs text-white/50 mt-1";
+    value.textContent = input.value;
+
+    input.oninput = () => {
+      activeParams[key] = input.type === "range" ? Number(input.value) : input.value;
+      value.textContent = input.value;
+      applyActiveFilter();
+    };
+
+    wrap.appendChild(title);
+    wrap.appendChild(input);
+    wrap.appendChild(value);
+    parameterPanel.appendChild(wrap);
+  });
+}
+
+function renderFilterPlugins() {
+  const registry = window.MeTuberFilterRegistry;
+  const validation = registry.validate();
+  logDebug("PLUGIN_REGISTRY_VALIDATE", validation);
+
+  if (!validation.ok) {
+    setStatus("Plugin registry errors. Open Debug.");
+    return;
+  }
+
+  filterGrid.innerHTML = "";
+  registry.plugins.forEach(plugin => {
+    const btn = document.createElement("button");
+    btn.className = "rounded-xl bg-white/10 py-3 px-2 text-sm font-bold";
+    btn.textContent = plugin.name;
+    btn.onclick = () => {
+      activeFilterId = plugin.id;
+      renderParameterPanel(plugin);
+      applyActiveFilter();
+    };
+    filterGrid.appendChild(btn);
+  });
+
+  const defaultPlugin = registry.get("normal");
+  renderParameterPanel(defaultPlugin);
+  applyActiveFilter();
+}
+
+renderFilterPlugins();
 
 recordBtn.onclick = async () => {
   if (!stream) await startCamera();
