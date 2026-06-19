@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>MeTuber Camera Studio</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/three@0.165.0/build/three.min.js"></script>
+
+  <style>
+    video.normal { filter:none; }
+    video.cinema { filter:contrast(1.25) saturate(1.25) brightness(.92); }
+    video.dream { filter:hue-rotate(35deg) saturate(1.8) contrast(1.1); }
+    video.noir { filter:grayscale(1) contrast(1.4); }
+    video.warm { filter:sepia(.35) saturate(1.3); }
+    video.glitch { filter:hue-rotate(120deg) contrast(1.6) saturate(2); }
+    #three-bg { position:fixed; inset:0; z-index:-1; opacity:.45; }
+  </style>
+</head>
+
+<body class="min-h-screen bg-black text-white overflow-x-hidden">
+  <canvas id="three-bg"></canvas>
+
+  <main class="mx-auto max-w-3xl px-4 py-5">
+    <section class="rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl overflow-hidden">
+      <div class="p-5 border-b border-white/10">
+        <p class="text-xs uppercase tracking-[0.35em] text-cyan-300">MeTuber</p>
+        <h1 class="text-3xl font-black mt-1">Mobile Camera Studio</h1>
+        <p class="text-sm text-white/60 mt-2">Camera filters, local recording, and WebSocket control surface.</p>
+      </div>
+
+      <div class="p-4">
+        <video id="preview" class="normal w-full rounded-3xl bg-black aspect-[9/16] object-cover border border-white/10" autoplay playsinline muted></video>
+
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <button id="startCam" class="rounded-2xl bg-cyan-400 text-black font-bold py-4">Start Camera</button>
+          <button id="flipCam" class="rounded-2xl bg-white/15 font-bold py-4">Flip Camera</button>
+          <button id="record" class="rounded-2xl bg-red-500 font-bold py-4">Start Recording</button>
+          <button id="stop" disabled class="rounded-2xl bg-white/10 text-white/40 font-bold py-4">Stop Recording</button>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 mt-4">
+          <button class="filterBtn rounded-xl bg-white/10 py-3" data-filter="normal">Normal</button>
+          <button class="filterBtn rounded-xl bg-white/10 py-3" data-filter="cinema">Cinema</button>
+          <button class="filterBtn rounded-xl bg-white/10 py-3" data-filter="dream">Dream</button>
+          <button class="filterBtn rounded-xl bg-white/10 py-3" data-filter="noir">Noir</button>
+          <button class="filterBtn rounded-xl bg-white/10 py-3" data-filter="warm">Warm</button>
+          <button class="filterBtn rounded-xl bg-white/10 py-3" data-filter="glitch">Glitch</button>
+        </div>
+
+        <p id="status" class="text-sm text-white/60 mt-4">Idle.</p>
+        <a id="download" class="hidden mt-4 block rounded-2xl bg-emerald-400 text-black text-center font-black py-4" download="metuber-recording.webm">Download Recording</a>
+      </div>
+    </section>
+  </main>
+
+<script>
+let stream;
+let recorder;
+let chunks = [];
+let facingMode = "user";
+
+const preview = document.getElementById("preview");
+const statusEl = document.getElementById("status");
+const download = document.getElementById("download");
+const recordBtn = document.getElementById("record");
+const stopBtn = document.getElementById("stop");
+
+function setStatus(msg) { statusEl.textContent = msg; }
+
+async function startCamera() {
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  stream = await navigator.mediaDevices.getUserMedia({
+    video: { facingMode },
+    audio: true
+  });
+  preview.srcObject = stream;
+  setStatus("Camera ready.");
+}
+
+document.getElementById("startCam").onclick = async () => {
+  try { await startCamera(); }
+  catch (err) { setStatus("Camera error: " + err.message); }
+};
+
+document.getElementById("flipCam").onclick = async () => {
+  facingMode = facingMode === "user" ? "environment" : "user";
+  try { await startCamera(); }
+  catch (err) { setStatus("Flip error: " + err.message); }
+};
+
+document.querySelectorAll(".filterBtn").forEach(btn => {
+  btn.onclick = () => {
+    preview.className = btn.dataset.filter + " w-full rounded-3xl bg-black aspect-[9/16] object-cover border border-white/10";
+    setStatus("Filter: " + btn.dataset.filter);
+  };
+});
+
+recordBtn.onclick = async () => {
+  if (!stream) await startCamera();
+
+  chunks = [];
+  recorder = new MediaRecorder(stream, { mimeType: "video/webm" });
+
+  recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  recorder.onstop = () => {
+    const blob = new Blob(chunks, { type: "video/webm" });
+    download.href = URL.createObjectURL(blob);
+    download.classList.remove("hidden");
+    setStatus("Recording ready.");
+  };
+
+  recorder.start();
+  recordBtn.disabled = true;
+  stopBtn.disabled = false;
+  stopBtn.className = "rounded-2xl bg-red-700 font-bold py-4";
+  setStatus("Recording...");
+};
+
+stopBtn.onclick = () => {
+  if (recorder && recorder.state !== "inactive") recorder.stop();
+  recordBtn.disabled = false;
+  stopBtn.disabled = true;
+  stopBtn.className = "rounded-2xl bg-white/10 text-white/40 font-bold py-4";
+};
+
+// Three.js neon background
+const canvas = document.getElementById("three-bg");
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ canvas, alpha:true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+camera.position.z = 5;
+
+const group = new THREE.Group();
+scene.add(group);
+
+for (let i = 0; i < 80; i++) {
+  const geo = new THREE.BoxGeometry(0.04, 0.04, 0.04);
+  const mat = new THREE.MeshBasicMaterial({ color: 0x22d3ee });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set((Math.random()-.5)*8, (Math.random()-.5)*12, (Math.random()-.5)*8);
+  group.add(mesh);
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  group.rotation.x += 0.0015;
+  group.rotation.y += 0.0025;
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
