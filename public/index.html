@@ -138,6 +138,22 @@
               <button id="stop" disabled class="rounded-2xl bg-white/10 text-white/40 font-bold py-4 col-span-2">Stop Recording</button>
             </div>
 
+            <h2 class="text-xl font-black mt-5">Beauty Preprocess</h2>
+            <div id="beautyPanel" class="mt-3 grid gap-3">
+              <label class="block rounded-2xl bg-black/40 border border-cyan-300/10 p-3">
+                <div class="text-sm font-bold">Skin Smooth</div>
+                <input id="beautySmooth" type="range" min="0" max="5" step="1" value="2" class="w-full mt-2">
+              </label>
+              <label class="block rounded-2xl bg-black/40 border border-cyan-300/10 p-3">
+                <div class="text-sm font-bold">Softness</div>
+                <input id="beautySoftness" type="range" min="0" max="1" step="0.05" value="0.35" class="w-full mt-2">
+              </label>
+              <label class="block rounded-2xl bg-black/40 border border-cyan-300/10 p-3">
+                <div class="text-sm font-bold">Face Brightness</div>
+                <input id="beautyBrightness" type="range" min="-30" max="50" step="1" value="8" class="w-full mt-2">
+              </label>
+            </div>
+
             <h2 class="text-xl font-black mt-5">Filter Plugins</h2>
             <div id="filterGrid" class="grid grid-cols-2 gap-2 mt-3"></div>
             <div id="parameterPanel" class="mt-4 grid gap-3"></div>
@@ -269,7 +285,10 @@ function startCanvasFilter(plugin) {
     }
 
     try {
-      const imageData = processedCtx.getImageData(0, 0, processedCanvas.width, processedCanvas.height);
+      let imageData = processedCtx.getImageData(0, 0, processedCanvas.width, processedCanvas.height);
+      if (window.MeTuberPreprocess) {
+        imageData = window.MeTuberPreprocess.apply(imageData);
+      }
       const fn = window.MeTuberCanvasFilters?.[plugin.canvasFilter];
       if (typeof fn === "function") {
         const processed = fn(imageData, activeParams);

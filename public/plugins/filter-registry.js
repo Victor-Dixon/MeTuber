@@ -256,7 +256,11 @@ window.MeTuberFilterRegistry.plugins.unshift(
     description: "Real Sobel edge detection canvas filter.",
     cssFilter: "none",
     canvasFilter: "edgeDetect",
-    parameters: {}
+    parameters: {
+      strength: { type: "range", min: 0.5, max: 4, step: 0.1, default: 1.8, label: "Edge Strength" },
+      threshold: { type: "range", min: 0, max: 255, step: 1, default: 35, label: "Edge Threshold" },
+      invert: { type: "range", min: 0, max: 1, step: 1, default: 0, label: "Invert" }
+    }
   },
   {
     id: "real-cartoon",
@@ -265,7 +269,11 @@ window.MeTuberFilterRegistry.plugins.unshift(
     description: "Posterized cartoon color processing.",
     cssFilter: "none",
     canvasFilter: "cartoon",
-    parameters: {}
+    parameters: {
+      levels: { type: "range", min: 3, max: 16, step: 1, default: 6, label: "Color Levels" },
+      saturation: { type: "range", min: 0.5, max: 3, step: 0.1, default: 1.45, label: "Saturation" },
+      contrast: { type: "range", min: 0.5, max: 3, step: 0.1, default: 1.25, label: "Contrast" }
+    }
   },
   {
     id: "anime-cartoon",
@@ -274,6 +282,63 @@ window.MeTuberFilterRegistry.plugins.unshift(
     description: "Anime-style boosted posterized color.",
     cssFilter: "none",
     canvasFilter: "anime",
-    parameters: {}
+    parameters: {
+      levels: { type: "range", min: 3, max: 20, step: 1, default: 7, label: "Anime Levels" },
+      saturation: { type: "range", min: 0.5, max: 3.5, step: 0.1, default: 1.7, label: "Saturation" },
+      brightness: { type: "range", min: -40, max: 60, step: 1, default: 12, label: "Brightness" },
+      hue: { type: "range", min: -60, max: 60, step: 1, default: 8, label: "Hue Push" }
+    }
   }
 );
+
+
+window.MeTuberPreprocess = {
+  settings: {
+    enabled: true,
+    smooth: 2,
+    brightness: 8,
+    softness: 0.35
+  },
+
+  apply(imageData) {
+    const settings = this.settings;
+    if (!settings.enabled) return imageData;
+
+    const d = imageData.data;
+    const copy = new Uint8ClampedArray(d);
+    const w = imageData.width;
+    const h = imageData.height;
+    const radius = Math.max(0, Number(settings.smooth || 0));
+    const softness = Math.max(0, Math.min(1, Number(settings.softness ?? 0.35)));
+    const brightness = Number(settings.brightness || 0);
+
+    if (radius <= 0 && brightness === 0) return imageData;
+
+    for (let y = radius; y < h - radius; y++) {
+      for (let x = radius; x < w - radius; x++) {
+        const idx = (y * w + x) * 4;
+
+        let r = 0, g = 0, b = 0, count = 0;
+        for (let yy = -radius; yy <= radius; yy++) {
+          for (let xx = -radius; xx <= radius; xx++) {
+            const p = ((y + yy) * w + (x + xx)) * 4;
+            r += copy[p];
+            g += copy[p + 1];
+            b += copy[p + 2];
+            count++;
+          }
+        }
+
+        const avgR = r / count;
+        const avgG = g / count;
+        const avgB = b / count;
+
+        d[idx] = Math.max(0, Math.min(255, copy[idx] * (1 - softness) + avgR * softness + brightness));
+        d[idx + 1] = Math.max(0, Math.min(255, copy[idx + 1] * (1 - softness) + avgG * softness + brightness));
+        d[idx + 2] = Math.max(0, Math.min(255, copy[idx + 2] * (1 - softness) + avgB * softness + brightness));
+      }
+    }
+
+    return imageData;
+  }
+};
