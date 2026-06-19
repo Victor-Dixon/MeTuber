@@ -116,10 +116,18 @@ function stopCanvasFilter() {
   canvasFilterLoop = null;
   processedCanvas.classList.add("hidden");
   preview.classList.remove("hidden");
+  preview.style.opacity = "1";
+  preview.style.position = "";
+  preview.style.inset = "";
+  preview.style.pointerEvents = "";
 }
 
 function startCanvasFilter(plugin) {
-  preview.classList.add("hidden");
+  preview.classList.remove("hidden");
+  preview.style.opacity = "0.01";
+  preview.style.position = "absolute";
+  preview.style.inset = "0";
+  preview.style.pointerEvents = "none";
   processedCanvas.classList.remove("hidden");
 
   const draw = () => {
@@ -131,13 +139,20 @@ function startCanvasFilter(plugin) {
     processedCanvas.width = preview.videoWidth;
     processedCanvas.height = preview.videoHeight;
 
-    processedCtx.drawImage(preview, 0, 0, processedCanvas.width, processedCanvas.height);
+    try {
+      processedCtx.drawImage(preview, 0, 0, processedCanvas.width, processedCanvas.height);
+    } catch (err) {
+      logDebug("CANVAS_DRAW_ERROR", { error: err.message });
+      canvasFilterLoop = requestAnimationFrame(draw);
+      return;
+    }
 
     try {
       const imageData = processedCtx.getImageData(0, 0, processedCanvas.width, processedCanvas.height);
       const fn = window.MeTuberCanvasFilters?.[plugin.canvasFilter];
       if (typeof fn === "function") {
-        processedCtx.putImageData(fn(imageData, activeParams), 0, 0);
+        const processed = fn(imageData, activeParams);
+        processedCtx.putImageData(processed, 0, 0);
       }
     } catch (err) {
       logDebug("CANVAS_FILTER_FRAME_ERROR", { plugin: plugin.id, error: err.message });
