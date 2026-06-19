@@ -7,7 +7,11 @@ window.MeTuberFilterRegistry = {
       category: "Base",
       description: "No visual filter.",
       cssFilter: "none",
-      parameters: {}
+      parameters: {
+        strength: { type: "range", min: 0.5, max: 4, step: 0.1, default: 1.8, label: "Edge Strength" },
+        threshold: { type: "range", min: 0, max: 255, step: 1, default: 35, label: "Edge Threshold" },
+        invert: { type: "range", min: 0, max: 1, step: 1, default: 0, label: "Invert" }
+      }
     },
     {
       id: "invert",
@@ -75,7 +79,11 @@ window.MeTuberFilterRegistry = {
       category: "Preset",
       description: "Cinematic contrast and saturation.",
       cssFilter: "contrast(1.25) saturate(1.25) brightness(.92)",
-      parameters: {}
+      parameters: {
+        levels: { type: "range", min: 3, max: 16, step: 1, default: 6, label: "Color Levels" },
+        saturation: { type: "range", min: 0.5, max: 3, step: 0.1, default: 1.45, label: "Saturation" },
+        contrast: { type: "range", min: 0.5, max: 3, step: 0.1, default: 1.25, label: "Contrast" }
+      }
     },
     {
       id: "dream",
@@ -83,7 +91,12 @@ window.MeTuberFilterRegistry = {
       category: "Preset",
       description: "Dream.OS hue-shifted saturation.",
       cssFilter: "hue-rotate(35deg) saturate(1.8) contrast(1.1)",
-      parameters: {}
+      parameters: {
+        levels: { type: "range", min: 3, max: 20, step: 1, default: 7, label: "Anime Levels" },
+        saturation: { type: "range", min: 0.5, max: 3.5, step: 0.1, default: 1.7, label: "Saturation" },
+        brightness: { type: "range", min: -40, max: 60, step: 1, default: 12, label: "Brightness" },
+        hue: { type: "range", min: -60, max: 60, step: 1, default: 8, label: "Hue Push" }
+      }
     },
     {
       id: "noir",
@@ -140,7 +153,11 @@ window.MeTuberFilterRegistry = {
 
 // Runtime canvas filters: real frame processing, not CSS-only.
 window.MeTuberCanvasFilters = {
-  edgeDetect(imageData) {
+  edgeDetect(imageData, params = {}) {
+    const strength = Number(params.strength ?? 1.8);
+    const threshold = Number(params.threshold ?? 35);
+    const invert = Number(params.invert ?? 0);
+
     const src = imageData.data;
     const w = imageData.width;
     const h = imageData.height;
@@ -161,7 +178,10 @@ window.MeTuberCanvasFilters = {
           -gray[i-w-1] - 2*gray[i-w] - gray[i-w+1] +
            gray[i+w-1] + 2*gray[i+w] + gray[i+w+1];
 
-        const mag = Math.min(255, Math.sqrt(gx*gx + gy*gy));
+        let mag = Math.sqrt(gx*gx + gy*gy) * strength;
+        mag = mag < threshold ? 0 : Math.min(255, mag);
+        if (invert) mag = 255 - mag;
+
         const o = i * 4;
         out[o] = out[o+1] = out[o+2] = mag;
         out[o+3] = 255;
@@ -172,32 +192,56 @@ window.MeTuberCanvasFilters = {
     return imageData;
   },
 
-  cartoon(imageData) {
+  cartoon(imageData, params = {}) {
+    const levels = Number(params.levels ?? 6);
+    const saturation = Number(params.saturation ?? 1.45);
+    const contrast = Number(params.contrast ?? 1.25);
+    const step = Math.max(1, 255 / Math.max(2, levels));
     const d = imageData.data;
 
     for (let i = 0; i < d.length; i += 4) {
-      d[i] = Math.floor(d[i] / 48) * 48;
-      d[i+1] = Math.floor(d[i+1] / 48) * 48;
-      d[i+2] = Math.floor(d[i+2] / 48) * 48;
-      d[i] = Math.min(255, d[i] * 1.18);
-      d[i+1] = Math.min(255, d[i+1] * 1.12);
-      d[i+2] = Math.min(255, d[i+2] * 1.08);
+      let r = Math.round(d[i] / step) * step;
+      let g = Math.round(d[i+1] / step) * step;
+      let b = Math.round(d[i+2] / step) * step;
+
+      const avg = (r + g + b) / 3;
+      r = avg + (r - avg) * saturation;
+      g = avg + (g - avg) * saturation;
+      b = avg + (b - avg) * saturation;
+
+      r = (r - 128) * contrast + 128;
+      g = (g - 128) * contrast + 128;
+      b = (b - 128) * contrast + 128;
+
+      d[i] = Math.max(0, Math.min(255, r));
+      d[i+1] = Math.max(0, Math.min(255, g));
+      d[i+2] = Math.max(0, Math.min(255, b));
     }
 
     return imageData;
   },
 
-  anime(imageData) {
+  anime(imageData, params = {}) {
+    const levels = Number(params.levels ?? 7);
+    const saturation = Number(params.saturation ?? 1.7);
+    const brightness = Number(params.brightness ?? 12);
+    const hue = Number(params.hue ?? 8);
+    const step = Math.max(1, 255 / Math.max(2, levels));
     const d = imageData.data;
 
     for (let i = 0; i < d.length; i += 4) {
-      d[i] = Math.floor(d[i] / 36) * 36;
-      d[i+1] = Math.floor(d[i+1] / 36) * 36;
-      d[i+2] = Math.floor(d[i+2] / 36) * 36;
+      let r = Math.round(d[i] / step) * step;
+      let g = Math.round(d[i+1] / step) * step;
+      let b = Math.round(d[i+2] / step) * step;
 
-      d[i] = Math.min(255, d[i] * 1.28 + 8);
-      d[i+1] = Math.min(255, d[i+1] * 1.18 + 6);
-      d[i+2] = Math.min(255, d[i+2] * 1.25 + 10);
+      const avg = (r + g + b) / 3;
+      r = avg + (r - avg) * saturation + brightness + hue;
+      g = avg + (g - avg) * saturation + brightness;
+      b = avg + (b - avg) * saturation + brightness + hue * 0.5;
+
+      d[i] = Math.max(0, Math.min(255, r));
+      d[i+1] = Math.max(0, Math.min(255, g));
+      d[i+2] = Math.max(0, Math.min(255, b));
     }
 
     return imageData;
