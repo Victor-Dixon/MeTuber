@@ -33,7 +33,7 @@
       <div class="p-4">
         <div class="relative">
           <video id="preview" class="normal w-full rounded-3xl bg-black aspect-[9/16] object-cover border border-white/10" autoplay playsinline muted></video>
-          <canvas id="processedCanvas" class="hidden absolute inset-0 w-full h-full rounded-3xl bg-black object-cover border border-white/10"></canvas>
+          <canvas id="processedCanvas" class="hidden absolute inset-0 w-full h-full rounded-3xl bg-black border border-white/10"></canvas>
         </div>
 
         <div class="grid grid-cols-2 gap-3 mt-4">
@@ -117,18 +117,15 @@ function stopCanvasFilter() {
   processedCanvas.classList.add("hidden");
   preview.classList.remove("hidden");
   preview.style.opacity = "1";
-  preview.style.position = "";
-  preview.style.inset = "";
   preview.style.pointerEvents = "";
 }
 
 function startCanvasFilter(plugin) {
   preview.classList.remove("hidden");
   preview.style.opacity = "0.01";
-  preview.style.position = "absolute";
-  preview.style.inset = "0";
   preview.style.pointerEvents = "none";
   processedCanvas.classList.remove("hidden");
+  processedCanvas.style.zIndex = "10";
 
   const draw = () => {
     if (!preview.videoWidth || !preview.videoHeight) {
@@ -248,14 +245,22 @@ function renderFilterPlugins() {
     btn.textContent = plugin.name;
     btn.onclick = () => {
       activeFilterId = plugin.id;
-      renderParameterPanel(plugin);
+
+      if (plugin.canvasFilter || Object.keys(plugin.parameters || {}).length > 0) {
+        renderParameterPanel(plugin);
+      } else {
+        parameterPanel.innerHTML = "";
+        activeParams = {};
+      }
+
       applyActiveFilter();
     };
     filterGrid.appendChild(btn);
   });
 
-  const defaultPlugin = registry.get("normal");
-  renderParameterPanel(defaultPlugin);
+  parameterPanel.innerHTML = "";
+  activeFilterId = "normal";
+  activeParams = {};
   applyActiveFilter();
 }
 
