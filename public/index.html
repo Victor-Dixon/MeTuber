@@ -3,12 +3,83 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>MeTuber Camera Studio</title>
+  <title>MeTuber Team Studio</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/three@0.165.0/build/three.min.js"></script>
 
   <style>
+    :root {
+      --panel: rgba(8, 13, 28, .72);
+      --line: rgba(103, 232, 249, .18);
+      --glow: 0 0 40px rgba(34, 211, 238, .18);
+    }
+
+    body::before {
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(34,211,238,.22), transparent 25%),
+        radial-gradient(circle at 80% 0%, rgba(168,85,247,.18), transparent 25%),
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+      background-size:auto, auto, 44px 44px, 44px 44px;
+      animation:gridDrift 18s linear infinite;
+      z-index:-2;
+    }
+
+    @keyframes gridDrift {
+      from { background-position:0 0,0 0,0 0,0 0; }
+      to { background-position:0 0,0 0,0 44px,44px 0; }
+    }
+
+    @keyframes pulseGlow {
+      0%,100% { box-shadow:0 0 20px rgba(34,211,238,.18); }
+      50% { box-shadow:0 0 55px rgba(34,211,238,.42); }
+    }
+
+    @keyframes scan {
+      from { transform:translateY(-100%); opacity:.15; }
+      to { transform:translateY(100%); opacity:.45; }
+    }
+
+    .studio-panel {
+      background:var(--panel);
+      border:1px solid var(--line);
+      box-shadow:var(--glow);
+      backdrop-filter:blur(18px);
+    }
+
+    .tech-button {
+      border:1px solid rgba(103,232,249,.22);
+      background:linear-gradient(135deg, rgba(34,211,238,.18), rgba(168,85,247,.12));
+      transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .tech-button:active { transform:scale(.97); }
+    .tech-button:hover { border-color:rgba(103,232,249,.65); box-shadow:0 0 26px rgba(34,211,238,.22); }
+
+    .preview-shell::after {
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:linear-gradient(to bottom, transparent, rgba(34,211,238,.10), transparent);
+      animation:scan 3.4s linear infinite;
+      mix-blend-mode:screen;
+    }
+
+    .status-dot {
+      width:.55rem;
+      height:.55rem;
+      border-radius:999px;
+      background:#22c55e;
+      box-shadow:0 0 16px #22c55e;
+      display:inline-block;
+    }
+
     video.normal { filter:none; }
     video.cinema { filter:contrast(1.25) saturate(1.25) brightness(.92); }
     video.dream { filter:hue-rotate(35deg) saturate(1.8) contrast(1.1); }
@@ -19,34 +90,86 @@
   </style>
 </head>
 
-<body class="min-h-screen bg-black text-white overflow-x-hidden">
+<body class="min-h-screen bg-slate-950 text-white overflow-x-hidden">
   <canvas id="three-bg"></canvas>
 
-  <main class="mx-auto max-w-3xl px-4 py-5">
-    <section class="rounded-3xl border border-white/10 bg-white/10 backdrop-blur-xl shadow-2xl overflow-hidden">
-      <div class="p-5 border-b border-white/10">
-        <p class="text-xs uppercase tracking-[0.35em] text-cyan-300">MeTuber</p>
-        <h1 class="text-3xl font-black mt-1">Mobile Camera Studio</h1>
-        <p class="text-sm text-white/60 mt-2">Camera filters, local recording, and WebSocket control surface.</p>
+  <main class="mx-auto max-w-6xl px-4 py-5">
+    <section class="studio-panel rounded-[2rem] overflow-hidden">
+      <div class="p-5 border-b border-cyan-300/10">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-xs uppercase tracking-[0.45em] text-cyan-300">MeTuber Team Studio</p>
+            <h1 class="text-4xl md:text-6xl font-black mt-2 bg-gradient-to-r from-cyan-200 via-white to-fuchsia-300 text-transparent bg-clip-text">Advanced Video Ops</h1>
+            <p class="text-sm text-white/60 mt-3">Multi-user capture, filter plugins, shared media, and timeline assembly.</p>
+          </div>
+          <div class="hidden sm:grid gap-2 text-right text-xs text-white/60">
+            <span><span class="status-dot"></span> LIVE NODE</span>
+            <span id="clockPill" class="rounded-full border border-cyan-300/20 px-3 py-1 bg-cyan-300/10">SYNC</span>
+          </div>
+        </div>
+
+        <div class="mt-5 grid grid-cols-3 gap-2 text-xs">
+          <div class="rounded-2xl border border-cyan-300/10 bg-black/30 p-3">
+            <p class="text-white/40">MODE</p><p class="font-black text-cyan-200">TEAM STUDIO</p>
+          </div>
+          <div class="rounded-2xl border border-cyan-300/10 bg-black/30 p-3">
+            <p class="text-white/40">FILTERS</p><p class="font-black text-fuchsia-200">PLUGIN REGISTRY</p>
+          </div>
+          <div class="rounded-2xl border border-cyan-300/10 bg-black/30 p-3">
+            <p class="text-white/40">EDITOR</p><p class="font-black text-emerald-200">TIMELINE READY</p>
+          </div>
+        </div>
       </div>
 
-      <div class="p-4">
-        <div class="relative">
+      <div class="p-4 md:p-6 grid lg:grid-cols-[1.1fr_.9fr] gap-5">
+        <div class="relative preview-shell rounded-3xl overflow-hidden border border-cyan-300/20 shadow-2xl shadow-cyan-500/10">
           <video id="preview" class="normal w-full rounded-3xl bg-black aspect-[9/16] object-cover border border-white/10" autoplay playsinline muted></video>
           <canvas id="processedCanvas" class="hidden absolute inset-0 w-full h-full rounded-3xl bg-black border border-white/10"></canvas>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 mt-4">
-          <button id="startCam" class="rounded-2xl bg-cyan-400 text-black font-bold py-4">Start Camera</button>
-          <button id="flipCam" class="rounded-2xl bg-white/15 font-bold py-4">Flip Camera</button>
-          <button id="record" class="rounded-2xl bg-red-500 font-bold py-4">Start Recording</button>
-          <button id="stop" disabled class="rounded-2xl bg-white/10 text-white/40 font-bold py-4">Stop Recording</button>
-        </div>
+        <div class="lg:col-start-2 lg:row-start-1">
+          <div class="studio-panel rounded-3xl p-4">
+            <h2 class="text-xl font-black">Capture Console</h2>
+            <div class="grid grid-cols-2 gap-3 mt-4">
+              <button id="startCam" class="tech-button rounded-2xl text-cyan-100 font-bold py-4">Start Camera</button>
+              <button id="flipCam" class="tech-button rounded-2xl font-bold py-4">Flip Camera</button>
+              <button id="record" class="rounded-2xl bg-red-500/90 border border-red-300/30 font-bold py-4 animate-pulse">Start Recording</button>
+              <button id="stop" disabled class="rounded-2xl bg-white/10 text-white/40 font-bold py-4">Stop Recording</button>
+            </div>
 
-        <div id="filterGrid" class="grid grid-cols-2 gap-2 mt-4"></div>
-        <div id="parameterPanel" class="mt-4 grid gap-3"></div>
+            <h2 class="text-xl font-black mt-5">Filter Plugins</h2>
+            <div id="filterGrid" class="grid grid-cols-2 gap-2 mt-3"></div>
+            <div id="parameterPanel" class="mt-4 grid gap-3"></div>
+          </div>
 
-        <details class="mt-4 rounded-2xl bg-black/40 border border-white/10 p-3">
+
+        <section class="lg:col-span-2 mt-2 rounded-3xl studio-panel p-4">
+          <h2 class="text-xl font-black">Team Room</h2>
+          <div class="grid grid-cols-2 gap-2 mt-3">
+            <input id="roomName" class="rounded-xl bg-black/50 border border-white/10 p-3" value="main-room">
+            <input id="userName" class="rounded-xl bg-black/50 border border-white/10 p-3" value="creator">
+            <button id="joinRoom" class="rounded-xl bg-cyan-400 text-black font-black py-3 col-span-2">Join Room</button>
+          </div>
+          <pre id="roomFeed" class="mt-3 text-xs text-white/60 whitespace-pre-wrap max-h-40 overflow-auto"></pre>
+        </section>
+
+        <section class="lg:col-span-2 rounded-3xl studio-panel p-4">
+          <h2 class="text-xl font-black">Media Library</h2>
+          <p class="text-sm text-white/50 mt-1">Recordings and uploads appear here.</p>
+          <input id="uploadVideo" type="file" accept="video/*" class="mt-3 block w-full text-sm">
+          <button id="refreshLibrary" class="mt-3 rounded-xl bg-white/10 py-3 px-4 font-bold">Refresh Library</button>
+          <div id="videoLibrary" class="mt-3 grid gap-3"></div>
+        </section>
+
+        <section class="lg:col-span-2 rounded-3xl studio-panel p-4">
+          <h2 class="text-xl font-black">Editor</h2>
+          <p class="text-sm text-white/50 mt-1">Build a project timeline. Server render comes next.</p>
+          <video id="editorPreview" controls class="mt-3 w-full rounded-2xl bg-black"></video>
+          <div id="timeline" class="mt-3 grid gap-2"></div>
+          <button id="saveProject" class="mt-3 rounded-xl bg-emerald-400 text-black py-3 px-4 font-black">Save Project JSON</button>
+        </section>
+
+        <details class="lg:col-span-2 mt-2 rounded-3xl studio-panel p-4">
           <summary class="cursor-pointer text-sm text-cyan-300 font-bold">Debug</summary>
           <pre id="debugPanel" class="mt-3 text-xs whitespace-pre-wrap text-white/70"></pre>
         </details>
@@ -197,7 +320,7 @@ function renderParameterPanel(plugin) {
     activeParams[key] = spec.default;
 
     const wrap = document.createElement("label");
-    wrap.className = "block rounded-2xl bg-white/10 p-3";
+    wrap.className = "block rounded-2xl bg-black/40 border border-cyan-300/10 p-3";
 
     const title = document.createElement("div");
     title.className = "text-sm font-bold";
@@ -241,7 +364,7 @@ function renderFilterPlugins() {
   filterGrid.innerHTML = "";
   registry.plugins.forEach(plugin => {
     const btn = document.createElement("button");
-    btn.className = "rounded-xl bg-white/10 py-3 px-2 text-sm font-bold";
+    btn.className = "tech-button rounded-xl py-3 px-2 text-sm font-bold text-cyan-50";
     btn.textContent = plugin.name;
     btn.onclick = () => {
       activeFilterId = plugin.id;
@@ -286,7 +409,11 @@ recordBtn.onclick = async () => {
     const blob = new Blob(chunks, { type: "video/webm" });
     download.href = URL.createObjectURL(blob);
     download.classList.remove("hidden");
-    setStatus("Recording ready.");
+    uploadBlob(blob, "webm").then(result => {
+      logDebug("RECORDING_UPLOADED", result);
+      refreshLibrary();
+    });
+    setStatus("Recording ready and uploaded.");
   };
 
   recorder.start();
@@ -303,8 +430,114 @@ stopBtn.onclick = () => {
   stopBtn.className = "rounded-2xl bg-white/10 text-white/40 font-bold py-4";
 };
 
+
+const timeline = [];
+let teamSocket = null;
+
+async function uploadBlob(blob, ext = "webm") {
+  const res = await fetch(`/api/upload?ext=${encodeURIComponent(ext)}`, {
+    method: "POST",
+    body: blob
+  });
+  return await res.json();
+}
+
+async function refreshLibrary() {
+  const box = document.getElementById("videoLibrary");
+  box.innerHTML = "Loading...";
+  const res = await fetch("/api/videos");
+  const data = await res.json();
+  box.innerHTML = "";
+
+  (data.videos || []).forEach(video => {
+    const card = document.createElement("div");
+    card.className = "rounded-2xl bg-white/10 p-3";
+
+    const title = document.createElement("div");
+    title.className = "text-sm font-bold break-all";
+    title.textContent = video.name;
+
+    const preview = document.createElement("video");
+    preview.src = video.url;
+    preview.controls = true;
+    preview.className = "mt-2 w-full rounded-xl bg-black";
+
+    const add = document.createElement("button");
+    add.className = "mt-2 rounded-xl bg-cyan-400 text-black py-2 px-3 font-bold";
+    add.textContent = "Add to Timeline";
+    add.onclick = () => {
+      timeline.push({ type:"video", name:video.name, url:video.url, start:0, end:null });
+      renderTimeline();
+      document.getElementById("editorPreview").src = video.url;
+    };
+
+    card.appendChild(title);
+    card.appendChild(preview);
+    card.appendChild(add);
+    box.appendChild(card);
+  });
+}
+
+function renderTimeline() {
+  const box = document.getElementById("timeline");
+  box.innerHTML = "";
+  timeline.forEach((clip, idx) => {
+    const row = document.createElement("div");
+    row.className = "rounded-xl bg-white/10 p-3 text-sm";
+    row.textContent = `${idx + 1}. ${clip.name}`;
+    box.appendChild(row);
+  });
+}
+
+document.getElementById("uploadVideo").onchange = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const ext = file.name.split(".").pop() || "webm";
+  const result = await uploadBlob(file, ext);
+  logDebug("UPLOAD_RESULT", result);
+  await refreshLibrary();
+};
+
+document.getElementById("refreshLibrary").onclick = refreshLibrary;
+
+document.getElementById("saveProject").onclick = async () => {
+  const project = {
+    name: "MeTuber Project",
+    createdAt: new Date().toISOString(),
+    timeline
+  };
+  const res = await fetch("/api/project", {
+    method: "POST",
+    headers: {"content-type":"application/json"},
+    body: JSON.stringify(project)
+  });
+  const data = await res.json();
+  logDebug("PROJECT_SAVED", data);
+  setStatus(data.ok ? "Project saved." : "Project save failed.");
+};
+
+document.getElementById("joinRoom").onclick = () => {
+  const room = document.getElementById("roomName").value || "main-room";
+  const user = document.getElementById("userName").value || "creator";
+  const proto = location.protocol === "https:" ? "wss:" : "ws:";
+  teamSocket = new WebSocket(`${proto}//${location.host}`);
+
+  teamSocket.onopen = () => teamSocket.send(JSON.stringify({ type:"join", room, user }));
+  teamSocket.onmessage = (event) => {
+    const feed = document.getElementById("roomFeed");
+    feed.textContent = event.data + "\n" + feed.textContent;
+  };
+};
+
+refreshLibrary();
+
 // Three.js neon background
 const canvas = document.getElementById("three-bg");
+setInterval(() => {
+  const el = document.getElementById("clockPill");
+  if (el) el.textContent = new Date().toLocaleTimeString();
+}, 1000);
+
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ canvas, alpha:true });
@@ -314,18 +547,25 @@ camera.position.z = 5;
 const group = new THREE.Group();
 scene.add(group);
 
-for (let i = 0; i < 80; i++) {
-  const geo = new THREE.BoxGeometry(0.04, 0.04, 0.04);
-  const mat = new THREE.MeshBasicMaterial({ color: 0x22d3ee });
+for (let i = 0; i < 140; i++) {
+  const geo = i % 5 === 0 ? new THREE.IcosahedronGeometry(0.045, 0) : new THREE.BoxGeometry(0.035, 0.035, 0.035);
+  const mat = new THREE.MeshBasicMaterial({ color: i % 3 === 0 ? 0xa855f7 : 0x22d3ee });
   const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set((Math.random()-.5)*8, (Math.random()-.5)*12, (Math.random()-.5)*8);
+  mesh.position.set((Math.random()-.5)*10, (Math.random()-.5)*14, (Math.random()-.5)*9);
   group.add(mesh);
 }
+
+const ringGeo = new THREE.TorusGeometry(2.2, 0.006, 8, 96);
+const ringMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee });
+const ring = new THREE.Mesh(ringGeo, ringMat);
+scene.add(ring);
 
 function animate() {
   requestAnimationFrame(animate);
   group.rotation.x += 0.0015;
-  group.rotation.y += 0.0025;
+  group.rotation.y += 0.0035;
+  ring.rotation.x += 0.004;
+  ring.rotation.y += 0.002;
   renderer.render(scene, camera);
 }
 animate();
