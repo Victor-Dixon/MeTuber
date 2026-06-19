@@ -429,7 +429,27 @@ async function startRecordingFromStream(sourceStream, label = "camera") {
     download.classList.remove("hidden");
     uploadBlob(blob, "webm").then(result => {
       logDebug("RECORDING_UPLOADED", result);
-      refreshLibrary();
+      function bindBeautyControls() {
+  const smooth = document.getElementById("beautySmooth");
+  const softness = document.getElementById("beautySoftness");
+  const brightness = document.getElementById("beautyBrightness");
+  if (!smooth || !softness || !brightness || !window.MeTuberPreprocess) return;
+
+  const sync = () => {
+    window.MeTuberPreprocess.settings.smooth = Number(smooth.value);
+    window.MeTuberPreprocess.settings.softness = Number(softness.value);
+    window.MeTuberPreprocess.settings.brightness = Number(brightness.value);
+    logDebug("BEAUTY_PREPROCESS_UPDATED", window.MeTuberPreprocess.settings);
+  };
+
+  smooth.oninput = sync;
+  softness.oninput = sync;
+  brightness.oninput = sync;
+  sync();
+}
+
+refreshLibrary();
+bindBeautyControls();
       if (teamSocket && teamSocket.readyState === WebSocket.OPEN) {
         teamSocket.send(JSON.stringify({ type:"clip-uploaded", clip:result }));
       }
