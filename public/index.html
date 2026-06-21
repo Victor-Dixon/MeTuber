@@ -3,652 +3,145 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>MeTuber Team Studio</title>
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/three@0.165.0/build/three.min.js"></script>
-
-  <style>
-    :root {
-      --panel: rgba(8, 13, 28, .72);
-      --line: rgba(103, 232, 249, .18);
-      --glow: 0 0 40px rgba(34, 211, 238, .18);
-    }
-
-    body::before {
-      content:"";
-      position:fixed;
-      inset:0;
-      pointer-events:none;
-      background:
-        radial-gradient(circle at 20% 10%, rgba(34,211,238,.22), transparent 25%),
-        radial-gradient(circle at 80% 0%, rgba(168,85,247,.18), transparent 25%),
-        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
-      background-size:auto, auto, 44px 44px, 44px 44px;
-      animation:gridDrift 18s linear infinite;
-      z-index:-2;
-    }
-
-    @keyframes gridDrift {
-      from { background-position:0 0,0 0,0 0,0 0; }
-      to { background-position:0 0,0 0,0 44px,44px 0; }
-    }
-
-    @keyframes pulseGlow {
-      0%,100% { box-shadow:0 0 20px rgba(34,211,238,.18); }
-      50% { box-shadow:0 0 55px rgba(34,211,238,.42); }
-    }
-
-    @keyframes scan {
-      from { transform:translateY(-100%); opacity:.15; }
-      to { transform:translateY(100%); opacity:.45; }
-    }
-
-    .studio-panel {
-      background:var(--panel);
-      border:1px solid var(--line);
-      box-shadow:var(--glow);
-      backdrop-filter:blur(18px);
-    }
-
-    .tech-button {
-      border:1px solid rgba(103,232,249,.22);
-      background:linear-gradient(135deg, rgba(34,211,238,.18), rgba(168,85,247,.12));
-      transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
-    }
-
-    .tech-button:active { transform:scale(.97); }
-    .tech-button:hover { border-color:rgba(103,232,249,.65); box-shadow:0 0 26px rgba(34,211,238,.22); }
-
-    .preview-shell::after {
-      content:"";
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      background:linear-gradient(to bottom, transparent, rgba(34,211,238,.10), transparent);
-      animation:scan 3.4s linear infinite;
-      mix-blend-mode:screen;
-    }
-
-    .status-dot {
-      width:.55rem;
-      height:.55rem;
-      border-radius:999px;
-      background:#22c55e;
-      box-shadow:0 0 16px #22c55e;
-      display:inline-block;
-    }
-
-    video.normal { filter:none; }
-    video.cinema { filter:contrast(1.25) saturate(1.25) brightness(.92); }
-    video.dream { filter:hue-rotate(35deg) saturate(1.8) contrast(1.1); }
-    video.noir { filter:grayscale(1) contrast(1.4); }
-    video.warm { filter:sepia(.35) saturate(1.3); }
-    video.glitch { filter:hue-rotate(120deg) contrast(1.6) saturate(2); }
-    #three-bg { position:fixed; inset:0; z-index:-1; opacity:.45; }
-  </style>
+  <title>MeTuber Cartoon Capture</title>
+  <link rel="stylesheet" href="/assets/capture.css">
 </head>
 
-<body class="min-h-screen bg-slate-950 text-white overflow-x-hidden">
-  <canvas id="three-bg"></canvas>
+<body>
+  <main class="capture-screen" data-debug="false">
+    <section class="camera-stage" aria-label="MeTuber camera preview">
+      <video id="preview" class="camera-preview" autoplay playsinline muted></video>
+      <canvas id="processedCanvas" class="camera-preview processed-preview" aria-hidden="true"></canvas>
+      <canvas id="snapshotCanvas" class="snapshot-canvas" aria-hidden="true"></canvas>
 
-  <main class="mx-auto max-w-6xl px-4 py-5">
-    <section class="studio-panel rounded-[2rem] overflow-hidden">
-      <div class="p-5 border-b border-cyan-300/10">
-        <div class="flex items-start justify-between gap-4">
-          <div>
-            <p class="text-xs uppercase tracking-[0.45em] text-cyan-300">MeTuber Team Studio</p>
-            <h1 class="text-4xl md:text-6xl font-black mt-2 bg-gradient-to-r from-cyan-200 via-white to-fuchsia-300 text-transparent bg-clip-text">Advanced Video Ops</h1>
-            <p class="text-sm text-white/60 mt-3">Multi-user capture, filter plugins, shared media, and timeline assembly.</p>
-          </div>
-          <div class="hidden sm:grid gap-2 text-right text-xs text-white/60">
-            <span><span class="status-dot"></span> LIVE NODE</span>
-            <span id="clockPill" class="rounded-full border border-cyan-300/20 px-3 py-1 bg-cyan-300/10">SYNC</span>
-          </div>
-        </div>
-
-        <div class="mt-5 grid grid-cols-3 gap-2 text-xs">
-          <div class="rounded-2xl border border-cyan-300/10 bg-black/30 p-3">
-            <p class="text-white/40">MODE</p><p class="font-black text-cyan-200">TEAM STUDIO</p>
-          </div>
-          <div class="rounded-2xl border border-cyan-300/10 bg-black/30 p-3">
-            <p class="text-white/40">FILTERS</p><p class="font-black text-fuchsia-200">PLUGIN REGISTRY</p>
-          </div>
-          <div class="rounded-2xl border border-cyan-300/10 bg-black/30 p-3">
-            <p class="text-white/40">EDITOR</p><p class="font-black text-emerald-200">TIMELINE READY</p>
-          </div>
-        </div>
+      <div class="cartoon-backdrop" aria-hidden="true">
+        <span class="blob blob-cyan"></span>
+        <span class="blob blob-pink"></span>
+        <span class="blob blob-yellow"></span>
+        <span class="star star-one">✦</span>
+        <span class="star star-two">✧</span>
+        <span class="star star-three">✦</span>
       </div>
 
-      <div class="p-4 md:p-6 grid lg:grid-cols-[1.1fr_.9fr] gap-5">
-        <div class="relative preview-shell rounded-3xl overflow-hidden border border-cyan-300/20 shadow-2xl shadow-cyan-500/10">
-          <video id="preview" class="normal w-full rounded-3xl bg-black aspect-[9/16] object-cover border border-white/10" autoplay playsinline muted></video>
-          <canvas id="processedCanvas" class="hidden absolute inset-0 w-full h-full rounded-3xl bg-black border border-white/10"></canvas>
-        </div>
+      <div class="stage-vignette" aria-hidden="true"></div>
+    </section>
 
-        <div class="lg:col-start-2 lg:row-start-1">
-          <div class="studio-panel rounded-3xl p-4">
-            <h2 class="text-xl font-black">Capture Console</h2>
-            <div class="grid grid-cols-2 gap-3 mt-4">
-              <button id="startCam" class="tech-button rounded-2xl text-cyan-100 font-bold py-4">Start Camera</button>
-              <button id="flipCam" class="tech-button rounded-2xl font-bold py-4">Flip Camera</button>
-              <button id="record" class="rounded-2xl bg-red-500/90 border border-red-300/30 font-bold py-4 animate-pulse">Record Camera</button>
-              <button id="recordScreen" class="tech-button rounded-2xl font-bold py-4">Record Screen</button>
-              <button id="stop" disabled class="rounded-2xl bg-white/10 text-white/40 font-bold py-4 col-span-2">Stop Recording</button>
-            </div>
+    <header class="top-capture-bar" aria-label="Capture controls">
+      <button id="closeCapture" class="glass-button icon-button" type="button" aria-label="Close capture">×</button>
+      <div class="mode-pill" aria-live="polite">
+        <span class="mode-dot"></span>
+        <span id="modeTitle">MeTuber Cartoon Mode</span>
+      </div>
+      <button id="textToolTop" class="glass-button icon-button text-tool" type="button" aria-label="Add text">T</button>
+    </header>
 
-            <h2 class="text-xl font-black mt-5">Beauty Preprocess</h2>
-            <div id="beautyPanel" class="mt-3 grid gap-3">
-              <label class="block rounded-2xl bg-black/40 border border-cyan-300/10 p-3">
-                <div class="text-sm font-bold">Skin Smooth</div>
-                <input id="beautySmooth" type="range" min="0" max="18" step="1" value="8" class="w-full mt-2">
-              </label>
-              <label class="block rounded-2xl bg-black/40 border border-cyan-300/10 p-3">
-                <div class="text-sm font-bold">Softness</div>
-                <input id="beautySoftness" type="range" min="0" max="1" step="0.05" value="0.75" class="w-full mt-2">
-              </label>
-              <label class="block rounded-2xl bg-black/40 border border-cyan-300/10 p-3">
-                <div class="text-sm font-bold">Face Brightness</div>
-                <input id="beautyBrightness" type="range" min="-30" max="50" step="1" value="8" class="w-full mt-2">
-              </label>
-            </div>
+    <nav class="right-tool-rail" aria-label="Creative tools">
+      <button class="rail-tool" type="button" data-tool="Text"><span>T</span><small>Text</small></button>
+      <button class="rail-tool" type="button" data-tool="Draw"><span>✎</span><small>Draw</small></button>
+      <button class="rail-tool" type="button" data-tool="Stickers"><span>☺</span><small>Stickers</small></button>
+      <button class="rail-tool" type="button" data-tool="Cut"><span>◌</span><small>Cut</small></button>
+      <button class="rail-tool" type="button" data-tool="Music"><span>♪</span><small>Music</small></button>
+      <button class="rail-tool" type="button" data-tool="Voice"><span>◎</span><small>Voice</small></button>
+      <button class="rail-tool" type="button" data-tool="Effects"><span>✦</span><small>Effects</small></button>
+      <button id="moreTools" class="rail-tool" type="button" data-tool="More"><span>⋯</span><small>More</small></button>
+    </nav>
 
-            <h2 class="text-xl font-black mt-5">Filter Plugins</h2>
-            <div id="filterGrid" class="grid grid-cols-2 gap-2 mt-3"></div>
-            <div id="parameterPanel" class="mt-4 grid gap-3"></div>
-          </div>
-
-
-        <section class="lg:col-span-2 mt-2 rounded-3xl studio-panel p-4">
-          <h2 class="text-xl font-black">Team Room</h2>
-          <div class="grid grid-cols-2 gap-2 mt-3">
-            <input id="roomName" class="rounded-xl bg-black/50 border border-white/10 p-3" value="main-room">
-            <input id="userName" class="rounded-xl bg-black/50 border border-white/10 p-3" value="creator">
-            <button id="joinRoom" class="rounded-xl bg-cyan-400 text-black font-black py-3 col-span-2">Join Room</button>
-          </div>
-          <pre id="roomFeed" class="mt-3 text-xs text-white/60 whitespace-pre-wrap max-h-40 overflow-auto"></pre>
-        </section>
-
-        <section class="lg:col-span-2 rounded-3xl studio-panel p-4">
-          <h2 class="text-xl font-black">Media Library</h2>
-          <p class="text-sm text-white/50 mt-1">Recordings and uploads appear here.</p>
-          <input id="uploadVideo" type="file" accept="video/*" class="mt-3 block w-full text-sm">
-          <button id="refreshLibrary" class="mt-3 rounded-xl bg-white/10 py-3 px-4 font-bold">Refresh Library</button>
-          <div id="videoLibrary" class="mt-3 grid gap-3"></div>
-        </section>
-
-        <section class="lg:col-span-2 rounded-3xl studio-panel p-4">
-          <h2 class="text-xl font-black">Editor</h2>
-          <p class="text-sm text-white/50 mt-1">Build a project timeline. Server render comes next.</p>
-          <video id="editorPreview" controls class="mt-3 w-full rounded-2xl bg-black"></video>
-          <div id="timeline" class="mt-3 grid gap-2"></div>
-          <button id="saveProject" class="mt-3 rounded-xl bg-emerald-400 text-black py-3 px-4 font-black">Save Project JSON</button>
-        </section>
-
-        <details class="lg:col-span-2 mt-2 rounded-3xl studio-panel p-4">
-          <summary class="cursor-pointer text-sm text-cyan-300 font-bold">Debug</summary>
-          <pre id="debugPanel" class="mt-3 text-xs whitespace-pre-wrap text-white/70"></pre>
-        </details>
-
-        <p id="status" class="text-sm text-white/60 mt-4">Idle.</p>
-        <a id="download" class="hidden mt-4 block rounded-2xl bg-emerald-400 text-black text-center font-black py-4" download="metuber-recording.webm">Download Recording</a>
+    <section id="permissionOverlay" class="permission-overlay" aria-live="polite">
+      <div class="permission-card">
+        <div class="permission-badge">MT</div>
+        <h1>Turn on your camera</h1>
+        <p>MeTuber needs camera access to preview filters and make cartoon story clips.</p>
+        <button id="enableCamera" class="primary-button" type="button">Enable Camera</button>
+        <button id="useDemoPreview" class="ghost-button" type="button">Preview without camera</button>
       </div>
     </section>
+
+    <section id="toast" class="toast" role="status" aria-live="polite">Ready.</section>
+
+    <section class="bottom-capture-panel" aria-label="Capture and filter controls">
+      <div id="filterCarousel" class="filter-carousel" aria-label="Filter carousel"></div>
+
+      <div class="bottom-controls">
+        <button id="saveCapture" class="glass-button bottom-icon" type="button" aria-label="Save capture">↓</button>
+        <button id="captureButton" class="capture-button" type="button" aria-label="Capture photo">
+          <span></span>
+        </button>
+        <button id="postCapture" class="post-button" type="button">Send To</button>
+      </div>
+    </section>
+
+    <aside id="moreSheet" class="more-sheet" aria-label="More capture controls" aria-hidden="true">
+      <div class="sheet-card">
+        <div class="sheet-handle"></div>
+        <div class="sheet-header">
+          <div>
+            <p>MeTuber Studio</p>
+            <h2>Creator controls</h2>
+          </div>
+          <button id="closeMoreSheet" class="glass-button icon-button" type="button" aria-label="Close more controls">×</button>
+        </div>
+
+        <div class="sheet-grid">
+          <button id="startCam" class="sheet-action" type="button">Start Camera</button>
+          <button id="flipCam" class="sheet-action" type="button">Flip Camera</button>
+          <button id="record" class="sheet-action hot" type="button">Record Video</button>
+          <button id="recordScreen" class="sheet-action" type="button">Record Screen</button>
+          <button id="stop" class="sheet-action muted" type="button" disabled>Stop Recording</button>
+          <button id="toggleDebug" class="sheet-action" type="button">Debug View</button>
+        </div>
+
+        <details class="advanced-panel">
+          <summary>Beauty preprocess</summary>
+          <label>
+            <span>Skin Smooth</span>
+            <input id="beautySmooth" type="range" min="0" max="18" step="1" value="8">
+          </label>
+          <label>
+            <span>Softness</span>
+            <input id="beautySoftness" type="range" min="0" max="1" step="0.05" value="0.75">
+          </label>
+          <label>
+            <span>Face Brightness</span>
+            <input id="beautyBrightness" type="range" min="-30" max="50" step="1" value="8">
+          </label>
+        </details>
+
+        <details class="advanced-panel">
+          <summary>Filter parameters</summary>
+          <div id="parameterPanel" class="parameter-panel"></div>
+        </details>
+
+        <details class="advanced-panel debug-only">
+          <summary>Team room</summary>
+          <div class="room-grid">
+            <input id="roomName" value="main-room" aria-label="Room name">
+            <input id="userName" value="creator" aria-label="User name">
+            <button id="joinRoom" class="sheet-action" type="button">Join Room</button>
+          </div>
+          <pre id="roomFeed" class="debug-feed"></pre>
+        </details>
+
+        <details class="advanced-panel debug-only">
+          <summary>Media library and editor</summary>
+          <input id="uploadVideo" type="file" accept="video/*">
+          <button id="refreshLibrary" class="sheet-action" type="button">Refresh Library</button>
+          <div id="videoLibrary" class="video-library"></div>
+          <video id="editorPreview" controls></video>
+          <div id="timeline" class="timeline"></div>
+          <button id="saveProject" class="sheet-action" type="button">Save Project JSON</button>
+        </details>
+
+        <details class="advanced-panel debug-panel debug-only">
+          <summary>Debug log</summary>
+          <pre id="debugPanel"></pre>
+        </details>
+
+        <a id="download" class="download-link" download="metuber-recording.webm">Download Recording</a>
+      </div>
+    </aside>
   </main>
 
-<script src="/plugins/filter-registry.js"></script>
-<script>
-let stream;
-let recorder;
-let chunks = [];
-let facingMode = "user";
-
-const preview = document.getElementById("preview");
-const processedCanvas = document.getElementById("processedCanvas");
-const processedCtx = processedCanvas.getContext("2d", { willReadFrequently: true });
-let canvasFilterLoop = null;
-const statusEl = document.getElementById("status");
-const download = document.getElementById("download");
-const recordBtn = document.getElementById("record");
-const stopBtn = document.getElementById("stop");
-
-function setStatus(msg) { statusEl.textContent = msg; }
-
-async function startCamera() {
-  if (stream) stream.getTracks().forEach(t => t.stop());
-  stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode },
-    audio: true
-  });
-  preview.srcObject = stream;
-  setStatus("Camera ready.");
-}
-
-document.getElementById("startCam").onclick = async () => {
-  try { await startCamera(); }
-  catch (err) { setStatus("Camera error: " + err.message); }
-};
-
-document.getElementById("flipCam").onclick = async () => {
-  facingMode = facingMode === "user" ? "environment" : "user";
-  try { await startCamera(); }
-  catch (err) { setStatus("Flip error: " + err.message); }
-};
-
-const filterGrid = document.getElementById("filterGrid");
-const parameterPanel = document.getElementById("parameterPanel");
-const debugPanel = document.getElementById("debugPanel");
-let activeFilterId = "normal";
-let activeParams = {};
-
-function logDebug(message, data) {
-  const line = `[${new Date().toISOString()}] ${message}` + (data ? "\n" + JSON.stringify(data, null, 2) : "");
-  debugPanel.textContent = line + "\n\n" + debugPanel.textContent;
-}
-
-function basePreviewClass() {
-  return "w-full rounded-3xl bg-black aspect-[9/16] object-cover border border-white/10";
-}
-
-function stopCanvasFilter() {
-  if (canvasFilterLoop) cancelAnimationFrame(canvasFilterLoop);
-  canvasFilterLoop = null;
-  processedCanvas.classList.add("hidden");
-  preview.classList.remove("hidden");
-  preview.style.opacity = "1";
-  preview.style.pointerEvents = "";
-}
-
-function startCanvasFilter(plugin) {
-  preview.classList.remove("hidden");
-  preview.style.opacity = "0.01";
-  preview.style.pointerEvents = "none";
-  processedCanvas.classList.remove("hidden");
-  processedCanvas.style.zIndex = "10";
-
-  const draw = () => {
-    if (!preview.videoWidth || !preview.videoHeight) {
-      canvasFilterLoop = requestAnimationFrame(draw);
-      return;
-    }
-
-    processedCanvas.width = preview.videoWidth;
-    processedCanvas.height = preview.videoHeight;
-
-    try {
-      processedCtx.drawImage(preview, 0, 0, processedCanvas.width, processedCanvas.height);
-    } catch (err) {
-      logDebug("CANVAS_DRAW_ERROR", { error: err.message });
-      canvasFilterLoop = requestAnimationFrame(draw);
-      return;
-    }
-
-    try {
-      let imageData = processedCtx.getImageData(0, 0, processedCanvas.width, processedCanvas.height);
-      if (window.MeTuberPreprocess) {
-        imageData = window.MeTuberPreprocess.apply(imageData);
-      }
-      const fn = window.MeTuberCanvasFilters?.[plugin.canvasFilter];
-      if (typeof fn === "function") {
-        const processed = fn(imageData, activeParams);
-        processedCtx.putImageData(processed, 0, 0);
-      }
-    } catch (err) {
-      logDebug("CANVAS_FILTER_FRAME_ERROR", { plugin: plugin.id, error: err.message });
-    }
-
-    canvasFilterLoop = requestAnimationFrame(draw);
-  };
-
-  draw();
-}
-
-function applyActiveFilter() {
-  try {
-    const plugin = window.MeTuberFilterRegistry.get(activeFilterId);
-    if (!plugin) throw new Error("missing plugin " + activeFilterId);
-
-    if (plugin.canvasFilter) {
-      preview.style.filter = "none";
-      startCanvasFilter(plugin);
-      setStatus("Canvas Filter: " + plugin.name);
-      logDebug("CANVAS_FILTER_APPLIED", { activeFilterId, canvasFilter: plugin.canvasFilter });
-      return;
-    }
-
-    stopCanvasFilter();
-    const filter = window.MeTuberFilterRegistry.getFilter(activeFilterId, activeParams);
-    preview.className = basePreviewClass();
-    preview.style.filter = filter;
-    setStatus("Filter: " + plugin.name);
-    logDebug("FILTER_APPLIED", { activeFilterId, activeParams, filter });
-  } catch (err) {
-    stopCanvasFilter();
-    preview.style.filter = "none";
-    setStatus("Filter error: " + err.message);
-    logDebug("FILTER_ERROR", { activeFilterId, error: err.message });
-  }
-}
-
-function renderParameterPanel(plugin) {
-  parameterPanel.innerHTML = "";
-  activeParams = {};
-
-  const params = plugin.parameters || {};
-  Object.entries(params).forEach(([key, spec]) => {
-    activeParams[key] = spec.default;
-
-    const wrap = document.createElement("label");
-    wrap.className = "block rounded-2xl bg-black/40 border border-cyan-300/10 p-3";
-
-    const title = document.createElement("div");
-    title.className = "text-sm font-bold";
-    title.textContent = spec.label || key;
-
-    const input = document.createElement("input");
-    input.type = spec.type === "range" ? "range" : "text";
-    input.min = spec.min ?? "";
-    input.max = spec.max ?? "";
-    input.step = spec.step ?? "";
-    input.value = spec.default ?? "";
-    input.className = "w-full mt-2";
-
-    const value = document.createElement("div");
-    value.className = "text-xs text-white/50 mt-1";
-    value.textContent = input.value;
-
-    input.oninput = () => {
-      activeParams[key] = input.type === "range" ? Number(input.value) : input.value;
-      value.textContent = input.value;
-      applyActiveFilter();
-    };
-
-    wrap.appendChild(title);
-    wrap.appendChild(input);
-    wrap.appendChild(value);
-    parameterPanel.appendChild(wrap);
-  });
-}
-
-function renderFilterPlugins() {
-  const registry = window.MeTuberFilterRegistry;
-  const validation = registry.validate();
-  logDebug("PLUGIN_REGISTRY_VALIDATE", validation);
-
-  if (!validation.ok) {
-    setStatus("Plugin registry errors. Open Debug.");
-    return;
-  }
-
-  filterGrid.innerHTML = "";
-  registry.plugins.forEach(plugin => {
-    const btn = document.createElement("button");
-    btn.className = "tech-button rounded-xl py-3 px-2 text-sm font-bold text-cyan-50";
-    btn.textContent = plugin.name;
-    btn.onclick = () => {
-      activeFilterId = plugin.id;
-
-      if (plugin.canvasFilter || Object.keys(plugin.parameters || {}).length > 0) {
-        renderParameterPanel(plugin);
-      } else {
-        parameterPanel.innerHTML = "";
-        activeParams = {};
-      }
-
-      applyActiveFilter();
-    };
-    filterGrid.appendChild(btn);
-  });
-
-  parameterPanel.innerHTML = "";
-  activeFilterId = "normal";
-  activeParams = {};
-  applyActiveFilter();
-}
-
-renderFilterPlugins();
-
-async function startRecordingFromStream(sourceStream, label = "camera") {
-  chunks = [];
-  const activePlugin = window.MeTuberFilterRegistry.get(activeFilterId);
-  const recordStream = activePlugin && activePlugin.canvasFilter && processedCanvas.captureStream
-    ? processedCanvas.captureStream(30)
-    : stream;
-
-  if (activePlugin && activePlugin.canvasFilter) {
-    stream.getAudioTracks().forEach(track => recordStream.addTrack(track));
-  }
-
-  recorder = new MediaRecorder(recordStream, { mimeType: "video/webm" });
-
-  recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
-  recorder.onstop = () => {
-    const blob = new Blob(chunks, { type: "video/webm" });
-    download.href = URL.createObjectURL(blob);
-    download.classList.remove("hidden");
-    uploadBlob(blob, "webm").then(result => {
-      logDebug("RECORDING_UPLOADED", result);
-      function bindBeautyControls() {
-  const smooth = document.getElementById("beautySmooth");
-  const softness = document.getElementById("beautySoftness");
-  const brightness = document.getElementById("beautyBrightness");
-  if (!smooth || !softness || !brightness || !window.MeTuberPreprocess) return;
-
-  const sync = () => {
-    window.MeTuberPreprocess.settings.smooth = Number(smooth.value);
-    window.MeTuberPreprocess.settings.softness = Number(softness.value);
-    window.MeTuberPreprocess.settings.brightness = Number(brightness.value);
-    logDebug("BEAUTY_PREPROCESS_UPDATED", window.MeTuberPreprocess.settings);
-  };
-
-  smooth.oninput = sync;
-  softness.oninput = sync;
-  brightness.oninput = sync;
-  sync();
-}
-
-refreshLibrary();
-bindBeautyControls();
-      if (teamSocket && teamSocket.readyState === WebSocket.OPEN) {
-        teamSocket.send(JSON.stringify({ type:"clip-uploaded", clip:result }));
-      }
-    });
-    setStatus("Recording ready and uploaded.");
-  };
-
-  recorder.start();
-  recordBtn.disabled = true;
-  document.getElementById("recordScreen").disabled = true;
-  stopBtn.disabled = false;
-  stopBtn.className = "rounded-2xl bg-red-700 font-bold py-4 col-span-2";
-  setStatus("Recording " + label + "...");
-}
-
-recordBtn.onclick = async () => {
-  if (!stream) await startCamera();
-  await startRecordingFromStream(stream, "camera");
-};
-
-document.getElementById("recordScreen").onclick = async () => {
-  try {
-    if (!navigator.mediaDevices.getDisplayMedia) {
-      setStatus("Screen recording not supported in this browser.");
-      logDebug("SCREEN_RECORD_UNSUPPORTED", { userAgent: navigator.userAgent });
-      return;
-    }
-
-    const screenStream = await navigator.mediaDevices.getDisplayMedia({
-      video: true,
-      audio: true
-    });
-
-    await startRecordingFromStream(screenStream, "screen");
-
-    screenStream.getVideoTracks()[0].onended = () => {
-      if (recorder && recorder.state !== "inactive") recorder.stop();
-    };
-  } catch (err) {
-    setStatus("Screen record error: " + err.message);
-    logDebug("SCREEN_RECORD_ERROR", { error: err.message });
-  }
-};
-
-stopBtn.onclick = () => {
-  if (recorder && recorder.state !== "inactive") recorder.stop();
-  recordBtn.disabled = false;
-  document.getElementById("recordScreen").disabled = false;
-  stopBtn.disabled = true;
-  stopBtn.className = "rounded-2xl bg-white/10 text-white/40 font-bold py-4 col-span-2";
-};
-
-
-const timeline = [];
-let teamSocket = null;
-
-async function uploadBlob(blob, ext = "webm") {
-  const room = document.getElementById("roomName")?.value || "main-room";
-  const user = document.getElementById("userName")?.value || "creator";
-  const res = await fetch(`/api/upload?ext=${encodeURIComponent(ext)}&room=${encodeURIComponent(room)}&user=${encodeURIComponent(user)}`, {
-    method: "POST",
-    body: blob
-  });
-  return await res.json();
-}
-
-async function refreshLibrary() {
-  const box = document.getElementById("videoLibrary");
-  box.innerHTML = "Loading...";
-  const res = await fetch("/api/videos");
-  const data = await res.json();
-  box.innerHTML = "";
-
-  (data.videos || []).forEach(video => {
-    const card = document.createElement("div");
-    card.className = "rounded-2xl bg-white/10 p-3";
-
-    const title = document.createElement("div");
-    title.className = "text-sm font-bold break-all";
-    title.textContent = video.name;
-
-    const preview = document.createElement("video");
-    preview.src = video.url;
-    preview.controls = true;
-    preview.className = "mt-2 w-full rounded-xl bg-black";
-
-    const add = document.createElement("button");
-    add.className = "mt-2 rounded-xl bg-cyan-400 text-black py-2 px-3 font-bold";
-    add.textContent = "Add to Timeline";
-    add.onclick = () => {
-      timeline.push({ type:"video", name:video.name, url:video.url, start:0, end:null });
-      renderTimeline();
-      document.getElementById("editorPreview").src = video.url;
-    };
-
-    card.appendChild(title);
-    card.appendChild(preview);
-    card.appendChild(add);
-    box.appendChild(card);
-  });
-}
-
-function renderTimeline() {
-  const box = document.getElementById("timeline");
-  box.innerHTML = "";
-  timeline.forEach((clip, idx) => {
-    const row = document.createElement("div");
-    row.className = "rounded-xl bg-white/10 p-3 text-sm";
-    row.textContent = `${idx + 1}. ${clip.name}`;
-    box.appendChild(row);
-  });
-}
-
-document.getElementById("uploadVideo").onchange = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const ext = file.name.split(".").pop() || "webm";
-  const result = await uploadBlob(file, ext);
-  logDebug("UPLOAD_RESULT", result);
-  await refreshLibrary();
-};
-
-document.getElementById("refreshLibrary").onclick = refreshLibrary;
-
-document.getElementById("saveProject").onclick = async () => {
-  const project = {
-    name: "MeTuber Project",
-    createdAt: new Date().toISOString(),
-    timeline
-  };
-  const res = await fetch("/api/project", {
-    method: "POST",
-    headers: {"content-type":"application/json"},
-    body: JSON.stringify(project)
-  });
-  const data = await res.json();
-  logDebug("PROJECT_SAVED", data);
-  setStatus(data.ok ? "Project saved." : "Project save failed.");
-};
-
-document.getElementById("joinRoom").onclick = () => {
-  const room = document.getElementById("roomName").value || "main-room";
-  const user = document.getElementById("userName").value || "creator";
-  const proto = location.protocol === "https:" ? "wss:" : "ws:";
-  teamSocket = new WebSocket(`${proto}//${location.host}`);
-
-  teamSocket.onopen = () => teamSocket.send(JSON.stringify({ type:"join", room, user }));
-  teamSocket.onmessage = (event) => {
-    const feed = document.getElementById("roomFeed");
-    feed.textContent = event.data + "\n" + feed.textContent;
-  };
-};
-
-refreshLibrary();
-
-// Three.js neon background
-const canvas = document.getElementById("three-bg");
-setInterval(() => {
-  const el = document.getElementById("clockPill");
-  if (el) el.textContent = new Date().toLocaleTimeString();
-}, 1000);
-
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ canvas, alpha:true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-camera.position.z = 5;
-
-const group = new THREE.Group();
-scene.add(group);
-
-for (let i = 0; i < 140; i++) {
-  const geo = i % 5 === 0 ? new THREE.IcosahedronGeometry(0.045, 0) : new THREE.BoxGeometry(0.035, 0.035, 0.035);
-  const mat = new THREE.MeshBasicMaterial({ color: i % 3 === 0 ? 0xa855f7 : 0x22d3ee });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.position.set((Math.random()-.5)*10, (Math.random()-.5)*14, (Math.random()-.5)*9);
-  group.add(mesh);
-}
-
-const ringGeo = new THREE.TorusGeometry(2.2, 0.006, 8, 96);
-const ringMat = new THREE.MeshBasicMaterial({ color: 0x22d3ee });
-const ring = new THREE.Mesh(ringGeo, ringMat);
-scene.add(ring);
-
-function animate() {
-  requestAnimationFrame(animate);
-  group.rotation.x += 0.0015;
-  group.rotation.y += 0.0035;
-  ring.rotation.x += 0.004;
-  ring.rotation.y += 0.002;
-  renderer.render(scene, camera);
-}
-animate();
-
-window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-</script>
+  <script src="/plugins/filter-registry.js"></script>
+  <script src="/assets/capture.js"></script>
 </body>
 </html>
